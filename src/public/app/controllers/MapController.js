@@ -869,13 +869,11 @@ app.controller("MapController", function($scope, $http, $sce){
 
 	$scope.map.initBasemaps = function(){
         $scope.map.basemaps = [
-            { wms: 'http://www.wms.nrw.de/geobasis/wms_nw_dtk', layer: 'nw_dtk_col', name: 'NRW-Atlas: Topographische Karten (alle Zoomstufen)' },
-            { wms: 'http://www.wms.nrw.de/geobasis/wms_nw_dop20', layer: 'nw_dop20', name: 'NRW-Atlas: Luftbild (20 cm) (alle Zoomstufen)' },
-            { wms: 'http://www.wms.nrw.de/geobasis/wms_nw_dtk50', layer: 'nw_dtk50_col', name: 'NRW-Atlas: Topo. Karte 1:50.000 (Zoom 1 km - 500 m)' },
-            { wms: 'http://www.wms.nrw.de/geobasis/wms_nw_dtk25', layer: 'nw_dtk25_col', name: 'NRW-Atlas: Topo. Karte 1:25.000 (Zoom 500 m - 300 m)' },
-            { wms: 'http://www.wms.nrw.de/geobasis/wms_nw_dtk10', layer: 'nw_dtk10_col', name: 'NRW-Atlas: Topo. Karte 1:10.000 (Zoom 300 m - 30 m)' },
-            { wms: 'http://www.wms.nrw.de/geobasis/wms_nw_dgk5', layer: 'nw_dgk5_grundriss', name: 'NRW-Atlas: Deutsche Grundkarte 1:5.000 (Zoom 100 m - 30 m)' },
-			{ wms: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', layer: 'OpenStreetMap', name: 'OpenStreetMap' },
+					{ wms: 'https://sgx.geodatenzentrum.de/wms_topplus_open', layer: 'web', name: 'TopPlusOpen (alle Zoomstufen)' },
+					{ wms: 'https://sgx.geodatenzentrum.de/wms_sen2europe', layer: 'rgb', name: 'Sentinel2: RGB Darstellung' },
+					{ wms: 'https://www.wms.nrw.de/geobasis/wms_nw_dop', layer: 'nw_dop_rgb', name: 'NRW-Atlas: Luftbild DOP 20 cm' },
+				//{ wms: 'https://www.wms.nrw.de/geobasis/wms_nw_abk ', layer: 'nw_abk_col', name: 'Amtliche Basiskarte 1:5.000 mit Kataster' },
+			    { wms: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', layer: 'OpenStreetMap', name: 'OpenStreetMap' },
             { wms: '', layer: 'Lageplan', name: 'Lageplan' }
         ];
 		// show default basemap
