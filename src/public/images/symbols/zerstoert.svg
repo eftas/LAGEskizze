@@ -11,9 +11,7 @@
 	<clipPath id="SVGID_2_">
 		<use xlink:href="#SVGID_1_"  overflow="visible"/>
 	</clipPath>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 <line fill="none" stroke="#000000" stroke-width="2" x1="58.833" y1="103.464" x2="103.465" y2="58.832"/>
 <line fill="none" stroke="#000000" stroke-width="2" x1="38.268" y1="58.833" x2="82.899" y2="103.464"/>
 <line fill="none" stroke="#000000" stroke-width="2" x1="48.55" y1="48.55" x2="93.183" y2="93.182"/>

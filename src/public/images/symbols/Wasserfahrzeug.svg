@@ -13,7 +13,5 @@
 	</clipPath>
 	<path clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" d="M1.51,41.469
 		c0.622,32.511,31.496,58.794,69.357,58.794c37.86,0,68.734-26.283,69.356-58.794H1.51z"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 </svg>

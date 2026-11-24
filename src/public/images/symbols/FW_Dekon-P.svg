@@ -68,7 +68,5 @@
 	</clipPath>
 	<path clip-path="url(#SVGID_6_)" fill="#FFFFFF" d="M123.77,70.598c-2.979,0-5.395-2.415-5.395-5.394s2.415-5.393,5.395-5.393
 		c2.979,0,5.394,2.414,5.394,5.393S126.748,70.598,123.77,70.598"/>
-	<line clip-path="url(#SVGID_6_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_6_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 </svg>

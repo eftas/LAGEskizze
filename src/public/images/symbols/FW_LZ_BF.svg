@@ -23,9 +23,7 @@
 		<line clip-path="url(#SVGID_2_)" fill="none" stroke="#FFFFFF" stroke-width="3" x1="101.436" y1="77.978" x2="142.771" y2="44.41"/>
 	
 		<line clip-path="url(#SVGID_2_)" fill="none" stroke="#FFFFFF" stroke-width="3" x1="142.771" y1="112.221" x2="101.435" y2="78.653"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 <g>
 	<path fill="#FFFFFF" d="M16.32,67.204H9.763V51.538h6.293c3.059,0,4.841,1.716,4.841,4.4c0,1.738-1.144,2.86-1.937,3.234
 		c0.946,0.44,2.156,1.43,2.156,3.521C21.117,65.62,19.115,67.204,16.32,67.204z M15.814,54.266h-2.992v3.609h2.992

@@ -44,6 +44,5 @@
 		<use xlink:href="#SVGID_3_"  overflow="visible"/>
 	</clipPath>
 	<line clip-path="url(#SVGID_4_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="27.929" x2="141.732" y2="27.929"/>
-	<line clip-path="url(#SVGID_4_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 </svg>

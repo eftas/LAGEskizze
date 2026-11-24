@@ -11,9 +11,7 @@
 	<clipPath id="SVGID_2_">
 		<use xlink:href="#SVGID_1_"  overflow="visible"/>
 	</clipPath>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 <polyline fill="none" stroke="#000000" stroke-width="2" points="21.26,107.539 70.866,91.523 120.473,107.539 "/>
 <line fill="none" stroke="#000000" stroke-width="2" x1="56.531" y1="47.348" x2="85.201" y2="47.348"/>
 <polygon points="49.606,47.348 60.328,51.25 60.328,43.445 "/>

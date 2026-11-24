@@ -19,7 +19,5 @@
 	<circle clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" cx="124.232" cy="106.441" r="4.394"/>
 	<path clip-path="url(#SVGID_2_)" fill="#C20E1A" d="M0,29.764V99.78h141.732V29.764c-16.899,6.788-42.368,11.111-70.866,11.111
 		C42.369,40.875,16.899,36.551,0,29.764"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 </svg>

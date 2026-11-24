@@ -20,7 +20,5 @@
 		c-2.427,0-4.394,1.967-4.394,4.393C66.472,38.723,68.439,40.69,70.866,40.69"/>
 	<polyline clip-path="url(#SVGID_2_)" fill="none" stroke="#FFFFFF" stroke-width="2" points="0,43.37 70.866,95.244 70.866,62.716 
 		141.732,112.251 	"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="28.346" x2="141.732" y2="28.346"/>
-	<line clip-path="url(#SVGID_2_)" fill="none" stroke="#000000" stroke-width="2" x1="0" y1="113.385" x2="141.732" y2="113.385"/>
-</g>
+	</g>
 </svg>
