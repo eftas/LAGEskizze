@@ -796,6 +796,14 @@ header .qb button:disabled { opacity: .35; }
 header button:disabled { opacity: .4; cursor: default; }
 .dlg { position: fixed; inset: 0; background: rgba(15,42,71,.35); z-index: 3000; display: flex; align-items: center; justify-content: center; }
 .dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(460px, 92vw); max-height: 92vh; overflow: auto; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+@keyframes dlgIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dlgCardIn { from { opacity: 0; transform: translateY(18px) scale(.96); } to { opacity: 1; transform: none; } }
+.dlg:not(.rolelay) { animation: dlgIn .4s ease both; }
+.dlg:not(.rolelay) > div { animation: dlgCardIn .4s ease both; }
+.dlg.dlgout { animation: dlgIn .4s ease reverse both; pointer-events: none; }
+.dlg.dlgout > div { animation: dlgCardIn .4s ease reverse both; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .4s; animation-timing-function: ease; }
+@media (prefers-reduced-motion: reduce) { .dlg:not(.rolelay), .dlg:not(.rolelay) > div, .dlg.dlgout, .dlg.dlgout > div { animation: none; } ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
 .dlg h3 { margin: 0 0 8px; font-size: 15px; }
 .dlg input { width: 100%; }
 header { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 0 14px; background: #0f2a47; color: #fff; }
@@ -4406,12 +4414,14 @@ function placeMeasure(ll) {
 const VT = { bars: { top: true, left: true, right: true, bottom: true }, prevPanel: true, popKey: '', popText: '' };
 try { Object.assign(VT.bars, JSON.parse(localStorage.getItem('kritis-vt') || '{}')); } catch (e) { /* egal */ }
 function vtSave() { try { localStorage.setItem('kritis-vt', JSON.stringify(VT.bars)); } catch (e) { /* egal */ } }
+function vtSwitch(fn) { const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; if (document.startViewTransition && !reduce) { try { document.startViewTransition(fn); return; } catch (e) { /* ohne Übergang */ } } fn(); }
 function startVortrag() {
-  if (runtime.vortrag) return; closeUnitOverview(); closeFue(); runtime.vortrag = true; VT.prevPanel = !$('#app').classList.contains('collapsed'); setPanel(false, false);
-  document.body.classList.add('vortrag'); $('#vt').hidden = false; state.chemBand = true; vtApply(); renderVortrag(); renderChemBand(); setTimeout(() => map.invalidateSize(), 300);
+  if (runtime.vortrag) return; runtime.vortrag = true; vtSwitch(() => {
+  closeUnitOverview(); closeFue(); VT.prevPanel = !$('#app').classList.contains('collapsed'); setPanel(false, false);
+  document.body.classList.add('vortrag'); $('#vt').hidden = false; state.chemBand = true; vtApply(); renderVortrag(); renderChemBand(); setTimeout(() => map.invalidateSize(), 300); });
 }
 function endVortrag() {
-  if (!runtime.vortrag) return; runtime.vortrag = false; document.body.classList.remove('vortrag'); $('#vt').hidden = true; setPanel(VT.prevPanel, false); setTimeout(() => map.invalidateSize(), 300);
+  if (!runtime.vortrag) return; runtime.vortrag = false; vtSwitch(() => { document.body.classList.remove('vortrag'); $('#vt').hidden = true; setPanel(VT.prevPanel, false); setTimeout(() => map.invalidateSize(), 300); });
 }
 let vtMenuOpen = false;
 function vtBuildMenu() {
@@ -4466,7 +4476,7 @@ function renderVortrag() {
     free.length ? el('div', { class: 'vtsec', style: '--c:#94a3b8' }, el('b', { text: 'nicht zugeteilt' }), ...free.map(unitRow)) : '', !state.units.length ? el('div', { class: 'sm', text: 'Noch keine Einheit.' }) : '');
 }
 setInterval(() => { if (runtime.vortrag) renderVortrag(); }, 5000);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && runtime.vortrag && !document.querySelector('.dlg')) { if (vtMenuOpen) vtMenu(false); else endVortrag(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && runtime.vortrag && !document.querySelector('.dlg:not(.dlgout)')) { if (vtMenuOpen) vtMenu(false); else endVortrag(); } });
 function renderChem() { renderChemMap(); renderChemTab(); renderChemBand(); }
 function chemWindChanged() {
   renderChemMap(); fillChemNumbers();
@@ -4956,7 +4966,7 @@ function closeFue() { $('#fueOv').hidden = true; if (runtime.vortrag) vtApply();
 function initFue() {
   $('#btnFue').onclick = () => ($('#fueOv').hidden ? openFue() : closeFue()); $('#fueClose').onclick = closeFue;
   $('#fueAddEA').onclick = () => fueAddSection(null);
-  $('#fueOv').addEventListener('keydown', e => { if (e.key === 'Escape' && !document.querySelector('.dlg')) { e.stopPropagation(); closeFue(); } });
+  $('#fueOv').addEventListener('keydown', e => { if (e.key === 'Escape' && !document.querySelector('.dlg:not(.dlgout)')) { e.stopPropagation(); closeFue(); } });
 }
 
 /* ------------------------------------------------------------------ */
@@ -5491,6 +5501,9 @@ $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ')
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
 $('#btnPrint').onclick = () => printLagekarte();
 
+/* Dialoge blenden aus, bevor sie entfernt werden */
+(function () { const orig = Element.prototype.remove; Element.prototype.remove = function () {
+  if (this.classList && this.classList.contains('dlg') && !this.classList.contains('rolelay') && !this._leaving && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { this._leaving = true; this.classList.add('dlgout'); setTimeout(() => orig.call(this), 400); } else orig.call(this); }; })();
 /* ---- Menü im Kopf ---- */
 (function () {
   const wrap = $('#hdrMore'), btn = $('#btnMore'), menu = $('#hdrMenu');
