@@ -1362,6 +1362,32 @@ body.printing #printSheet tr.ps td { background: #e8eef7; font-weight: 700; }
 #printSheet .pd { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 body.printing .leaflet-tile-pane .bm-inv, body.printing .leaflet-tile-pane { filter: none !important; }
 body.printing .umk .ulb, body.printing .symlabel { background: #fff !important; color: #0f172a !important; }
+
+/* ===== Vortragsansicht ===== */
+#vt[hidden] { display: none; }
+#vtTop { position: absolute; left: 0; right: 0; top: 0; height: 64px; z-index: 1500; background: var(--panel, #fff); color: var(--ink); border-bottom: 3px solid var(--accent); display: flex; align-items: center; gap: 20px; padding: 0 22px; overflow: hidden; }
+#vtTop .nm { font: 700 26px Inter, sans-serif; color: #1e3a8a; } #vtTop .ex { background: #b45309; color: #fff; border-radius: 999px; padding: 3px 14px; font-weight: 700; letter-spacing: .06em; font-size: 14px; }
+#vtTop .en { font-weight: 600; color: var(--muted); } #vtTop .t { font: 600 22px 'JetBrains Mono', ui-monospace, monospace; }
+#vtTop .tz { font: 700 20px 'JetBrains Mono', ui-monospace, monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 2px 10px; }
+#vtTop .mt { margin-left: auto; font: 700 21px Inter, sans-serif; color: #b45309; white-space: nowrap; }
+#vtKpi { position: absolute; left: 14px; top: calc(var(--vtT, 64px) + 14px); z-index: 1450; display: flex; flex-direction: column; gap: 8px; width: 214px; }
+.vtk { background: var(--panel, #fff); color: var(--ink); border-radius: 12px; border-left: 10px solid var(--c); box-shadow: 0 2px 10px rgba(0,0,0,.3); padding: 6px 14px 6px 12px; } .vtk b { font: 700 32px/1.1 Inter, sans-serif; display: block; font-variant-numeric: tabular-nums; } .vtk span { font-size: 13.5px; color: var(--muted); }
+#vtRight { position: absolute; right: 0; top: var(--vtT, 64px); bottom: 0; width: 436px; z-index: 1450; background: var(--panel, #fff); color: var(--ink); border-left: 3px solid var(--line); overflow: auto; padding: 14px 16px 60px; scrollbar-width: thin; }
+#vtRight h2 { margin: 0 0 8px; font: 700 20px Inter, sans-serif; text-transform: none; letter-spacing: 0; color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; } #vtRight h2 span { font: 600 15px Inter, sans-serif; color: var(--muted); }
+.vtsec { border: 1px solid var(--line); border-left: 8px solid var(--c); border-radius: 10px; padding: 8px 12px; margin: 8px 0; background: var(--panel, #fff); } .vtsec.sub { margin-left: 14px; background: rgba(100,116,139,.07); } .vtsec b { font-size: 18px; } .vtsec .sm { color: var(--muted); font-size: 13.5px; }
+.vtu { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 16px; font-weight: 600; } .vtu img { width: 46px; height: 34px; object-fit: contain; } .vtu .st { margin-left: auto; text-align: right; }
+.vtc { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 13.5px; font-weight: 700; } .vtc.bad { background: #fee2e2; color: #7f1d1d; }
+#vtCtl { position: absolute; left: 14px; bottom: 36px; z-index: 1600; display: flex; flex-wrap: wrap; gap: 6px; max-width: 214px; }
+.vtb { border: 1px solid var(--line); background: var(--panel, #fff); color: var(--ink); border-radius: 8px; padding: 5px 11px; font-weight: 700; font-size: 12.5px; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer; opacity: .92; } .vtb:not(.on):not(.end):not(.all) { opacity: .6; text-decoration: line-through; } .vtb.end { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+body.vortrag header, body.vortrag #panel, body.vortrag #panelToggle, body.vortrag #reviewSlider, body.vortrag #placeSearch, body.vortrag #roleChip { display: none !important; }
+body.vortrag #app { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: 1fr !important; height: 100%; }
+body.vortrag #mapWrap { grid-row: 1; grid-column: 1; }
+body.vt-no-top #vtTop, body.vt-no-left #vtKpi, body.vt-no-right #vtRight { display: none; }
+body.vortrag #chemBand { left: calc(max(var(--vtL, 236px), 230px) + 16px); right: calc(var(--vtR, 436px) + 16px); bottom: 20px; z-index: 1460; }
+body.vt-no-bottom #chemBand { display: none !important; }
+body.vortrag .leaflet-top.leaflet-left { margin-left: calc(var(--vtL, 236px) + 6px); margin-top: calc(var(--vtT, 64px) + 6px); }
+body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margin-top: var(--vtT, 64px); }
+[data-theme="dark"] #vtTop .nm { color: #bcd2ff; } [data-theme="dark"] #vtTop .mt { color: #fbbf24; } [data-theme="dark"] #vtRight, [data-theme="dark"] #vtTop { background: #0e1625; } [data-theme="dark"] .vtk, [data-theme="dark"] .vtsec { background: #152036; }
 </style>
 </head>
 <body>
@@ -1835,6 +1861,7 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
         <div class="ovtools"><button class="btn primary" id="ovAdd">+ Einheit</button><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
       <div id="ovCols"></div>
     </section>
+    <div id="vt" hidden><div id="vtTop"></div><div id="vtKpi"></div><div id="vtRight"></div><div id="vtCtl" role="toolbar" aria-label="Leisten der Vortragsansicht"></div></div>
     <div id="reviewSlider" hidden><label for="rvRange">Rückblick</label><input type="range" id="rvRange" min="0" max="0" step="1" value="0" aria-label="Lagestand wählen"><span id="rvLbl"></span></div>
     <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
     <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
@@ -4330,6 +4357,56 @@ function placeMeasure(ll) {
   const m = Object.assign({ id: uid(), lat: ll.lat, lng: ll.lng }, runtime.mode.data); stopDraw(); state.measure.push(m);
   addJournal('Messwert ' + m.ppm + ' ppm (' + MEAS_TXT[measLevel(m)] + ')', true, { lat: m.lat, lng: m.lng }); renderChem(); save('Messpunkt gesetzt: ' + m.ppm + ' ppm');
 }
+
+/* ------------------------------------------------------------------ */
+/* Vortragsansicht: große Zahlen, Kräfte nach Abschnitt, Gefahrstoff   */
+/* ------------------------------------------------------------------ */
+const VT = { bars: { top: true, left: true, right: true, bottom: true }, prevPanel: true, popKey: '', popText: '' };
+try { Object.assign(VT.bars, JSON.parse(localStorage.getItem('kritis-vt') || '{}')); } catch (e) { /* egal */ }
+function vtSave() { try { localStorage.setItem('kritis-vt', JSON.stringify(VT.bars)); } catch (e) { /* egal */ } }
+function startVortrag() {
+  if (runtime.vortrag) return; closeUnitOverview(); closeFue(); runtime.vortrag = true; VT.prevPanel = !$('#app').classList.contains('collapsed'); setPanel(false, false);
+  document.body.classList.add('vortrag'); $('#vt').hidden = false; state.chemBand = true; vtApply(); renderVortrag(); renderChemBand(); setTimeout(() => map.invalidateSize(), 300);
+}
+function endVortrag() {
+  if (!runtime.vortrag) return; runtime.vortrag = false; document.body.classList.remove('vortrag'); $('#vt').hidden = true; setPanel(VT.prevPanel, false); setTimeout(() => map.invalidateSize(), 300);
+}
+function vtApply() {
+  const b = VT.bars, r = document.documentElement.style;
+  ['top', 'left', 'right', 'bottom'].forEach(k => document.body.classList.toggle('vt-no-' + k, !b[k]));
+  r.setProperty('--vtL', b.left ? '236px' : '0px'); r.setProperty('--vtR', b.right ? '436px' : '0px'); r.setProperty('--vtT', b.top ? '64px' : '0px');
+  const ctl = $('#vtCtl'); ctl.replaceChildren(...[['top', 'Oben'], ['left', 'Zahlen'], ['right', 'Kräfte'], ['bottom', 'Gefahrstoff']].map(([k, t]) => el('button', { class: 'vtb' + (b[k] ? ' on' : ''), 'aria-pressed': String(!!b[k]), title: t + (b[k] ? ' einklappen' : ' ausklappen'), text: t, onclick: () => { VT.bars[k] = !VT.bars[k]; vtSave(); vtApply(); } })),
+    el('button', { class: 'vtb all', text: Object.values(b).some(Boolean) ? 'Alle einklappen' : 'Alle ausklappen', title: 'Alle Leisten ein- oder ausklappen', onclick: () => { const on = !Object.values(VT.bars).some(Boolean); Object.keys(VT.bars).forEach(k => { VT.bars[k] = on; }); vtSave(); vtApply(); } }),
+    el('button', { class: 'vtb end', text: 'Beenden', title: 'Vortragsansicht verlassen (Esc)', onclick: endVortrag }));
+  setTimeout(() => map.invalidateSize(), 120);
+}
+function vtMeetingText() {
+  const due = meetingDue(); if (due == null) return ''; const d = due - nowMs(); return 'Nächste Lagebesprechung ' + fmtHM2(due) + ' Uhr · ' + (d >= 0 ? 'in ' : 'überfällig seit ') + fmtDur(Math.abs(d));
+}
+function vtZone() {
+  const ca = chemActive(), cs = ca && chemSub(ca.sid); if (!cs) return null; const R = chemRings(ca);
+  const z = ca.fire ? ['z3', cs.erg.fire + '-m-Kreis'] : ca.large ? ['z2', cs.erg.spillDownwind + ' m in Windrichtung'] : ['z1', cs.erg.isolate + '-m-Zone']; return { ring: R[z[0]], label: z[1] };
+}
+function renderVortrag() {
+  if (!runtime.vortrag) return; const ex = state.exercise, t = casTotals().t, probs = state.problems.filter(p => p.status !== 'erledigt').length;
+  $('#vtTop').replaceChildren(el('span', { class: 'nm', text: 'LAGEkarte' }), ex && ex.active ? el('span', { class: 'ex', text: 'ÜBUNG' }) : '', ex && ex.name ? el('span', { class: 'en', text: ex.name }) : '', el('span', { class: 't', text: fmtClock(nowMs()) }), el('span', { class: 'tz', text: fmtTac(nowMs()) }), el('span', { class: 'mt', text: vtMeetingText() }));
+  const k = (c, n, l, id) => el('div', { class: 'vtk', style: '--c:' + c }, el('b', { text: n, id: id || null }), el('span', { text: l })), zone = vtZone(), meas = (state.measure || []);
+  $('#vtKpi').replaceChildren(k('#dc2626', String(t.sk1 || 0), 'SK I (rot)'), k('#ca8a04', String(t.sk2 || 0), 'SK II (gelb)'), k('#16a34a', String(t.sk3 || 0), 'SK III (grün)'), k('#111827', String(t.vermisst || 0), 'Vermisste, ' + (t.tot || 0) + ' Tote'),
+    k('#0e7490', zone ? '…' : POP.total != null ? '≈ ' + popFmtN(POP.total) : '–', zone ? 'Einwohner im ' + zone.label : 'Einwohner im Abfragegebiet', 'vtPop'), k(probs ? '#b91c1c' : '#15803d', String(probs), 'Probleme offen'),
+    meas.length ? k('#0e7490', Math.max(...meas.map(m => m.ppm)) + ' ppm', 'höchster Messwert') : '');
+  if (zone && zone.ring) popFor([zone.ring]).then(r => { const e = $('#vtPop'); if (e) e.textContent = r.noData || r.missing.length ? '–' : '≈ ' + popFmtN(r.pop); });
+  const roots = state.sections.filter(x => x.kind !== 'line' && !x.parentId), compact = state.units.length > 14, tot = state.units.reduce((a, u) => a + uTotal(u), 0);
+  const unitRow = u => { const st = ustat(u.status), fl = unitFlags(u); return el('div', { class: 'vtu' }, el('img', { src: unitSym(u).url, alt: '' }), el('span', { text: u.name || 'Einheit' }), el('span', { class: 'st' }, fl.out ? el('span', { class: 'vtc bad', text: 'ausgefallen' }) : fl.due ? el('span', { class: 'vtc bad', text: 'Ablösung fällig' }) : el('span', { class: 'vtc', style: 'background:' + safeColor(st.color) + ';color:#fff', text: st.label }))); };
+  const secBox = (sx, lvl) => { const us = state.units.filter(u => u.sectionId === sx.id), shown = compact ? us.filter(u => { const f = unitFlags(u); return f.out || f.due; }) : us, sum = us.reduce((a, u) => a + uTotal(u), 0);
+    return el('div', { class: 'vtsec' + (lvl ? ' sub' : ''), style: '--c:' + safeColor(sx.color, '#2563eb') }, el('div', {}, el('b', { text: sx.name }), el('span', { class: 'sm', text: ' · ' + (sx.leader || 'Leiter offen') + (sx.radio ? ' · ' + sx.radio : '') })), el('div', { class: 'sm', text: us.length + ' Einheiten, Stärke ' + sum }),
+      ...shown.map(unitRow), compact && us.length > shown.length ? el('div', { class: 'sm', text: '+ ' + (us.length - shown.length) + ' weitere ohne Auffälligkeit' }) : '',
+      ...state.sections.filter(c => c.parentId === sx.id && c.kind !== 'line').map(c => secBox(c, 1))); };
+  const free = state.units.filter(u => !u.sectionId || !state.sections.some(x => x.id === u.sectionId));
+  $('#vtRight').replaceChildren(el('h2', {}, 'Kräfte', el('span', { text: state.units.length + ' Einheiten · Stärke ' + tot })), ...roots.map(r => secBox(r, 0)),
+    free.length ? el('div', { class: 'vtsec', style: '--c:#94a3b8' }, el('b', { text: 'nicht zugeteilt' }), ...free.map(unitRow)) : '', !state.units.length ? el('div', { class: 'sm', text: 'Noch keine Einheit.' }) : '');
+}
+setInterval(() => { if (runtime.vortrag) renderVortrag(); }, 5000);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && runtime.vortrag && !document.querySelector('.dlg')) endVortrag(); });
 function renderChem() { renderChemMap(); renderChemTab(); renderChemBand(); }
 function chemWindChanged() {
   renderChemMap(); fillChemNumbers();
@@ -4852,7 +4929,7 @@ function applyRole() {
   document.body.dataset.role = r;
   document.querySelectorAll('#tabs button').forEach(b => { b.hidden = !!(tabs && !tabs.includes(b.dataset.tab)); });
   $('#btnAddPoi').hidden = r !== 'S2' || runtime.viewer;
-  $('#lvShow').hidden = r !== 'S2'; $('#impOthers').hidden = r !== 'S2';
+  $('#lvShow').hidden = false; $('#impOthers').hidden = r !== 'S2';
   const chip = $('#roleChip'); chip.hidden = runtime.viewer; chip.textContent = roleName();
   $('#btnExport').hidden = runtime.viewer; $('#btnExport').title = r === 'S2' ? 'Eigene Daten und Gesamtstand als JSON-Datei' : 'Nur Ihre Daten als JSON-Datei speichern';
   const sel = document.querySelector('#tabs button[aria-selected="true"]'); if (!sel || sel.hidden) openTab((tabs && tabs[0]) || 'einsatz');
@@ -4867,7 +4944,7 @@ function chooseRole(forceAsk) {
     document.body.append(dlg);
   });
 }
-function showLagevortrag() { closeUnitOverview(); closeFue(); setPanel(false); state.chemBand = true; renderChemBand(); say('Lagevortrag: Karte groß. Mit dem Pfeil am Rand kommt die Leiste zurück.', 4000); }
+function showLagevortrag() { startVortrag(); }
 /* ---- Export und Einlesen ---- */
 /* Tagebuch zusammenführen: nach Uhrzeit einsortieren, neu fortlaufend nummerieren, Berichtigungen über feste Kennungen verknüpft */
 function journalRefs(list) {
@@ -5300,6 +5377,7 @@ function renderCounts() {
   const wtxt = [wx.temp != null ? String(wx.temp).replace('.', ',') + ' °C' : '', wx.sky || '', wd.dir != null ? 'Wind ' + compassName(wd.dir) + (wd.speed != null ? ' ' + String(wd.speed).replace('.', ',') + ' m/s' : '') : ''].filter(Boolean).join(', ');
   if (wtxt) box.append(el('span', { class: 'chip', title: 'Wetter und Wind', text: wtxt }));
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
+  if (runtime.vortrag) renderVortrag();
   { const ca = chemActive(); if (ca) box.append(el('span', { class: 'chip chem', title: 'Gefahrstoff-Lage: ' + ca.name, text: 'Gefahrstoff ' + (chemSub(ca.sid) || {}).name })); }
   if (POP.total != null) box.append(el('span', { class: 'chip', title: 'Wohnbevölkerung im Abfragegebiet nach Zensus 2022', text: 'ca. ' + popFmtN(POP.total) + ' Einwohner' }));
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
