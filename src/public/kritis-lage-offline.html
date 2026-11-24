@@ -778,6 +778,7 @@ button { cursor: pointer; }
 .ctx-item:hover, .ctx-item:focus { background: #e3edf8; outline: none; }
 .ctx-item.dis { color: #98a2b0; cursor: default; }
 .ctx-item.dis:hover { background: none; }
+.ctx-item.hd { color: var(--ink); font-weight: 700; }
 .ctx-sep { height: 1px; background: #e1e5eb; margin: 4px 2px; }
 .ctx-sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.4); flex: none; }
 .ctx-item img { width: 22px; height: 22px; flex: none; }
@@ -898,8 +899,12 @@ table.list tr.clickable:hover { background: #f1f5fa; }
   #app.collapsed { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 0; }
   #panelToggle { left: 50%; top: auto; bottom: 0; margin: 0 0 0 -28px; width: 56px; height: 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
-  #hdrCounts, #hdrArea { display: none; }
+  #hdrCounts, #hdrArea, #clock, #btnPrint { display: none; }
+  header { gap: 8px; padding: 0 8px; overflow-x: auto; }
+  header h1 { font-size: 14px; }
+  header button { padding: 3px 7px; white-space: nowrap; flex: none; }
 }
+@media (max-width: 520px) { header h1 { display: none; } }
 @media print {
   header button, #panel, #panelToggle, .leaflet-control-container, #msg { display: none !important; }
   #app { display: block; height: auto; }
@@ -1711,6 +1716,7 @@ function createOfflineBase(D) {
 /* Gebiet                                                              */
 /* ------------------------------------------------------------------ */
 /* Gebiete: Verwaltung, Anzeige, Liste */
+map.createPane('areas').style.zIndex = 390;      // unter overlayPane (400): Abschnitte und Linien bleiben anklickbar
 const areaGroup = L.layerGroup().addTo(map);
 const areaLayers = {};
 const queryAreas = () => state.areas.filter(a => a.query);
@@ -1754,15 +1760,24 @@ function removeArea(id) {
   renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas();
   save('Gebiet gelöscht: ' + a.name);
 }
-function areaStyle(a) { return { color: safeColor(a.color), weight: 3, dashArray: '8 6', fillColor: safeColor(a.color), fillOpacity: a.opacity, className: 'arealyr' }; }
+function areaStyle(a) { return { color: safeColor(a.color), weight: 3, dashArray: '8 6', fillColor: safeColor(a.color), fillOpacity: a.opacity, className: 'arealyr', pane: 'areas' }; }
 function makeAreaLayer(a) {
   const st = areaStyle(a);
   const lyr = a.kind === 'circle' && a.circle ? L.circle([a.circle.lat, a.circle.lng], Object.assign({ radius: a.circle.km * 1000 }, st))
     : L.polygon(a.rings.length > 1 ? a.rings.map(r => [r]) : a.rings, st);
   lyr.bindTooltip(el('span', { text: a.name, style: 'color:' + safeColor(a.color) }), { permanent: true, direction: 'center', className: 'arealabel' });
   lyr._areaId = a.id;
-  lyr.on('contextmenu', e => ctxOpen(e, areaItems(a), e.latlng));
+  lyr.on('click', e => { if (runtime.mode || runtime.placing || runtime.edit || runtime.drawPurpose) return; L.popup({ maxWidth: 280 }).setLatLng(e.latlng).setContent(areaPopup(a)).openOn(map); });
+  lyr.on('contextmenu', e => ctxOpen(e, areaItems(a), e.latlng, 'Gebiet: ' + a.name));
   return lyr;
+}
+function areaPopup(a) {
+  const nm = el('input', { type: 'text', value: a.name, onchange: ev => renameArea(a, ev.target.value) });
+  const col = el('input', { type: 'color', value: safeColor(a.color), oninput: ev => { a.color = ev.target.value; restyleArea(a); }, onchange: () => { renderAreaList(); save('Gebiet umgefärbt: ' + a.name); } });
+  return el('div', { class: 'pp' }, el('label', { text: 'Bezeichnung' }), nm, el('label', { text: 'Farbe' }), col,
+    el('div', { class: 'hint', text: fmtKm2(a.km2) + (a.query ? ', Abfragegebiet' : '') }),
+    el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Zoom', onclick: () => { map.closePopup(); zoomArea(a); } }),
+      el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => { map.closePopup(); removeArea(a.id); } })));
 }
 function renderAreas() {
   areaGroup.clearLayers(); Object.keys(areaLayers).forEach(k => delete areaLayers[k]);
@@ -2040,7 +2055,7 @@ function renderMarkers() {
     const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p), draggable: !!p.manual });
     if (p.manual) m.on('dragend', () => { const ll = m.getLatLng(); p.lat = ll.lat; p.lng = ll.lng; save('Objekt verschoben: ' + poiTitle(p)); renderDeps(); });
     m.bindPopup(() => poiPopup(p), { maxWidth: 300 });
-    m.on('contextmenu', e => ctxOpen(e, poiItems(p), null));
+    m.on('contextmenu', e => ctxOpen(e, poiItems(p), null, poiTitle(p)));
     m.on('click', () => {
       if (runtime.mode && runtime.mode.type === 'link') { m.closePopup(); finishLink(p); }
     });
@@ -2075,7 +2090,7 @@ function poiPopup(p) {
   const note = el('textarea', { rows: '3', oninput: ev => { o.note = ev.target.value; save(); }, onchange: () => save('Notiz: ' + poiTitle(p)) }); note.value = o.note || '';
 
   const outgoing = state.deps.filter(d => d.from === p.id), incoming = state.deps.filter(d => d.to === p.id);
-  wrap.append(
+  wrap.append(...[
     p.manual ? el('input', { type: 'text', value: p.name || '', placeholder: 'Bezeichnung', oninput: ev => { p.name = ev.target.value; save(); renderList(); }, onchange: () => { if (markers[p.id]) markers[p.id].options.title = poiTitle(p); save('Objekt umbenannt: ' + poiTitle(p)); } }) : el('h3', { text: poiTitle(p) }),
     el('div', { class: 'sub' }, SECTORS[l.sector].name + ' · ' + l.name + (p.manual ? ' · manuell erfasst' : ''), p.addr ? el('br') : null, p.addr || null),
     stBox, timeEl,
@@ -2089,7 +2104,7 @@ function poiPopup(p) {
       el('button', { class: 'btn small', text: 'Versorgt…', onclick: () => startLink(p) }),
       el('button', { class: 'btn small', text: 'Problem melden', onclick: () => { map.closePopup(); reportProblemFor(p); } }),
       p.manual ? el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { map.closePopup(); removeManualPoi(p); } })
-               : el('a', { href: 'https://www.openstreetmap.org/' + p.osm, target: '_blank', rel: 'noopener', text: 'OSM-Objekt' })));
+               : el('a', { href: 'https://www.openstreetmap.org/' + p.osm, target: '_blank', rel: 'noopener', text: 'OSM-Objekt' }))].filter(Boolean));
   return wrap;
 }
 
@@ -2154,18 +2169,23 @@ function renderSymbols() {
       return el('div', { class: 'pp' }, el('h3', { text: s.title || s.name }), el('div', { class: 'sub', text: 'Gesetzt ' + fmtTime(s.time) }), inp,
         el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.symbols = state.symbols.filter(x => x !== s); renderSymbols(); save('Zeichen entfernt'); } })));
     });
-    m.on('contextmenu', e => ctxOpen(e, symbolItemsOf(s), null));
+    m.on('contextmenu', e => ctxOpen(e, symbolItemsOf(s), null, 'Zeichen: ' + (s.label || s.title || s.name)));
     m.addTo(symLayer);
   });
+}
+const secOp = sx => sx.opacity != null ? sx.opacity : (sx.kind === 'line' ? 1 : 0.12);
+function secShape(sx) {
+  const c = safeColor(sx.color, '#e11d48');
+  return sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5, opacity: secOp(sx) }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: secOp(sx) });
 }
 function renderSections() {
   secLayer.clearLayers(); Object.keys(secLayers).forEach(k => delete secLayers[k]);
   state.sections.forEach(sx => {
     const c = safeColor(sx.color, '#e11d48');
-    const lyr = sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5 }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: .12 });
+    const lyr = secShape(sx);
     lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' });
     lyr._secId = sx.id; secLayers[sx.id] = lyr;
-    lyr.on('contextmenu', e => ctxOpen(e, sectionItems(sx), e.latlng));
+    lyr.on('contextmenu', e => ctxOpen(e, sectionItems(sx), e.latlng, (sx.kind === 'line' ? 'Linie: ' : 'Abschnitt: ') + sx.name));
     lyr.bindPopup(() => {
       const nm = el('input', { type: 'text', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) });
       const col = el('input', { type: 'color', value: c, onchange: ev => { sx.color = ev.target.value; renderSections(); renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
@@ -2191,14 +2211,15 @@ function renderSecList() {
     box.append(el('div', { class: 'arow' }, el('div', { class: 'top' }, col, nm,
       el('button', { class: 'btn small', text: sx.kind === 'line' ? 'Linie' : 'Fläche', disabled: 'disabled' }),
       el('button', { class: 'btn small', text: 'Zoom', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) }),
-      el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeSection(sx) }))));
+      el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeSection(sx) })),
+      el('div', { class: 'sub' }, el('label', {}, 'Deckkraft', el('input', { type: 'range', min: sx.kind === 'line' ? '0.2' : '0', max: sx.kind === 'line' ? '1' : '0.6', step: '0.02', value: secOp(sx), title: 'Deckkraft',
+        oninput: ev => { sx.opacity = +ev.target.value; renderSectionsKeepList(); }, onchange: () => { renderSections(); save('Deckkraft geändert: ' + sx.name); } })))));
   });
 }
 function renderSectionsKeepList() {   // während der Farbwahl nur die Karte neu zeichnen, die Liste bleibt (sonst schließt sich der Farbwähler)
   secLayer.clearLayers();
   state.sections.forEach(sx => {
-    const c = safeColor(sx.color, '#e11d48');
-    const lyr = sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5 }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: .12 });
+    const lyr = secShape(sx);
     lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' }); lyr.addTo(secLayer);
   });
 }
@@ -2347,7 +2368,7 @@ function renderCas() {
     const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: [34, 24], iconAnchor: [17, 12], html: '<div class="cas" style="--c:' + CAS[c.cat].color + '">' + CAS[c.cat].short + ' ' + c.n + '</div>' }), draggable: true });
     m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save('Zahl verschoben'); });
     m.bindTooltip(el('span', { text: CAS[c.cat].label + ': ' + c.n + (c.note ? ', ' + c.note : '') }));
-    m.on('contextmenu', e => ctxOpen(e, casItems(c), null));
+    m.on('contextmenu', e => ctxOpen(e, casItems(c), null, CAS[c.cat].label + ': ' + c.n));
     m.addTo(casLayer);
   });
   renderCounts();
@@ -2394,7 +2415,7 @@ function renderProblems() {
   state.problems.filter(x => x.lat != null && x.status !== 'erledigt').forEach(x => {
     const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + PRIO[x.prio].color + '">!</div>' }) });
     m.bindTooltip(el('span', { text: x.title + ' (' + PRIO[x.prio].label + ')' }));
-    m.on('contextmenu', e => ctxOpen(e, problemItems(x), null));
+    m.on('contextmenu', e => ctxOpen(e, problemItems(x), null, 'Problem: ' + x.title));
     m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + PRIO[x.prio].color; setTimeout(() => { c.style.outline = ''; }, 1800); } });
     m.addTo(probLayer);
   });
@@ -2460,7 +2481,7 @@ function menuNode(items, level) {
   const box = el('div', { class: 'ctx', role: 'menu', tabindex: '-1', 'data-level': String(level) });
   items.forEach(it => {
     if (it.sep) { box.append(el('div', { class: 'ctx-sep', role: 'separator' })); return; }
-    const row = el('div', { class: 'ctx-item' + (it.disabled ? ' dis' : ''), role: 'menuitem', tabindex: '-1', 'aria-disabled': it.disabled ? 'true' : 'false' },
+    const row = el('div', { class: 'ctx-item' + (it.disabled ? ' dis' : '') + (it.head ? ' hd' : ''), role: 'menuitem', tabindex: '-1', 'aria-disabled': it.disabled ? 'true' : 'false' },
       it.swatch ? el('span', { class: 'ctx-sw', style: 'background:' + safeColor(it.swatch) }) : null,
       it.icon ? el('img', { src: it.icon, alt: '' }) : null,
       el('span', { class: 'ctx-lb', text: it.label }),
@@ -2500,9 +2521,10 @@ function showMenu(x, y, items) {
   closeMenu();
   const box = menuNode(items, 0); menuStack.push(box); placeBox(box, x, y); box.focus();
 }
-function ctxOpen(e, items, ll) {
+function ctxOpen(e, items, ll, title) {
   e.originalEvent._ctx = true; L.DomEvent.preventDefault(e.originalEvent);
-  showMenu(e.originalEvent.clientX, e.originalEvent.clientY, ll ? items.concat([{ sep: true }], mapItems(ll)) : items);
+  const head = title ? [{ label: title, disabled: true, head: true }, { sep: true }] : [];
+  showMenu(e.originalEvent.clientX, e.originalEvent.clientY, head.concat(ll ? items.concat([{ sep: true }], mapItems(ll)) : items));
 }
 document.addEventListener('mousedown', e => { if (menuStack.length && !menuStack.some(m => m.contains(e.target))) closeMenu(); }, true);
 window.addEventListener('wheel', e => { if (menuStack.length && !menuStack.some(m => m.contains(e.target))) closeMenu(); }, { passive: true });
@@ -2610,7 +2632,7 @@ function areaItems(a) {
     { label: 'Farbe', swatch: a.color, sub: () => colorItems(a.color, c => { a.color = c; restyleArea(a); renderAreaList(); save('Gebiet umgefärbt: ' + a.name); }) },
     { label: 'Deckkraft', sub: [0.05, 0.12, 0.25, 0.4].map(o => ({ label: Math.round(o * 100) + ' %', check: Math.abs(a.opacity - o) < 0.01, onclick: () => { a.opacity = o; restyleArea(a); renderAreaList(); save('Deckkraft geändert: ' + a.name); } })) },
     { label: a.query ? 'Abfragegebiet ausschalten' : 'Abfragegebiet einschalten', onclick: () => { a.query = !a.query; renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas(); save((a.query ? 'Abfragegebiet an: ' : 'Abfragegebiet aus: ') + a.name); if (a.query) loadObjects(); } },
-    { label: 'Objekte neu laden', onclick: () => { delete state.loaded[a.id]; if (!a.query) { a.query = true; renderAreas(); renderAreaList(); } loadObjects(); } },
+    { label: 'Objekte neu laden', onclick: () => { delete state.loaded[a.id]; if (!a.query) { a.query = true; renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas(); save('Abfragegebiet an: ' + a.name); } loadObjects(); } },
     { label: 'Zoom auf Gebiet', onclick: () => zoomArea(a) },
     { label: 'Duplizieren', onclick: () => { const c = JSON.parse(JSON.stringify({ kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })); addArea(Object.assign(c, { name: a.name + ' (Kopie)', color: a.color }), { fit: false }); } },
     { label: multi ? 'Eckpunkte bearbeiten (nicht bei Teilflächen)' : 'Eckpunkte bearbeiten', disabled: multi, onclick: () => startEdit('area', a) },
@@ -2625,6 +2647,7 @@ function sectionItems(sx) {
   return [
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Abschnitt umbenennen', sx.name); if (v != null) renameSection(sx, v); } },
     { label: 'Farbe', swatch: sx.color, sub: () => colorItems(sx.color, c => { sx.color = c; renderSections(); save('Abschnitt umgefärbt: ' + sx.name); }) },
+    { label: 'Deckkraft', sub: (sx.kind === 'line' ? [0.3, 0.6, 1] : [0.05, 0.12, 0.25, 0.4]).map(o => ({ label: Math.round(o * 100) + ' %', check: Math.abs(secOp(sx) - o) < 0.01, onclick: () => { sx.opacity = o; renderSections(); save('Deckkraft geändert: ' + sx.name); } })) },
     { label: 'Eckpunkte bearbeiten', onclick: () => startEdit('section', sx) },
     { label: 'Duplizieren', onclick: () => { state.sections.push(Object.assign(JSON.parse(JSON.stringify(sx)), { id: uid(), name: sx.name + ' (Kopie)' })); renderSections(); save('Abschnitt dupliziert: ' + sx.name); } },
     { label: 'Zoom', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) },
@@ -2672,6 +2695,7 @@ function casItems(c) {
   return [
     { label: 'Anzahl ändern…', onclick: async () => { const v = await askText('Anzahl ' + CAS[c.cat].label, String(c.n)); if (v == null) return; c.n = Math.max(0, Math.round(parseFloat(v) || 0)); renderCas(); save('Zahl geändert: ' + CAS[c.cat].label); } },
     { label: 'Bemerkung ändern…', onclick: async () => { const v = await askText('Bemerkung', c.note || ''); if (v == null) return; c.note = v.trim(); renderCas(); save('Zahl bemerkt: ' + CAS[c.cat].label); } },
+    { label: 'Duplizieren', onclick: () => { state.casualties.push(Object.assign({}, c, { id: uid(), lat: c.lat + 0.0004, lng: c.lng + 0.0004, time: new Date().toISOString() })); renderCas(); save('Zahl dupliziert: ' + CAS[c.cat].label); } },
     { label: 'Zoom', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 16)) },
     { sep: true },
     { label: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save('Zahl gelöscht: ' + CAS[c.cat].label); } }
@@ -2682,6 +2706,7 @@ function problemItems(x) {
     { label: 'Titel ändern…', onclick: async () => { const v = await askText('Titel', x.title); if (v == null || !v.trim()) return; x.title = v.trim(); renderProblems(); save('Problem bearbeitet: ' + x.title); } },
     { label: 'Status setzen', sub: Object.entries(PSTAT).map(([k, v]) => ({ label: v, check: x.status === k, onclick: () => { x.status = k; addJournal('Problem „' + x.title + '“: ' + v, true); renderProblems(); renderCounts(); save('Problemstatus: ' + x.title + ' ' + v); } })) },
     { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('probleme'); $('#pfStatus').value = ''; renderProblems(); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) c.scrollIntoView({ block: 'center' }); } },
+    { label: 'Duplizieren', onclick: () => { state.problems.unshift(Object.assign({}, x, { id: uid(), title: x.title + ' (Kopie)', lat: x.lat + 0.0004, lng: x.lng + 0.0004, time: new Date().toISOString() })); renderProblems(); renderCounts(); save('Problem dupliziert: ' + x.title); } },
     { label: 'Zoom', onclick: () => map.setView([x.lat, x.lng], Math.max(map.getZoom(), 16)) },
     { sep: true },
     { label: 'Löschen', onclick: () => { state.problems = state.problems.filter(y => y !== x); renderProblems(); renderCounts(); save('Problem gelöscht: ' + x.title); } }
@@ -2790,16 +2815,17 @@ document.addEventListener('keydown', e => {
   else if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && k === 'p') { e.preventDefault(); togglePanel(); }
 });
 /* Seitenleiste einklappen */
+const panelGlyph = open => window.matchMedia('(max-width: 860px)').matches ? (open ? '&#9662;' : '&#9652;') : (open ? '&lsaquo;' : '&rsaquo;');
 function setPanel(open, remember) {
   const app = $('#app'); app.classList.toggle('collapsed', !open);
   const t = $('#panelToggle'); t.setAttribute('aria-expanded', String(open));
-  t.innerHTML = open ? '&lsaquo;' : '&rsaquo;';
+  t.innerHTML = panelGlyph(open);
   if (remember !== false) { try { localStorage.setItem('kritis-panel', open ? '1' : '0'); } catch (e) { /* egal */ } }
   setTimeout(() => map.invalidateSize(), 260);
 }
 function togglePanel() { setPanel($('#app').classList.contains('collapsed')); }
 $('#panelToggle').onclick = togglePanel; $('#btnPanel').onclick = togglePanel;
-try { if (localStorage.getItem('kritis-panel') === '0') { $('#app').classList.add('collapsed'); $('#panelToggle').innerHTML = '&rsaquo;'; $('#panelToggle').setAttribute('aria-expanded', 'false'); setTimeout(() => map.invalidateSize(), 0); } } catch (e) { /* egal */ }
+try { if (localStorage.getItem('kritis-panel') === '0') { $('#app').classList.add('collapsed'); $('#panelToggle').innerHTML = panelGlyph(false); $('#panelToggle').setAttribute('aria-expanded', 'false'); setTimeout(() => map.invalidateSize(), 0); } } catch (e) { /* egal */ }
 
 /* Speichern, Laden, Export */
 const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
