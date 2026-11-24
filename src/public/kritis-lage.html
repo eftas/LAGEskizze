@@ -98,7 +98,7 @@ body.review #tabs [data-tab="staende"] { display: inline-block !important; }
 body.viewer #tabs [data-tab="einsatz"], body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
 body.beamer #app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
 body.beamer #mapWrap { grid-column: 1; }
-body.beamer #panel, body.beamer #panelToggle, body.beamer #btnPanel, body.beamer #btnPrint, body.beamer #btnShare { display: none !important; }
+body.beamer #panel, body.beamer #panelToggle, body.beamer #btnPrint, body.beamer #btnShare { display: none !important; }
 body.beamer #clock { font-size: 20px; }
 body.beamer header h1 { font-size: 20px; }
 #liveBadge::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #16a34a; display: inline-block; }
@@ -127,6 +127,9 @@ body.beamer #btnUnits { display: inline-block; }
 #placeSearch { position: absolute; top: 10px; left: 56px; z-index: 1000; width: min(380px, 52vw); display: flex; flex-wrap: wrap; gap: 4px; }
 #placeSearch input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid #94a3b8; border-radius: 5px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
 #placeSearch button { border: 1px solid #94a3b8; background: #fff; border-radius: 5px; padding: 0 12px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+#placeSearch #placeToggle { width: 34px; padding: 0; display: grid; place-items: center; color: var(--ink, #1e293b); }
+#placeSearch.min { width: auto; }
+#placeSearch.min #placeQ, #placeSearch.min button[type=submit], #placeSearch.min #placeRes { display: none; }
 #placeRes { flex: 1 0 100%; background: #fff; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,.3); max-height: 260px; overflow: auto; }
 #placeRes:empty { display: none; }
 #placeRes button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; box-shadow: none; padding: 7px 10px; font-weight: 400; }
@@ -214,7 +217,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .leaflet-tooltip.seclabel { background: transparent; border: 0; box-shadow: none; font-weight: 700; font-size: 13px; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
 .leaflet-tooltip.seclabel::before { display: none; }
 
-#casTiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+#casTiles, #popTiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
 .tile { border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 4px; padding: 6px 8px; background: #fafbfc; }
 .tile b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .tile span { font-size: 12px; color: var(--muted); }
@@ -234,7 +237,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
   #app.collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr 0; }
   #panelToggle { left: 50%; top: auto; bottom: 0; margin: 0 0 0 -28px; width: 56px; height: 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
-  #hdrCounts, #hdrArea, #clock, #btnPrint, #btnPanel { display: none; }
+  #hdrCounts, #hdrArea, #clock, #tacTime, #btnPrint { display: none; }
   #liveBadge { font-size: 0; padding: 4px 7px; gap: 0; }
   header { gap: 8px; padding: 0 8px; overflow-x: auto; }
   header h1 { font-size: 14px; }
@@ -270,6 +273,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 #hdrCounts { order: 10; flex: 1 0 100%; flex-wrap: wrap; overflow: visible; gap: 6px; }
 .chip { background: #eef2f7; color: var(--ink); border: 1px solid #cbd5e1; font-weight: 600; white-space: nowrap; }
 #hdrCounts .chip { font-size: 13px; padding: 3px 10px; }
+#tacTime { font: 700 15px 'JetBrains Mono', ui-monospace, Consolas, monospace; letter-spacing: .04em; }
 #clock { font: 600 16px 'JetBrains Mono', ui-monospace, Consolas, monospace; color: var(--ink); white-space: nowrap; opacity: 1; }
 #panel { display: grid; grid-template-columns: 78px 1fr; grid-template-rows: minmax(0, 1fr); }
 #tabs { grid-column: 1; grid-row: 1; flex-direction: column; border-bottom: 0; border-right: 1px solid var(--line); background: var(--rail); overflow-x: hidden; overflow-y: auto; }
@@ -293,6 +297,10 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
   #tabs button[aria-selected="true"] { border-left-color: transparent; border-bottom-color: var(--accent); }
   .tabpane { grid-column: auto; grid-row: auto; }
 }
+#popTable { overflow-x: auto; }
+.poptbl { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 6px 0; }
+.poptbl th, .poptbl td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--line, #d6dbe3); white-space: nowrap; }
+.poptbl th:first-child, .poptbl td:first-child { text-align: left; white-space: normal; }
 </style>
 </head>
 <body>
@@ -307,7 +315,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
     <span class="sp"></span>
     <div id="hdrCounts"></div>
     <span id="clock"></span>
-    <button id="btnPanel" title="Seitenleiste ein- oder ausklappen (Umschalt+P)">Leiste</button>
+    <span id="tacTime" class="chip" title="Taktische Zeit (Tag, Stunde, Minute: TTHHMM)" aria-label="Taktische Zeit"></span>
     <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
     <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
@@ -519,6 +527,11 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
     </section>
 
     <section class="tabpane" id="tab-zahlen">
+      <h2>Wohnbevölkerung (Zensus 2022)</h2>
+      <div id="popTiles"></div>
+      <div id="popTable"></div>
+      <div class="hint" id="popHint"></div>
+      <div class="row editonly"><label for="popR" style="width:130px">Umkreis um Objekte</label><input type="number" id="popR" min="50" max="5000" step="50" style="max-width:84px"><span>m</span></div>
       <h2>Personen im Gebiet</h2>
       <div id="casTiles"></div>
       <div class="hint" id="casHint"></div>
@@ -604,11 +617,16 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <div class="hint">Tabelle mit Semikolon als Trennzeichen und Zeichensatz für Excel. Karte als PDF: Drucken, dann „Als PDF speichern“.</div>
       <h2>Zurücksetzen</h2>
       <div class="row"><button class="btn danger" id="btnReset">Gesamte Lage löschen</button></div>
+      <h2>Bevölkerungsdaten</h2>
+      <div class="hint" id="popStatus"></div>
+      <div class="row"><label class="btn">Paket laden…<input type="file" id="popFile" accept=".js" multiple hidden></label></div>
+      <div class="hint">Wohnbevölkerung aus dem Zensus 2022 (100-m-Raster, Stichtag 15.05.2022). Die Pakete liegen im Ordner „zensus“ neben der Datei, in der Einzeldatei sind sie eingebaut. Die Zahlen beschreiben, wer dort wohnt, nicht wer sich gerade dort aufhält.</div>
       <h2>Quellen</h2>
       <div class="hint">Objektdaten: OpenStreetMap-Mitwirkende (ODbL), abgefragt über die Overpass API. Gebietssuche: Nominatim. Kartengrundlagen: OpenStreetMap, Geobasis NRW (dl-de/by-2-0). Taktische Zeichen: LAGEskizze (MIT), Jonas Köritz (CC BY 4.0, github.com/jonas-koeritz/Taktische-Zeichen) und Philipp Jardas (MIT, github.com/phjardas/taktische-zeichen). Die Lizenztexte stehen darunter.</div>
       <details class="lic"><summary>Lizenzen der enthaltenen Bestandteile</summary>
         <p class="hint">Diese Datei enthält fremde Bestandteile. Die Lizenzen im Überblick:</p>
         <ul class="hint">
+          <li>Zensus 2022, Gitterzellen (Bevölkerung, Alter): © Statistische Ämter des Bundes und der Länder, 2025, Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2-0). Für diese Anwendung als Auszug aufbereitet, Altersklassen zusammengefasst</li>
           <li>Leaflet 1.9.4: BSD-2-Clause, (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade</li>
           <li>Leaflet.draw 1.0.4: MIT, (c) 2012-2017 Jacob Toye, Jon West, Smartrak, Leaflet</li>
           <li>Leaflet.markercluster 1.5.3: MIT, Dave Leaver und Mitwirkende</li>
@@ -719,7 +737,7 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
 
   <div id="mapWrap">
     <div id="map"></div>
-    <form id="placeSearch" role="search" autocomplete="off"><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
+    <form id="placeSearch" role="search" autocomplete="off"><button type="button" id="placeToggle" aria-label="Ortssuche ein- oder ausklappen" aria-expanded="true" title="Ortssuche ein- oder ausklappen"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM15.5 15.5 21 21"/></svg></button><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
     <section id="unitOv" aria-label="Alle Einheiten auf einen Blick" hidden>
       <div class="ovhead"><h2>Einheiten auf einen Blick</h2><div id="ovSum"></div>
@@ -742,6 +760,7 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
 <script src="images/symbols/symbols.js" onerror="window.symbolsMissing=true"></script>
 <script src="images/symbols-tz/symbols-tz.js"></script>
 <script src="lib/tz-core.min.js"></script>
+<script src="zensus/zensus-index.js" onerror="window.zensusMissing=true"></script>
 
 <script>
 (function () {
@@ -841,6 +860,7 @@ function freshState() {
     stands: [],          // { id, nr, time, title, note, by, sum, z (komprimierter Stand) }
     units: [],           // { id, name, call, sym, f, u, h, status, sectionId, task, note, lat?, lng?, time }
     unitStatus: JSON.parse(JSON.stringify(UNIT_STATUS_DEFAULT)),
+    popRadius: 300,      // Umkreis in m für die Wohnbevölkerung an Objekten (nicht Teil des Rückgängig-Verlaufs)
     casualties: [],      // { id, cat, n, note, time, lat?, lng? }
     problems: []         // { id, title, text, prio, status, owner, time, poi?, poiName?, lat?, lng? }
   };
@@ -1170,6 +1190,7 @@ function renderAreas() {
   state.areas.forEach(a => { if (!a.visible) return; const l = makeAreaLayer(a); areaLayers[a.id] = l; areaGroup.addLayer(l); });
   const q = queryAreas().map(a => a.name).join(', ');
   $('#hdrArea').textContent = q;
+  renderPopSoon();
 }
 function restyleArea(a) {
   const l = areaLayers[a.id]; if (!l) return;
@@ -1455,7 +1476,7 @@ function poiPopup(p) {
     affected.has(p.id) ? el('div', { class: 'notice', text: 'Hängt laut manueller Verknüpfung von einem ausgefallenen Objekt ab.' }) : null,
     el('label', { text: 'Ansprechpartner' }), contact,
     el('label', { text: 'Notiz' }), note,
-    personsBox(p),
+    personsBox(p), popObjLine(p),
     outgoing.length ? el('div', { class: 'hint', text: 'Versorgt: ' + outgoing.map(d => d.toName).join(', ') }) : null,
     incoming.length ? el('div', { class: 'hint', text: 'Versorgt durch: ' + incoming.map(d => d.fromName).join(', ') }) : null,
     el('div', { class: 'row' },
@@ -1548,12 +1569,13 @@ function renderSections() {
     lyr.bindPopup(() => {
       const nm = el('input', { type: 'text', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) });
       const col = el('input', { type: 'color', value: c, onchange: ev => { sx.color = ev.target.value; renderSections(); renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
-      return el('div', { class: 'pp' }, el('label', { text: 'Bezeichnung' }), nm, el('label', { text: 'Farbe' }), col,
+      const pl = el('div', { class: 'hint' }); if (sx.kind !== 'line') popFor([sx.pts]).then(r => { pl.textContent = 'Wohnbevölkerung: ' + popShort(r); pl.title = POP_NOTE; });
+      return el('div', { class: 'pp' }, el('label', { text: 'Bezeichnung' }), nm, el('label', { text: 'Farbe' }), col, pl,
         el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => removeSection(sx) })));
     });
     lyr.addTo(secLayer);
   });
-  renderSecList();
+  renderSecList(); renderPopSoon();
 }
 function renameSection(sx, name) {
   name = (name || '').trim(); if (!name || name === sx.name) { renderSecList(); return; }
@@ -2412,9 +2434,10 @@ $('#btnShare').onclick = openShare;
 const SKY = ['', 'sonnig', 'heiter', 'wolkig', 'bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Starkregen', 'Schneefall', 'Gewitter', 'Sturm'];
 const pad2 = n => String(n).padStart(2, '0');
 const toLocalInput = ms => { const d = new Date(ms); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+const fmtTac = ms => { const d = new Date(ms), z = n => String(n).padStart(2, '0'); return z(d.getDate()) + z(d.getHours()) + z(d.getMinutes()); };
 const fmtClock = ms => new Date(ms).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 function tickClock() {
-  const e = state.exercise; $('#clock').textContent = fmtClock(nowMs());
+  const e = state.exercise; $('#clock').textContent = fmtClock(nowMs()); $('#tacTime').textContent = fmtTac(nowMs());
   $('#exTag').hidden = !(e && e.active); $('#exTag').title = e && e.name ? e.name : 'Übungsuhr aktiv';
   updateMeetingChip();
 }
@@ -2474,6 +2497,175 @@ function initEinsatz() {
   $('#wxTemp').addEventListener('change', e => { state.weather.temp = numOrNull(e.target.value); wx(); });
   $('#wxSky').addEventListener('change', e => { state.weather.sky = e.target.value; wx(); });
   $('#wxNote').addEventListener('change', e => { state.weather.note = e.target.value.trim(); wx(); });
+}
+
+/* ------------------------------------------------------------------ */
+/* Wohnbevölkerung (Zensus 2022, 100-m-Gitter, Stichtag 15.05.2022)    */
+/* ------------------------------------------------------------------ */
+const POP = { pkg: {}, loading: {}, missing: {}, cache: new Map(), token: 0, total: null };
+const popIndex = () => window.ZENSUS_INDEX || {};
+/* ETRS89-LAEA (EPSG:3035), GRS80, Mittelpunkt 52° N 10° O */
+const LAEA = (() => {
+  const a = 6378137, f = 1 / 298.257222101, e2 = 2 * f - f * f, e = Math.sqrt(e2), d = Math.PI / 180;
+  const q = ph => { const s = Math.sin(ph); return (1 - e2) * (s / (1 - e2 * s * s) - Math.log((1 - e * s) / (1 + e * s)) / (2 * e)); };
+  const ph0 = 52 * d, l0 = 10 * d, qp = q(Math.PI / 2), q0 = q(ph0), Rq = a * Math.sqrt(qp / 2), b0 = Math.asin(q0 / qp);
+  const D = a * Math.cos(ph0) / Math.sqrt(1 - e2 * Math.sin(ph0) ** 2) / (Rq * Math.cos(b0));
+  return (lat, lng) => {
+    const dl = lng * d - l0, b = Math.asin(q(lat * d) / qp), cb = Math.cos(b);
+    const B = Rq * Math.sqrt(2 / (1 + Math.sin(b0) * Math.sin(b) + Math.cos(b0) * cb * Math.cos(dl)));
+    return [4321000 + B * D * cb * Math.sin(dl), 3210000 + (B / D) * (Math.cos(b0) * Math.sin(b) - Math.sin(b0) * cb * Math.cos(dl))];
+  };
+})();
+async function popDecode(code) {
+  const m = window.ZENSUS_PKG && window.ZENSUS_PKG[code]; if (!m || !m.b64) return null;
+  const bin = Uint8Array.from(atob(m.b64), c => c.charCodeAt(0));
+  const raw = new Uint8Array(await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  if (String.fromCharCode(raw[0], raw[1], raw[2]) !== 'ZB1') throw new Error('Paketformat unbekannt');
+  const dv = new DataView(raw.buffer), n = dv.getUint32(3, true), xmin = dv.getInt32(7, true), ymin = dv.getInt32(11, true);
+  let pos = 15;
+  const col = () => { const a = new Int32Array(n); for (let i = 0; i < n; i++) { let v = 0, s = 1, b; do { b = raw[pos++]; v += (b & 127) * s; s *= 128; } while (b & 128); a[i] = v; } return a; };
+  const dy = col(), xr = col(), pop = col(), age2 = col(), u3 = col(), o65 = col();
+  const X = new Int32Array(n), Y = new Int32Array(n), rows = []; let x = xmin, y = ymin;
+  for (let i = 0; i < n; i++) { if (dy[i]) { y += dy[i]; x = xmin + xr[i]; } else x += xr[i]; X[i] = x; Y[i] = y; if (i === 0 || y !== Y[i - 1]) rows.push(i); }
+  m.b64 = null;      // Speicher freigeben
+  return { code, n, X, Y, pop, age2, u3, o65, rowStart: Int32Array.from(rows) };
+}
+function popLoadScript(code) {
+  return new Promise(res => {
+    if (window.ZENSUS_PKG && window.ZENSUS_PKG[code]) return res(true);
+    const s = document.createElement('script'); s.src = 'zensus/zensus-' + code + '.js';
+    s.onload = () => res(!!(window.ZENSUS_PKG && window.ZENSUS_PKG[code])); s.onerror = () => res(false); document.head.append(s);
+  });
+}
+function popPackage(code) {
+  if (POP.pkg[code]) return Promise.resolve(POP.pkg[code]);
+  if (POP.missing[code]) return Promise.resolve(null);
+  if (!POP.loading[code]) POP.loading[code] = (async () => {
+    try { if (!(await popLoadScript(code))) { POP.missing[code] = true; return null; } POP.pkg[code] = await popDecode(code); return POP.pkg[code]; }
+    catch (err) { POP.missing[code] = true; POP.error = String(err.message || err); return null; }
+    finally { delete POP.loading[code]; }
+  })();
+  return POP.loading[code];
+}
+/* Spannen (x-Intervalle) innerhalb der Ringe auf der Höhe y, vereinigt */
+function popSpans(rings, y) {
+  const iv = [];
+  rings.forEach(r => {
+    if (y < r.y0 || y > r.y1) return;
+    const xs = [], P = r.pts;
+    for (let i = 0, j = P.length - 1; i < P.length; j = i++) {
+      const a = P[j], b = P[i];
+      if ((a[1] <= y) !== (b[1] <= y)) xs.push(a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+    }
+    xs.sort((p, q) => p - q); for (let i = 0; i + 1 < xs.length; i += 2) iv.push([xs[i], xs[i + 1]]);
+  });
+  iv.sort((p, q) => p[0] - q[0]);
+  const out = []; iv.forEach(s => { const l = out[out.length - 1]; if (l && s[0] <= l[1]) { if (s[1] > l[1]) l[1] = s[1]; } else out.push([s[0], s[1]]); });
+  return out;
+}
+const POP_SUB = [0.1, 0.3, 0.5, 0.7, 0.9];
+function popScan(p, rings, bb, res) {
+  const rs = p.rowStart, nr = rs.length, yMin = Math.floor(bb[1] / 100), yMax = Math.floor(bb[3] / 100), xMin = Math.floor(bb[0] / 100);
+  let lo = 0, hi = nr; while (lo < hi) { const mid = (lo + hi) >> 1; if (p.Y[rs[mid]] < yMin) lo = mid + 1; else hi = mid; }
+  for (let r = lo; r < nr; r++) {
+    const s = rs[r], e = r + 1 < nr ? rs[r + 1] : p.n, gy = p.Y[s]; if (gy > yMax) break;
+    const ivs = POP_SUB.map(f => popSpans(rings, (gy + f) * 100)); if (!ivs.some(v => v.length)) continue;
+    let a = s, b = e; while (a < b) { const m = (a + b) >> 1; if (p.X[m] < xMin) a = m + 1; else b = m; }
+    const ptr = POP_SUB.map(() => 0);
+    for (let i = a; i < e; i++) {
+      const cx = p.X[i] * 100; if (cx > bb[2]) break;
+      let cov = 0;
+      for (let k = 0; k < POP_SUB.length; k++) {
+        const v = ivs[k]; let j = ptr[k]; while (j < v.length && v[j][1] <= cx) j++; ptr[k] = j;
+        for (let q = j; q < v.length && v[q][0] < cx + 100; q++) cov += Math.min(v[q][1], cx + 100) - Math.max(v[q][0], cx);
+      }
+      cov /= 100 * POP_SUB.length; if (cov <= 0) continue;
+      const n = p.pop[i] * cov; res.pop += n; res.u18 += p.u3[i] / 3 * cov; res.o65 += p.o65[i] * cov; res.cells += cov;
+      if (p.age2[i] !== 255) { res.ageW += n; res.ageS += n * p.age2[i] / 2; }
+    }
+  }
+}
+/* ringsLL: Liste von Ringen [[lat,lng],...] (Vereinigung). Liefert Summen; Zellen werden nach überdeckter Fläche gewichtet. */
+async function popQuery(ringsLL) {
+  const res = { pop: 0, u18: 0, o65: 0, ageW: 0, ageS: 0, cells: 0, missing: [], noData: !Object.keys(popIndex()).length };
+  if (res.noData) return res;
+  const rings = ringsLL.filter(r => r.length > 2).map(r => { const pts = r.map(q => LAEA(q[0], q[1])); let y0 = 1e15, y1 = -1e15; pts.forEach(q => { if (q[1] < y0) y0 = q[1]; if (q[1] > y1) y1 = q[1]; }); return { pts, y0, y1 }; });
+  if (!rings.length) return res;
+  const bb = [1e15, 1e15, -1e15, -1e15]; rings.forEach(r => r.pts.forEach(q => { bb[0] = Math.min(bb[0], q[0]); bb[1] = Math.min(bb[1], q[1]); bb[2] = Math.max(bb[2], q[0]); bb[3] = Math.max(bb[3], q[1]); }));
+  const idx = popIndex(), codes = Object.keys(idx).filter(c => { const b = idx[c].bbox; return !(bb[2] / 100 < b[0] || bb[0] / 100 > b[2] + 1 || bb[3] / 100 < b[1] || bb[1] / 100 > b[3] + 1); });
+  for (const c of codes) { const p = await popPackage(c); if (p) popScan(p, rings, bb, res); else res.missing.push(c); }
+  return res;
+}
+function popFor(ringsLL) {
+  const key = ringsLL.map(r => r.map(q => q[0].toFixed(5) + ',' + q[1].toFixed(5)).join(';')).join('|');
+  if (!POP.cache.has(key)) { POP.cache.set(key, popQuery(ringsLL)); if (POP.cache.size > 300) POP.cache.delete(POP.cache.keys().next().value); }
+  return POP.cache.get(key);
+}
+const popFmtN = n => (n >= 200 ? Math.round(n / 10) * 10 : Math.round(n)).toLocaleString('de-DE');
+const popPct = (a, b) => b > 0 ? Math.round(100 * a / b).toLocaleString('de-DE') + ' %' : '–';
+function popAge(r) { return r.ageW > 0 ? (r.ageS / r.ageW).toLocaleString('de-DE', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) : '–'; }
+function popShort(r) {
+  if (r.noData) return 'keine Bevölkerungsdaten geladen';
+  if (r.missing.length) return 'Daten für ' + r.missing.map(c => (popIndex()[c] || {}).name || c).join(', ') + ' fehlen';
+  if (r.pop < 0.5) return 'keine Wohnbevölkerung in den Zensus-Zellen';
+  return '≈ ' + popFmtN(r.pop) + ' Einwohner · Ø ' + popAge(r) + ' Jahre · unter 18: ' + popPct(r.u18, r.pop) + ' · ab 65: ' + popPct(r.o65, r.pop);
+}
+const popObjRings = p => [circleRing(p.lat, p.lng, (state.popRadius || 300) / 1000, 36)];
+function popObjLine(p) {
+  const box = el('div', { class: 'hint', text: 'Wohnbevölkerung im Umkreis von ' + (state.popRadius || 300) + ' m: wird berechnet…' });
+  popFor(popObjRings(p)).then(r => { box.textContent = 'Wohnbevölkerung im Umkreis von ' + (state.popRadius || 300) + ' m: ' + popShort(r); box.title = POP_NOTE; });
+  return box;
+}
+const POP_NOTE = 'Zensus 2022, Stichtag 15.05.2022, 100-m-Raster. Wohnbevölkerung, nicht die tatsächlich anwesenden Personen. Werte wegen Geheimhaltung leicht verändert. Unter 18 ist geschätzt (Altersklasse 16 bis 18 anteilig).';
+let popTimer = 0;
+function renderPopSoon() { clearTimeout(popTimer); popTimer = setTimeout(renderPop, 200); }
+async function renderPop() {
+  const tok = ++POP.token, qa = queryAreas(), secs = state.sections.filter(x => x.kind !== 'line' && x.pts && x.pts.length > 2);
+  const tiles = $('#popTiles'), tbl = $('#popTable'), hint = $('#popHint'); if (!tiles) return;
+  const noIdx = !Object.keys(popIndex()).length;
+  if (noIdx) { tiles.replaceChildren(); tbl.replaceChildren(); hint.textContent = 'Keine Bevölkerungsdaten gefunden. Der Ordner „zensus“ muss neben dieser Datei liegen, oder die Pakete im Reiter Daten laden. In der Einzeldatei sind sie eingebaut.'; POP.total = null; renderCounts(); return; }
+  if (!qa.length) { tiles.replaceChildren(); tbl.replaceChildren(); hint.textContent = 'Zuerst ein Gebiet wählen. Danach erscheint hier die Wohnbevölkerung.'; POP.total = null; renderCounts(); return; }
+  const rows = [{ name: 'Alle Abfragegebiete', rings: qa.flatMap(a => a.rings), total: true }];
+  if (qa.length > 1) qa.forEach(a => rows.push({ name: a.name, rings: a.rings, color: a.color }));
+  secs.forEach(sx => rows.push({ name: sx.name, rings: [sx.pts], color: sx.color, sid: sx.id }));
+  if (!tiles.childNodes.length) hint.textContent = 'wird berechnet…';
+  const out = await Promise.all(rows.map(r => popFor(r.rings)));
+  if (tok !== POP.token) return;
+  const T = out[0], bad = T.missing.length || T.noData;
+  tiles.replaceChildren();
+  if (!bad) {
+    const t = (v, l, c) => el('div', { class: 'tile', style: '--c:' + c }, el('b', { text: v }), el('span', { text: l }));
+    tiles.append(t('≈ ' + popFmtN(T.pop), 'Einwohner', '#1e40af'), t(popAge(T), 'Ø Alter in Jahren', '#475569'), t('≈ ' + popFmtN(T.u18), 'unter 18 (' + popPct(T.u18, T.pop) + ')', '#0e7490'), t('≈ ' + popFmtN(T.o65), 'ab 65 (' + popPct(T.o65, T.pop) + ')', '#b45309'));
+  }
+  tbl.replaceChildren();
+  if (rows.length > 1 && !bad) {
+    const th = (s) => el('th', { text: s });
+    tbl.append(el('table', { class: 'poptbl' }, el('thead', {}, el('tr', {}, th('Bereich'), th('Einw.'), th('Ø'), th('<18'), th('65+'))),
+      el('tbody', {}, ...rows.slice(1).map((r, i) => { const o = out[i + 1]; return el('tr', {}, el('td', {}, el('span', { class: 'dot', style: 'background:' + safeColor(r.color) }), ' ' + r.name), el('td', { text: o.missing.length ? '–' : '≈ ' + popFmtN(o.pop) }), el('td', { text: popAge(o) }), el('td', { text: popPct(o.u18, o.pop) }), el('td', { text: popPct(o.o65, o.pop) })); }))));
+  }
+  hint.textContent = bad ? 'Bevölkerungsdaten für ' + T.missing.map(c => (popIndex()[c] || {}).name || c).join(', ') + ' nicht geladen (Reiter Daten).' : POP_NOTE + ' Überlappende Gebiete werden nicht doppelt gezählt.';
+  POP.total = bad ? null : T.pop; renderCounts();
+  out.forEach((o, i) => { const sid = rows[i].sid; if (!sid) return; document.querySelectorAll('[data-pop-sx="' + sid + '"]').forEach(n => { n.textContent = 'Wohnbevölkerung: ' + popShort(o); n.title = POP_NOTE; }); });
+}
+function popStatusText() {
+  const idx = popIndex(), codes = Object.keys(idx); if (!codes.length) return 'Keine Bevölkerungsdaten gefunden.';
+  const have = codes.filter(c => window.ZENSUS_PKG && (window.ZENSUS_PKG[c] || POP.pkg[c]));
+  return have.length + ' von ' + codes.length + ' Bundesländern verfügbar' + (have.length < codes.length ? ' (nicht geladen: ' + codes.filter(c => !have.includes(c)).join(', ') + ')' : '') + '.';
+}
+function initPop() {
+  const r = $('#popR'); r.value = state.popRadius || 300;
+  r.addEventListener('change', () => { state.popRadius = Math.min(5000, Math.max(50, Math.round(+r.value || 300))); r.value = state.popRadius; persist(); renderPop(); });
+  $('#popFile').addEventListener('change', async ev => {
+    const files = [...ev.target.files]; ev.target.value = '';
+    for (const f of files) {
+      try { const txt = await f.text(), s = document.createElement('script'); s.src = URL.createObjectURL(new Blob([txt], { type: 'text/javascript' }));
+        await new Promise((ok, no) => { s.onload = ok; s.onerror = () => no(new Error('keine gültige Paketdatei')); document.head.append(s); }); }
+      catch (err) { say('Paket „' + f.name + '“ nicht lesbar: ' + err.message, 5000); }
+    }
+    POP.missing = {}; POP.cache.clear(); $('#popStatus').textContent = popStatusText(); renderPop();
+  });
+  $('#popStatus').textContent = popStatusText();
+  renderPop();
 }
 
 /* ------------------------------------------------------------------ */
@@ -2710,6 +2902,7 @@ function renderAbschnitte() {
       el('div', { class: 'row' }, fld('leader', 'Name, Funktion', 'Abschnittsleiter'), fld('deputy', 'Name', 'Stellvertreter')),
       el('div', { class: 'row' }, fld('radio', 'Rufname oder Kanal', 'Funk')),
       el('label', { class: 'hint' }, 'Auftrag', el('textarea', { rows: '2', onchange: ev => { sx.task = ev.target.value; save('Abschnitt ' + sx.name + ': Auftrag geändert'); } })),
+      el('div', { class: 'hint', 'data-pop-sx': sx.id, text: sx.pts && sx.pts.length > 2 ? 'Wohnbevölkerung: wird berechnet…' : '' }),
       el('div', { class: 'hint', text: t.us.length + ' Einheiten, Stärke ' + t.f + '/' + t.u + '/' + t.h + '/' + (t.f + t.u + t.h) }),
       ...t.us.map(u => el('div', { class: 'row' }, el('img', { class: 'uimg', src: unitSym(u).url, alt: '', style: 'width:34px;height:28px;object-fit:contain' }), el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) }),
         el('span', { class: 'chip', style: 'margin-left:auto' }, el('span', { class: 'dot', style: 'background:' + safeColor(ustat(u.status).color) }), ustat(u.status).label),
@@ -2720,6 +2913,7 @@ function renderAbschnitte() {
     card.querySelector('textarea').value = sx.task || ''; box.append(card);
   });
   if (runtime.viewer) lockViewer(box);
+  renderPopSoon();
 }
 function initAbschnitte() {
   $('#abAdd').onclick = () => {
@@ -2863,8 +3057,17 @@ function initStaende() {
 /* Ortssuche und Startansicht                                          */
 /* ------------------------------------------------------------------ */
 const GERMANY = [[47.2, 5.8], [55.1, 15.1]];
+function setPlaceMin(min, keep) {
+  const f = $('#placeSearch'); f.classList.toggle('min', !!min); $('#placeToggle').setAttribute('aria-expanded', String(!min));
+  if (!min) setTimeout(() => $('#placeQ').focus(), 0); else $('#placeRes').replaceChildren();
+  if (!keep) { try { localStorage.setItem('kritis-search', min ? 'min' : 'open'); } catch (e) { /* ohne Speicher */ } }
+}
 function initPlaceSearch() {
   const box = $('#placeRes');
+  let st = null; try { st = localStorage.getItem('kritis-search'); } catch (e) { /* ohne Speicher */ }
+  setPlaceMin(st ? st === 'min' : (state.areas.length > 0 || !!savedView()), true);
+  $('#placeToggle').addEventListener('click', () => setPlaceMin(!$('#placeSearch').classList.contains('min')));
+  $('#placeQ').addEventListener('keydown', ev => { if (ev.key === 'Escape') setPlaceMin(true); });
   $('#placeSearch').addEventListener('submit', async ev => {
     ev.preventDefault(); const q = $('#placeQ').value.trim(); if (!q) return;
     box.replaceChildren(el('div', { class: 'none', text: 'Suche läuft…' }));
@@ -2874,7 +3077,7 @@ function initPlaceSearch() {
       if (!r.ok) throw new Error('HTTP ' + r.status); const list = await r.json();
       box.replaceChildren(); if (!list.length) { box.append(el('div', { class: 'none', text: 'Nichts gefunden. Anderen Suchbegriff versuchen.' })); return; }
       const go = x => { const b = x.boundingbox.map(Number); map.fitBounds([[b[0], b[2]], [b[1], b[3]]], { maxZoom: 17, padding: [30, 30] }); };
-      go(list[0]);
+      go(list[0]); if (list.length < 2) setPlaceMin(true);
       if (list.length > 1) { box.append(el('div', { class: 'none', text: 'Andere Treffer:' })); list.slice(1).forEach(x => box.append(el('button', { type: 'button', text: x.display_name, onclick: () => { go(x); box.replaceChildren(); } }))); }
     } catch (e) { box.replaceChildren(el('div', { class: 'none', text: 'Suche nicht möglich (' + e.message + '). Ohne Internet gibt es keine Ortssuche.' })); }
   });
@@ -2892,7 +3095,7 @@ map.getContainer().addEventListener('click', e => {
 function initialView() {
   if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08), { animate: false });
   else if (savedView()) { const v = savedView(); map.setView([v.lat, v.lng], v.z, { animate: false }); }
-  else { map.fitBounds(GERMANY, { animate: false }); if (!runtime.viewer) { say('Ort oben links eingeben, die Karte zoomt dorthin.', 10000); setTimeout(() => $('#placeQ').focus(), 300); } }
+  else { map.fitBounds(GERMANY, { animate: false }); if (!runtime.viewer) { setPlaceMin(false, true); say('Ort oben links eingeben, die Karte zoomt dorthin.', 10000); } }
 }
 
 /* Karte anklicken */
@@ -2957,6 +3160,7 @@ function renderCounts() {
   if (wtxt) box.append(el('span', { class: 'chip', title: 'Wetter und Wind', text: wtxt }));
   box.append(el('span', { class: 'chip', id: 'mtChip', hidden: 'hidden' }));
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
+  if (POP.total != null) box.append(el('span', { class: 'chip', title: 'Wohnbevölkerung im Abfragegebiet nach Zensus 2022', text: 'ca. ' + popFmtN(POP.total) + ' Einwohner' }));
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
   if (openP) box.append(el('span', { class: 'chip', text: openP + ' Probleme offen' }));
   const ct = casTotals().t;
@@ -3018,7 +3222,7 @@ function setPanel(open, remember) {
   setTimeout(() => map.invalidateSize(), 260);
 }
 function togglePanel() { setPanel($('#app').classList.contains('collapsed')); }
-$('#panelToggle').onclick = togglePanel; $('#btnPanel').onclick = togglePanel;
+$('#panelToggle').onclick = togglePanel;
 try { if (localStorage.getItem('kritis-panel') === '0') { $('#app').classList.add('collapsed'); $('#panelToggle').innerHTML = panelGlyph(false); $('#panelToggle').setAttribute('aria-expanded', 'false'); setTimeout(() => map.invalidateSize(), 0); } } catch (e) { /* egal */ }
 
 /* Speichern, Laden, Export */
@@ -3076,7 +3280,7 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);

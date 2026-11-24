@@ -11,6 +11,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--src', default='src/public/kritis-lage.html')
 ap.add_argument('--cache', default='/tmp/kritis-cache')
 ap.add_argument('--out', default='src/public/kritis-lage-einzeldatei.html')
+ap.add_argument('--zensus', default='all', help='Bundeslaender fuer die eingebetteten Bevoelkerungspakete: all, none oder Kuerzel mit Komma, z. B. NW,BY')
 a = ap.parse_args()
 os.makedirs(a.cache, exist_ok=True)
 
@@ -71,6 +72,18 @@ def inline_local(m):
     f = os.path.join(os.path.dirname(os.path.abspath(a.src)), m.group(1))
     return '<script>' + open(f, encoding='utf-8').read().replace('</script', '<\\/script') + '</script>'
 html = re.sub(r'<script src="(lib/[^"]+)"></script>', inline_local, html)
+
+# ---- Bevoelkerungspakete (Zensus 2022) ----
+zdir = os.path.join(os.path.dirname(os.path.abspath(a.src)), 'zensus')
+if a.zensus != 'none' and os.path.exists(os.path.join(zdir, 'zensus-index.js')):
+    idxjs = open(os.path.join(zdir, 'zensus-index.js'), encoding='utf-8').read()
+    codes = sorted(f[7:9] for f in os.listdir(zdir) if re.fullmatch(r'zensus-[A-Z]{2}\.js', f))
+    if a.zensus != 'all': codes = [c for c in codes if c in a.zensus.split(',')]
+    pk = ''.join(open(os.path.join(zdir, 'zensus-%s.js' % c), encoding='utf-8').read() for c in codes)
+    html = re.sub(r'<script src="zensus/zensus-index.js"[^>]*></script>', lambda m: '<script>' + idxjs.replace('</script', '<\\/script') + pk + '</script>', html)
+    print('Bevoelkerungspakete eingebettet:', ', '.join(codes))
+else:
+    print('Hinweis: keine Bevoelkerungspakete eingebettet')
 
 assert 'cdnjs.cloudflare.com' not in html.replace('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images', ''), 'externe Verweise übrig'
 open(a.out, 'w', encoding='utf-8').write(html)
