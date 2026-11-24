@@ -27,7 +27,7 @@ header { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; pad
 header h1 { font-size: 16px; margin: 0; font-weight: 600; white-space: nowrap; }
 header .sp { flex: 1; }
 #hdrArea { opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32vw; }
-#hdrCounts { display: flex; gap: 6px; }
+#hdrCounts { display: flex; gap: 6px; min-width: 0; overflow: hidden; }
 .chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 11px; background: rgba(255,255,255,.14); font-size: 12px; white-space: nowrap; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
 #clock { font-variant-numeric: tabular-nums; opacity: .9; }
@@ -35,7 +35,7 @@ header button { background: rgba(255,255,255,.14); border: 1px solid rgba(255,25
 
 #panel { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
 #tabs { display: flex; border-bottom: 1px solid var(--line); }
-#tabs button { flex: 1; padding: 9px 4px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
+#tabs button { flex: 1; padding: 9px 2px; font-size: 12.5px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
 #tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 .tabpane { display: none; padding: 12px; overflow: auto; flex: 1; min-height: 0; }
 .tabpane.active { display: block; }
@@ -101,6 +101,20 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .leaflet-tooltip.seclabel { background: transparent; border: 0; box-shadow: none; font-weight: 700; font-size: 13px; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
 .leaflet-tooltip.seclabel::before { display: none; }
 
+#casTiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+.tile { border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 4px; padding: 6px 8px; background: #fafbfc; }
+.tile b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 12px; color: var(--muted); }
+.cas { min-width: 30px; height: 24px; padding: 0 5px; border-radius: 4px; background: var(--c); color: #fff; font: 700 12px/20px system-ui, sans-serif; text-align: center; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.5); white-space: nowrap; }
+.prob { width: 22px; height: 22px; background: var(--c); color: #fff; font: 700 14px/22px system-ui, sans-serif; text-align: center; clip-path: polygon(50% 0, 100% 100%, 0 100%); padding-top: 3px; line-height: 24px; }
+.card { border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 4px; padding: 8px; margin: 8px 0; background: #fff; }
+.card.done { opacity: .6; }
+.card input[type=text], .card textarea, .card select { width: 100%; }
+.card .title { font-weight: 600; }
+.card .row { margin: 4px 0; }
+.card .row > * { flex: 1; min-width: 0; }
+.card .row > button { flex: none; }
+.btn.wide { width: 100%; }
 @media (max-width: 860px) {
   #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
@@ -123,6 +137,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     <span class="sp"></span>
     <div id="hdrCounts"></div>
     <span id="clock"></span>
+    <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
 
@@ -131,6 +146,8 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <button role="tab" data-tab="gebiet" aria-selected="true">Gebiet</button>
       <button role="tab" data-tab="ebenen" aria-selected="false">Ebenen</button>
       <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
+      <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
+      <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
     </div>
@@ -168,6 +185,18 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     </section>
 
     <section class="tabpane" id="tab-ebenen">
+      <h2>Eigenes Objekt per Mausklick setzen</h2>
+      <div class="row">
+        <select id="poiType"></select>
+      </div>
+      <div class="row">
+        <input type="text" id="poiName" placeholder="Bezeichnung, z. B. Umspannwerk Ost">
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btnPoiPlace">Auf Karte setzen</button>
+        <span class="hint">Mehrfach klicken ist möglich. Esc beendet. Gesetzte Objekte lassen sich verschieben und bleiben beim Gebietswechsel erhalten.</span>
+      </div>
+      <h2>Ebenen</h2>
       <div id="sectors"></div>
       <div class="hint">Eine Ebene wird erst abgefragt, wenn sie eingeschaltet ist. Große Ebenen (Funkmasten, Supermärkte, Behörden) sind zunächst aus.</div>
     </section>
@@ -186,6 +215,44 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       </div>
       <div class="hint" id="listInfo"></div>
       <table class="list"><thead><tr><th>Objekt</th><th>Art</th><th>Status</th></tr></thead><tbody id="listBody"></tbody></table>
+    </section>
+
+    <section class="tabpane" id="tab-probleme">
+      <h2>Problem erfassen</h2>
+      <div class="row"><input type="text" id="pTitle" placeholder="Kurzbeschreibung, z. B. Trinkwasser Stadtteil Mitte ausgefallen"></div>
+      <div class="row">
+        <select id="pPrio"><option value="hoch">Priorität hoch</option><option value="mittel" selected>Priorität mittel</option><option value="niedrig">Priorität niedrig</option></select>
+        <input type="text" id="pOwner" placeholder="Zuständig">
+      </div>
+      <div class="row"><textarea id="pText" rows="2" placeholder="Einzelheiten, Maßnahmen, Rückfragen"></textarea></div>
+      <div class="row"><button class="btn primary" id="btnPAdd">Problem anlegen</button><span class="hint">Ort und Objektbezug lassen sich danach an der Karte setzen. Aus dem Objekt-Popup geht es mit „Problem melden“ direkt.</span></div>
+      <h2>Liste</h2>
+      <div class="row">
+        <select id="pfStatus"><option value="aktiv">offen und in Arbeit</option><option value="">alle</option><option value="offen">offen</option><option value="inArbeit">in Arbeit</option><option value="erledigt">erledigt</option></select>
+        <select id="pfPrio"><option value="">alle Prioritäten</option><option value="hoch">hoch</option><option value="mittel">mittel</option><option value="niedrig">niedrig</option></select>
+      </div>
+      <div class="row"><input type="search" id="pfText" placeholder="Suchen"></div>
+      <div class="hint" id="pInfo"></div>
+      <div id="pList"></div>
+    </section>
+
+    <section class="tabpane" id="tab-zahlen">
+      <h2>Personen im Gebiet</h2>
+      <div id="casTiles"></div>
+      <div class="hint" id="casHint"></div>
+      <h2>Zahl erfassen</h2>
+      <div class="row">
+        <select id="casCat"></select>
+        <input type="number" id="casN" value="1" min="0" step="1" style="max-width:90px">
+      </div>
+      <div class="row"><input type="text" id="casNote" placeholder="Bemerkung, z. B. Quelle oder Ort"></div>
+      <div class="row">
+        <button class="btn primary" id="btnCasAdd">Ohne Ort addieren</button>
+        <button class="btn" id="btnCasPlace">Auf Karte setzen</button>
+      </div>
+      <div class="hint">Einträge mit Ort zählen nur, solange sie im gewählten Gebiet liegen. Die Zahlen sind Meldungen, die der Stab einträgt, keine berechneten Werte.</div>
+      <h2>Einträge</h2>
+      <div id="casList"></div>
     </section>
 
     <section class="tabpane" id="tab-lage">
@@ -335,7 +402,9 @@ function freshState() {
     deps: [],            // { from, to, fromName, toName }
     symbols: [],         // { id, name, lat, lng, label, time }
     sections: [],        // { id, kind:'poly'|'line', name, color, pts:[[lat,lng]] }
-    journal: []          // { id, time, text, auto }
+    journal: [],         // { id, time, text, auto }
+    casualties: [],      // { id, cat, n, note, time, lat?, lng? }
+    problems: []         // { id, title, text, prio, status, owner, time, poi?, poiName?, lat?, lng? }
   };
 }
 let state = freshState();
@@ -444,6 +513,8 @@ const markers = {};                // poiId -> L.Marker
 const depLayer = L.layerGroup().addTo(map);
 const symLayer = L.layerGroup().addTo(map);
 const secLayer = L.layerGroup().addTo(map);
+const casLayer = L.layerGroup().addTo(map);
+const probLayer = L.layerGroup().addTo(map);
 let areaLayer = null;
 
 /* ------------------------------------------------------------------ */
@@ -458,7 +529,8 @@ function setArea(area, opts) {
   if (first) clearPois();
   drawArea(opts.fit !== false);
   renderAreaInfo();
-  renderAll();
+  renderMarkers();
+  renderAll(); renderCas();
   save();
   if (first && area.km2 <= AUTO_LOAD_MAX_KM2) loadObjects();
   else if (first) say('Das Gebiet ist sehr groß (' + Math.round(area.km2) + ' km²). Ebenen bitte gezielt laden.', 7000);
@@ -473,7 +545,7 @@ function drawArea(fit) {
   if (fit) map.fitBounds(areaLayer.getBounds().pad(0.08));
 }
 function clearArea() {
-  state.area = null; clearPois(); drawArea(false); renderAreaInfo(); renderAll(); save();
+  state.area = null; clearPois(); drawArea(false); renderAreaInfo(); renderMarkers(); renderAll(); renderCas(); save();
 }
 function renderAreaInfo() {
   const a = state.area, box = $('#areaInfo');
@@ -648,7 +720,8 @@ function setSectorState(sec, s, msg) { runtime.sector[sec] = { s, msg }; renderS
 
 function clearPois() {
   queue.length = 0;
-  state.pois = {}; state.layerLoaded = {}; runtime.sector = {};
+  state.pois = Object.fromEntries(Object.entries(state.pois).filter(([, p]) => p.manual));
+  state.layerLoaded = {}; runtime.sector = {};
   Object.values(groups).forEach(g => g.clearLayers());
   Object.keys(markers).forEach(k => delete markers[k]);
   depLayer.clearLayers();
@@ -678,7 +751,8 @@ function renderMarkers() {
   affected = computeAffected();
   Object.values(state.pois).forEach(p => {
     if (markers[p.id]) return;
-    const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p) });
+    const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p), draggable: !!p.manual });
+    if (p.manual) m.on('dragend', () => { const ll = m.getLatLng(); p.lat = ll.lat; p.lng = ll.lng; save(); renderDeps(); });
     m.bindPopup(() => poiPopup(p), { maxWidth: 300 });
     m.on('click', () => {
       if (runtime.mode && runtime.mode.type === 'link') { m.closePopup(); finishLink(p); }
@@ -715,8 +789,8 @@ function poiPopup(p) {
 
   const outgoing = state.deps.filter(d => d.from === p.id), incoming = state.deps.filter(d => d.to === p.id);
   wrap.append(
-    el('h3', { text: poiTitle(p) }),
-    el('div', { class: 'sub' }, SECTORS[l.sector].name + ' · ' + l.name, p.addr ? el('br') : null, p.addr || null),
+    p.manual ? el('input', { type: 'text', value: p.name || '', placeholder: 'Bezeichnung', oninput: ev => { p.name = ev.target.value; save(); renderList(); } }) : el('h3', { text: poiTitle(p) }),
+    el('div', { class: 'sub' }, SECTORS[l.sector].name + ' · ' + l.name + (p.manual ? ' · manuell erfasst' : ''), p.addr ? el('br') : null, p.addr || null),
     stBox, timeEl,
     affected.has(p.id) ? el('div', { class: 'notice', text: 'Hängt laut manueller Verknüpfung von einem ausgefallenen Objekt ab.' }) : null,
     el('label', { text: 'Ansprechpartner' }), contact,
@@ -725,7 +799,9 @@ function poiPopup(p) {
     incoming.length ? el('div', { class: 'hint', text: 'Versorgt durch: ' + incoming.map(d => d.fromName).join(', ') }) : null,
     el('div', { class: 'row' },
       el('button', { class: 'btn small', text: 'Versorgt…', onclick: () => startLink(p) }),
-      el('a', { href: 'https://www.openstreetmap.org/' + p.osm, target: '_blank', rel: 'noopener', text: 'OSM-Objekt' })));
+      el('button', { class: 'btn small', text: 'Problem melden', onclick: () => { map.closePopup(); reportProblemFor(p); } }),
+      p.manual ? el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { map.closePopup(); removeManualPoi(p); } })
+               : el('a', { href: 'https://www.openstreetmap.org/' + p.osm, target: '_blank', rel: 'noopener', text: 'OSM-Objekt' })));
   return wrap;
 }
 
@@ -811,9 +887,163 @@ function renderJournal() {
     el('button', { class: 'btn small', text: 'x', title: 'Eintrag löschen', onclick: () => { state.journal = state.journal.filter(x => x !== j); renderJournal(); save(); } }))));
 }
 
+/* ------------------------------------------------------------------ */
+/* Eigene Objekte, Personenzahlen, Problemliste                        */
+/* ------------------------------------------------------------------ */
+const CAS = {
+  betroffen: { label: 'Betroffene',      short: 'B',  color: '#475569' },
+  verletzt:  { label: 'Verletzte',       short: 'V',  color: '#d97706' },
+  schwer:    { label: 'Schwerverletzte', short: 'SV', color: '#c2410c' },
+  tot:       { label: 'Tote',            short: 'T',  color: '#111827' },
+  vermisst:  { label: 'Vermisste',       short: 'Vm', color: '#7c3aed' },
+  evakuiert: { label: 'Evakuierte',      short: 'E',  color: '#0369a1' },
+  gerettet:  { label: 'Gerettete',       short: 'G',  color: '#15803d' }
+};
+const PRIO = { hoch: { label: 'hoch', color: '#dc2626', ord: 0 }, mittel: { label: 'mittel', color: '#f59e0b', ord: 1 }, niedrig: { label: 'niedrig', color: '#64748b', ord: 2 } };
+const PSTAT = { offen: 'offen', inArbeit: 'in Arbeit', erledigt: 'erledigt' };
+
+function initNewUi() {
+  const sel = $('#poiType');
+  Object.entries(SECTORS).forEach(([sid, sec]) => {
+    const g = el('optgroup', { label: sec.name });
+    LAYERS.filter(l => l.sector === sid).forEach(l => g.append(el('option', { value: l.id, text: SINGULAR[l.id] })));
+    sel.append(g);
+  });
+  Object.entries(CAS).forEach(([k, v]) => $('#casCat').append(el('option', { value: k, text: v.label })));
+  $('#btnPoiPlace').onclick = startPoiMode;
+  $('#btnAddPoi').onclick = () => { openTab('ebenen'); startPoiMode(); };
+  $('#btnCasAdd').onclick = () => addCas();
+  $('#btnCasPlace').onclick = () => { stopDraw(); runtime.mode = 'cas'; $('#btnCasPlace').classList.add('active'); map.getContainer().style.cursor = 'crosshair'; say('Ort für die Zahl anklicken. Mehrfach möglich, Esc beendet.'); };
+  $('#btnPAdd').onclick = () => {
+    const t = $('#pTitle').value.trim(); if (!t) { $('#pTitle').focus(); return; }
+    addProblem({ title: t, text: $('#pText').value.trim(), prio: $('#pPrio').value, owner: $('#pOwner').value.trim() });
+    $('#pTitle').value = ''; $('#pText').value = '';
+  };
+  ['pfStatus', 'pfPrio'].forEach(id => $('#' + id).addEventListener('change', renderProblems));
+  $('#pfText').addEventListener('input', renderProblems);
+}
+
+/* Eigene Objekte */
+function startPoiMode() {
+  stopDraw(); runtime.mode = 'poi'; $('#btnPoiPlace').classList.add('active');
+  map.getContainer().style.cursor = 'crosshair'; say('Ort des Objekts anklicken. Mehrfach möglich, Esc beendet.');
+}
+function addManualPoi(lat, lng) {
+  const lid = $('#poiType').value, id = 'm' + uid();
+  state.pois[id] = { id, osm: '', manual: true, lat, lng, layer: lid, name: $('#poiName').value.trim(), addr: '' };
+  state.layerOn[lid] = true;
+  $('#poiName').value = '';
+  renderMarkers(); renderAll(); save();
+}
+function removeManualPoi(p) {
+  if (markers[p.id]) { groups[p.layer].removeLayer(markers[p.id]); delete markers[p.id]; }
+  delete state.pois[p.id]; delete state.objects[p.id];
+  state.deps = state.deps.filter(d => d.from !== p.id && d.to !== p.id);
+  refreshIcons(); renderDeps(); renderAll(); save();
+}
+
+/* Personenzahlen */
+function pip(lat, lng, ring) {
+  let c = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const yi = ring[i][0], xi = ring[i][1], yj = ring[j][0], xj = ring[j][1];
+    if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+const inArea = (lat, lng) => !state.area || state.area.rings.some(r => pip(lat, lng, r));
+function casTotals() {
+  const t = Object.fromEntries(Object.keys(CAS).map(k => [k, 0])); let outside = 0;
+  state.casualties.forEach(c => { if (c.lat != null && !inArea(c.lat, c.lng)) outside++; else t[c.cat] += c.n; });
+  return { t, outside };
+}
+function addCas(lat, lng) {
+  const cat = $('#casCat').value, n = Math.max(0, Math.round(parseFloat($('#casN').value) || 0));
+  if (!n) { say('Bitte eine Zahl größer 0 eintragen.', 3000); return; }
+  const note = $('#casNote').value.trim();
+  state.casualties.push({ id: uid(), cat, n, note, time: new Date().toISOString(), lat, lng });
+  addJournal('Zahlen: ' + n + ' ' + CAS[cat].label + (note ? ' (' + note + ')' : ''), true);
+  renderCas(); save();
+}
+function renderCas() {
+  const { t, outside } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
+  Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, el('b', { text: String(t[k]) }), el('span', { text: v.label }))));
+  $('#casHint').textContent = (state.area ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb des Gebiets.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '');
+  const list = $('#casList'); list.replaceChildren();
+  if (!state.casualties.length) list.append(el('div', { class: 'hint', text: 'Noch keine Einträge.' }));
+  state.casualties.slice().reverse().forEach(c => {
+    const out = c.lat != null && !inArea(c.lat, c.lng);
+    const nIn = el('input', { type: 'number', min: '0', value: c.n, style: 'width:70px', onchange: ev => { c.n = Math.max(0, Math.round(+ev.target.value || 0)); renderCas(); save(); } });
+    list.append(el('div', { class: 'entry' }, el('span', { class: 'dot', style: 'background:' + CAS[c.cat].color }), ' ', CAS[c.cat].label + ' ', nIn, ' ',
+      c.note ? c.note + ' ' : '', el('time', { text: fmtTime(c.time) }), out ? ' (außerhalb, nicht gezählt) ' : ' ',
+      c.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
+      el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save(); } })));
+  });
+  casLayer.clearLayers();
+  state.casualties.filter(c => c.lat != null).forEach(c => {
+    const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: [34, 24], iconAnchor: [17, 12], html: '<div class="cas" style="--c:' + CAS[c.cat].color + '">' + CAS[c.cat].short + ' ' + c.n + '</div>' }), draggable: true });
+    m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save(); });
+    m.bindTooltip(el('span', { text: CAS[c.cat].label + ': ' + c.n + (c.note ? ', ' + c.note : '') }));
+    m.addTo(casLayer);
+  });
+  renderCounts();
+}
+
+/* Problemliste */
+function addProblem(data) {
+  const pr = Object.assign({ id: uid(), title: '', text: '', prio: 'mittel', status: 'offen', owner: '', time: new Date().toISOString() }, data);
+  state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save(); return pr;
+}
+function reportProblemFor(p) {
+  const pr = addProblem({ title: poiTitle(p) + ': ', poi: p.id, poiName: poiTitle(p), lat: p.lat, lng: p.lng });
+  $('#pfStatus').value = 'aktiv'; $('#pfPrio').value = ''; $('#pfText').value = '';
+  openTab('probleme'); renderProblems();
+  const inp = document.querySelector('[data-pid="' + pr.id + '"] input[type=text]');
+  if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); inp.scrollIntoView({ block: 'nearest' }); }
+}
+function renderProblems() {
+  const fs = $('#pfStatus').value, fp = $('#pfPrio').value, q = $('#pfText').value.trim().toLowerCase();
+  const rows = state.problems.filter(x => (!fs || (fs === 'aktiv' ? x.status !== 'erledigt' : x.status === fs)) && (!fp || x.prio === fp)
+    && (!q || (x.title + ' ' + x.text + ' ' + x.owner + ' ' + (x.poiName || '')).toLowerCase().includes(q)))
+    .sort((a, b) => (a.status === 'erledigt') - (b.status === 'erledigt') || PRIO[a.prio].ord - PRIO[b.prio].ord || (a.time < b.time ? 1 : -1));
+  $('#pInfo').textContent = rows.length + ' von ' + state.problems.length + ' Problemen';
+  const box = $('#pList'); box.replaceChildren();
+  rows.forEach(x => {
+    const sel = (opts, cur, fn) => { const s = el('select', { onchange: ev => fn(ev.target.value) }, Object.entries(opts).map(([k, v]) => el('option', { value: k, text: v.label || v }))); s.value = cur; return s; };
+    const card = el('div', { class: 'card' + (x.status === 'erledigt' ? ' done' : ''), 'data-pid': x.id, style: '--c:' + PRIO[x.prio].color },
+      el('input', { type: 'text', class: 'title', value: x.title, oninput: ev => { x.title = ev.target.value; save(); } }),
+      el('div', { class: 'row' },
+        sel(PRIO, x.prio, v => { x.prio = v; save(); renderProblems(); }),
+        sel(PSTAT, x.status, v => { x.status = v; addJournal('Problem „' + x.title + '“: ' + PSTAT[v], true); save(); renderProblems(); renderCounts(); }),
+        el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); } })),
+      el('textarea', { rows: '2', placeholder: 'Einzelheiten, Maßnahmen', oninput: ev => { x.text = ev.target.value; save(); } }),
+      el('div', { class: 'row' },
+        el('span', { class: 'hint', text: fmtTime(x.time) + (x.poiName ? ' · ' + x.poiName : '') + (x.lat == null ? ' · ohne Ort' : '') }),
+        x.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([x.lat, x.lng], Math.max(map.getZoom(), 16)) }) : null,
+        el('button', { class: 'btn small', text: 'Ort setzen', onclick: () => { stopDraw(); runtime.mode = { type: 'probloc', id: x.id }; map.getContainer().style.cursor = 'crosshair'; say('Ort für das Problem anklicken. Esc bricht ab.'); } }),
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => { state.problems = state.problems.filter(y => y !== x); renderProblems(); renderCounts(); save(); } })));
+    card.querySelector('textarea').value = x.text || '';
+    box.append(card);
+  });
+  if (!rows.length) box.append(el('div', { class: 'hint', text: 'Keine Probleme in dieser Ansicht.' }));
+  probLayer.clearLayers();
+  state.problems.filter(x => x.lat != null && x.status !== 'erledigt').forEach(x => {
+    const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + PRIO[x.prio].color + '">!</div>' }) });
+    m.bindTooltip(el('span', { text: x.title + ' (' + PRIO[x.prio].label + ')' }));
+    m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + PRIO[x.prio].color; setTimeout(() => { c.style.outline = ''; }, 1800); } });
+    m.addTo(probLayer);
+  });
+}
+
 /* Karte anklicken */
 map.on('click', e => {
   if (runtime.mode === 'circle') { stopDraw(); applyCircle(e.latlng.lat, e.latlng.lng); }
+  else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
+  else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
+  else if (runtime.mode && runtime.mode.type === 'probloc') {
+    const pr = state.problems.find(x => x.id === runtime.mode.id); stopDraw();
+    if (pr) { pr.lat = e.latlng.lat; pr.lng = e.latlng.lng; renderProblems(); save(); }
+  }
   else if (runtime.placing) {
     const s = runtime.placing;
     state.symbols.push({ id: uid(), name: s.name, title: s.title, lat: e.latlng.lat, lng: e.latlng.lng, label: '', time: new Date().toISOString() });
@@ -852,6 +1082,10 @@ function renderCounts() {
   Object.values(state.pois).forEach(p => { if (state.layerOn[p.layer]) c[(state.objects[p.id] || {}).status || 'unbekannt']++; });
   const total = c.ausgefallen + c.eingeschraenkt + c.intakt + c.unbekannt, box = $('#hdrCounts'); box.replaceChildren();
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
+  const openP = state.problems.filter(x => x.status !== 'erledigt').length;
+  if (openP) box.append(el('span', { class: 'chip', text: openP + ' Probleme offen' }));
+  const ct = casTotals().t;
+  Object.entries(CAS).forEach(([k, v]) => { if (ct[k]) box.append(el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + v.color }), ct[k] + ' ' + v.label)); });
   ['ausgefallen', 'eingeschraenkt', 'intakt'].forEach(k => { if (c[k]) box.append(el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + STATUS[k].color }), c[k] + ' ' + STATUS[k].label)); });
 }
 function renderList() {
@@ -872,10 +1106,11 @@ function renderList() {
 }
 function renderAll() { affected = computeAffected(); renderSectors(); renderCounts(); renderList(); }
 
-document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
-  document.querySelectorAll('.tabpane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + b.dataset.tab));
-}));
+function openTab(name) {
+  document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', String(x.dataset.tab === name)));
+  document.querySelectorAll('.tabpane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+}
+document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => openTab(b.dataset.tab)));
 $('#btnPoly').onclick = e => startDraw('polygon', 'area', e.currentTarget);
 $('#btnRect').onclick = e => startDraw('rectangle', 'area', e.currentTarget);
 $('#btnCircle').onclick = startCircleMode;
@@ -906,7 +1141,7 @@ $('#btnCsv').onclick = () => {
   const head = ['OSM-ID', 'Sektor', 'Art', 'Name', 'Adresse', 'Status', 'Status seit', 'Möglicherweise betroffen', 'Ansprechpartner', 'Notiz', 'Breite', 'Länge', 'Link'];
   const rows = Object.values(state.pois).map(p => {
     const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
-    return [p.osm, SECTORS[l.sector].name, l.name, poiTitle(p), p.addr, STATUS[o.status || 'unbekannt'].label, o.statusTime || '', affected.has(p.id) ? 'ja' : '', o.contact, o.note, p.lat, p.lng, 'https://www.openstreetmap.org/' + p.osm];
+    return [p.manual ? 'manuell' : p.osm, SECTORS[l.sector].name, l.name, poiTitle(p), p.addr, STATUS[o.status || 'unbekannt'].label, o.statusTime || '', affected.has(p.id) ? 'ja' : '', o.contact, o.note, p.lat, p.lng, p.manual ? '' : 'https://www.openstreetmap.org/' + p.osm];
   });
   download('objekte-' + stamp() + '.csv', '﻿' + [head, ...rows].map(r => r.map(csvCell).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
 };
@@ -926,7 +1161,7 @@ function applyState(s, fit) {
   Object.values(groups).forEach(g => { g.clearLayers(); if (map.hasLayer(g)) map.removeLayer(g); });
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
-  drawArea(!!fit); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); save();
+  drawArea(!!fit); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); save();
 }
 
 /* ------------------------------------------------------------------ */
@@ -938,7 +1173,8 @@ try {
   if (raw) { const s = JSON.parse(raw); if (s && s.version === 1) state = Object.assign(freshState(), s); }
 } catch (e) { /* kein Speicher: leerer Start */ }
 state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-drawArea(true); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll();
+initNewUi();
+drawArea(true); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems();
 const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 tick(); setInterval(tick, 20000);
 window.__lage = { get state() { return state; }, map, setArea, loadObjects };   // für Tests
