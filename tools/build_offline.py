@@ -64,6 +64,12 @@ def inline_css(m):
     return '<style>' + css + '</style>'
 html = re.sub(r'<link rel="stylesheet" href="(https://cdnjs[^"]+)"[^>]*>', inline_css, html)
 
+# ---- Schriften inline ----
+def inline_font(m):
+    f = os.path.join(os.path.dirname(os.path.abspath(a.src)), m.group(1))
+    return 'url(data:font/woff2;base64,' + base64.b64encode(open(f, 'rb').read()).decode() + ')'
+html = re.sub(r'url\((fonts/[^)]+\.woff2)\)', inline_font, html)
+
 # ---- JS inline ----
 def inline_js(m):
     js = fetch(m.group(1)).decode('utf-8').replace('</script', '<\\/script')

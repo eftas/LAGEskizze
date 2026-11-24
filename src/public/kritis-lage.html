@@ -94,8 +94,8 @@ textarea { width: 100%; resize: vertical; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
 #btnShare { display: none; }
 body.viewer #qat, body.viewer #btnAddPoi, body.viewer #btnShare, body.viewer .editonly,
-body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
-body.beamer #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr; }
+body.viewer #tabs [data-tab="einsatz"], body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
+body.beamer #app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
 body.beamer #mapWrap { grid-column: 1; }
 body.beamer #panel, body.beamer #panelToggle, body.beamer #btnPanel, body.beamer #btnPrint, body.beamer #btnShare { display: none !important; }
 body.beamer #clock { font-size: 20px; }
@@ -103,6 +103,9 @@ body.beamer header h1 { font-size: 20px; }
 #liveBadge::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #16a34a; display: inline-block; }
 #liveBadge.off::before { background: #dc2626; }
 .sector .state { font-size: 12px; color: var(--muted); }
+.chip.ex { background: #b45309; color: #fff; border-color: #92400e; letter-spacing: .08em; }
+.chip.due { background: #b91c1c; color: #fff; border-color: #7f1d1d; }
+.chip.soon { background: #fef3c7; color: #78350f; border-color: #d97706; }
 .windctl { background: #fff; padding: 4px 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; line-height: 1.2; min-width: 96px; }
 .windctl svg { flex: none; }
 .keule-src { width: 24px; height: 24px; border-radius: 50%; background: #7f1d1d; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6); font: 700 11px/18px system-ui, sans-serif; text-align: center; }
@@ -176,8 +179,8 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .card .row > label.prio { flex: none; display: inline-flex; align-items: center; gap: 4px; }
 .btn.wide { width: 100%; }
 @media (max-width: 860px) {
-  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 46px 1fr 46vh; transition: grid-template-rows .2s ease; }
-  #app.collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: 46px 1fr 0; }
+  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr 46vh; transition: grid-template-rows .2s ease; }
+  #app.collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr 0; }
   #panelToggle { left: 50%; top: auto; bottom: 0; margin: 0 0 0 -28px; width: 56px; height: 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
   #hdrCounts, #hdrArea, #clock, #btnPrint, #btnPanel { display: none; }
@@ -194,6 +197,49 @@ table.list tr.clickable:hover { background: #f1f5fa; }
   #mapWrap { position: static; height: 90vh; }
   body { background: #fff; }
 }
+
+[hidden] { display: none !important; }
+/* ===== Gestaltung: Dock-Leiste, Kennzahlenzeile, helle Leitstellenfarben ===== */
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url(fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-display: swap; src: url(fonts/inter-600.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 700; font-display: swap; src: url(fonts/inter-700.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 600; font-display: swap; src: url(fonts/jetbrains-mono-600.woff2) format('woff2'); }
+:root { --bg: #eef2f7; --panel: #ffffff; --ink: #0f172a; --muted: #475569; --line: #d5dde8; --accent: #1e40af; --rail: #f1f5f9; --warn: #7c3f00; }
+body { font-family: Inter, system-ui, "Segoe UI", Roboto, sans-serif; font-size: 13.5px; }
+#app { grid-template-columns: 430px 1fr; grid-template-rows: auto 1fr; }
+header { background: #fff; color: var(--ink); border-bottom: 2px solid var(--accent); flex-wrap: wrap; row-gap: 6px; column-gap: 14px; padding: 7px 14px; min-height: 50px; }
+header h1 { font-size: 15px; font-weight: 700; color: #1e3a8a; letter-spacing: .02em; }
+header button { background: #fff; border: 1px solid #94a3b8; color: var(--ink); font-weight: 600; border-radius: 5px; padding: 4px 11px; white-space: nowrap; }
+header button:hover:not(:disabled) { border-color: var(--accent); background: #f1f5f9; }
+header button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header .qb button { border: 0; background: none; color: #1e293b; padding: 0; }
+header .qb button:hover:not(:disabled) { background: #e2e8f0; }
+#qat { border-right-color: #cbd5e1; }
+#hdrArea { display: none; }
+#hdrCounts { order: 10; flex: 1 0 100%; flex-wrap: wrap; overflow: visible; gap: 6px; }
+.chip { background: #eef2f7; color: var(--ink); border: 1px solid #cbd5e1; font-weight: 600; white-space: nowrap; }
+#hdrCounts .chip { font-size: 13px; padding: 3px 10px; }
+#clock { font: 600 16px 'JetBrains Mono', ui-monospace, Consolas, monospace; color: var(--ink); white-space: nowrap; opacity: 1; }
+#panel { display: grid; grid-template-columns: 78px 1fr; grid-template-rows: minmax(0, 1fr); }
+#tabs { grid-column: 1; grid-row: 1; flex-direction: column; border-bottom: 0; border-right: 1px solid var(--line); background: var(--rail); overflow-x: hidden; overflow-y: auto; }
+#tabs button { flex: 0 0 auto; padding: 13px 3px; font-size: 11.5px; font-weight: 600; border-bottom: 0; border-left: 3px solid transparent; color: #334155; text-align: center; }
+#tabs button:hover { background: #e8eef6; }
+#tabs button[aria-selected="true"] { background: #fff; color: var(--accent); border-left-color: var(--accent); border-bottom-color: transparent; }
+.tabpane { grid-column: 2; grid-row: 1; }
+.leaflet-tile-pane { filter: saturate(.75) contrast(.98); }
+.btn, .card, .arow, .sector { border-radius: 6px; }
+.poi { position: relative; }
+.poi .stb { position: absolute; right: -9px; top: -10px; width: 14px; height: 14px; border-radius: 50%; font: 700 10px/14px Inter, system-ui, sans-serif; text-align: center; border: 1px solid #fff; text-shadow: none; box-shadow: 0 0 0 1px rgba(0,0,0,.5); }
+.poi .stb.st-ausgefallen { background: #b91c1c; color: #fff; }
+.poi .stb.st-eingeschraenkt { background: #f59e0b; color: #111; }
+.poi .stb.st-intakt { background: #15803d; color: #fff; }
+@media (max-width: 860px) {
+  #panel { display: flex; }
+  #tabs { flex-direction: row; overflow-x: auto; overflow-y: hidden; border-right: 0; border-bottom: 1px solid var(--line); }
+  #tabs button { border-left: 0; border-bottom: 3px solid transparent; padding: 9px 9px; }
+  #tabs button[aria-selected="true"] { border-left-color: transparent; border-bottom-color: var(--accent); }
+  .tabpane { grid-column: auto; grid-row: auto; }
+}
 </style>
 </head>
 <body>
@@ -209,6 +255,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     <div id="hdrCounts"></div>
     <span id="clock"></span>
     <button id="btnPanel" title="Seitenleiste ein- oder ausklappen (Umschalt+P)">Leiste</button>
+    <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
@@ -217,17 +264,33 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 
   <aside id="panel">
     <div id="tabs" role="tablist">
-      <button role="tab" data-tab="gebiet" aria-selected="true">Gebiete</button>
+      <button role="tab" data-tab="einsatz" aria-selected="true">Einsatz</button>
+      <button role="tab" data-tab="gebiet" aria-selected="false">Gebiete</button>
       <button role="tab" data-tab="ebenen" aria-selected="false">Ebenen</button>
       <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
-      <button role="tab" data-tab="keule" aria-selected="false">Keule</button>
+      <button role="tab" data-tab="keule" aria-selected="false">Wetter und Keule</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
     </div>
 
-    <section class="tabpane active" id="tab-gebiet">
+    <section class="tabpane active" id="tab-einsatz">
+      <h2>Übung oder Einsatz</h2>
+      <div class="row"><input type="text" id="exName" placeholder="Bezeichnung, z. B. Stabsübung Köln"></div>
+      <div class="row"><label><input type="checkbox" id="exActive"> Übungsuhr verwenden</label></div>
+      <div class="row"><label for="exStart">Beginn der Übung</label><input type="datetime-local" id="exStart" style="max-width:210px"><button class="btn" id="exApply">Uhr stellen</button></div>
+      <div class="row"><button class="btn" id="exPause">Pause</button><label for="exSpeed">Tempo</label>
+        <select id="exSpeed" style="max-width:160px"><option value="1">1-fach (Echtzeit)</option><option value="2">2-fach</option><option value="5">5-fach</option><option value="10">10-fach</option><option value="30">30-fach</option><option value="60">60-fach</option></select>
+        <button class="btn" id="exReal">Zurück auf Echtzeit</button></div>
+      <div class="hint" id="exInfo"></div>
+      <div class="notice">Mit Übungsuhr erhalten alle neuen Einträge, Meldungen und Statuswechsel die Zeit der Übung, nicht die der Uhr im Laptop. Bereits gespeicherte Zeiten bleiben unverändert.</div>
+      <h2>Lagebesprechung</h2>
+      <div class="row"><label for="mtInt">Takt</label><input type="number" id="mtInt" min="1" step="1" style="max-width:80px"><span>Minuten</span><span class="hint">frei einstellbar, jederzeit änderbar</span></div>
+      <div class="hint" id="mtInfo"></div>
+    </section>
+
+    <section class="tabpane" id="tab-gebiet">
       <h2>Gebiet hinzufügen</h2>
       <div class="row">
         <button class="btn" id="btnPoly">Polygon</button>
@@ -346,6 +409,11 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     </section>
 
     <section class="tabpane" id="tab-keule">
+      <h2>Wetter</h2>
+      <div class="row"><label for="wxTemp" style="width:92px">Temperatur</label><input type="number" id="wxTemp" step="0.5" style="max-width:76px"><span>°C</span></div>
+      <div class="row"><label for="wxSky" style="width:92px">Wetter</label><select id="wxSky"></select></div>
+      <div class="row"><input type="text" id="wxNote" placeholder="Bemerkung, z. B. Niederschlag, Sicht"></div>
+      <div class="hint" id="wxInfo"></div>
       <h2>Wind</h2>
       <div class="row"><label for="wDir" style="width:92px">Wind aus</label><input type="number" id="wDir" min="0" max="360" step="5" style="max-width:76px"><span>°</span><select id="wCompass" aria-label="Himmelsrichtung"></select></div>
       <div class="row"><label for="wSpeed" style="width:92px">Geschwindigkeit</label><input type="number" id="wSpeed" min="0" step="0.5" style="max-width:76px"><span>m/s</span><span id="wBft" class="hint"></span></div>
@@ -519,6 +587,9 @@ function freshState() {
     symbols: [],         // { id, name, lat, lng, label, time }
     sections: [],        // { id, kind:'poly'|'line', name, color, pts:[[lat,lng]] }
     journal: [],         // { id, time, text, auto }
+    exercise: { active: false, name: '', startIso: null, setAtMs: null, running: true, pausedAt: null, speed: 1 },   // Übungsuhr
+    weather: { temp: null, sky: '', note: '', time: null },
+    meeting: { intervalMin: 60, lastIso: null },   // Takt der Lagebesprechung in Minuten
     wind: { dir: null, speed: null, cond: 'bedeckt', stab: '', terrain: 'land', time: null },   // dir: Wind AUS dieser Richtung in Grad
     plumes: [],          // { id, name, lat, lng, mode:'gauss'|'takt', follow, dir, speed, Q, H, thr1, thr2, len, angle, r0 }
     casualties: [],      // { id, cat, n, note, time, lat?, lng? }
@@ -536,6 +607,15 @@ const safeColor = (c, d) => /^#[0-9a-f]{6}$/i.test(c || '') ? c : (d || PAL[0]);
 
 const PRIO_OLD = { hoch: 1, mittel: 2, niedrig: 3 };
 function fixProblems(list) { (list || []).forEach(x => { x.prio = typeof x.prio === 'string' && PRIO_OLD[x.prio] ? PRIO_OLD[x.prio] : prioNum(x.prio); }); return list; }
+/* Übungsuhr: nowMs() liefert die Zeit der Übung (Beginn plus verstrichene Echtzeit mal Tempo), sonst die Echtzeit */
+function nowMs() {
+  const e = state.exercise;
+  if (!e || !e.active || !e.startIso) return Date.now();
+  const base = Date.parse(e.startIso); if (isNaN(base)) return Date.now();
+  if (!e.running) return e.pausedAt != null ? e.pausedAt : base;
+  return base + (Date.now() - e.setAtMs) * (e.speed || 1);
+}
+const nowIso = () => new Date(nowMs()).toISOString();
 /* Version 1 (ein Gebiet) -> Version 2 (mehrere Gebiete) */
 function migrate(s) {
   if (!s || typeof s !== 'object') throw new Error('unbekanntes Format');
@@ -648,7 +728,7 @@ function restore(snap) {
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
   state.wind = d.wind || freshState().wind; state.plumes = d.plumes || [];
   d.manual.forEach(q => { state.pois[q.id] = q; });
-  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen();
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz();
   hist.cur = snapshot(); persist();
 }
 
@@ -1170,10 +1250,11 @@ function computeAffected() {
   return out;
 }
 let affected = new Set();
+const STB = { unbekannt: '', intakt: '<i class="stb st-intakt">✓</i>', eingeschraenkt: '<i class="stb st-eingeschraenkt">!</i>', ausgefallen: '<i class="stb st-ausgefallen">×</i>' };
 function poiIcon(p) {
   const l = LAYER_BY_ID[p.layer], st = STATUS[(state.objects[p.id] || {}).status || 'unbekannt'];
   return L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -13],
-    html: '<div class="poi' + (affected.has(p.id) ? ' affected' : '') + '" style="--c:' + SECTORS[l.sector].color + ';--s:' + st.color + '">' + l.glyph + '</div>' });
+    html: '<div class="poi' + (affected.has(p.id) ? ' affected' : '') + '" style="--c:' + SECTORS[l.sector].color + ';--s:' + st.color + '">' + l.glyph + STB[(state.objects[p.id] || {}).status || 'unbekannt'] + '</div>' });
 }
 const poiTitle = p => p.name || ('(ohne Name) ' + SINGULAR[p.layer]);
 
@@ -1212,7 +1293,7 @@ function poiPopup(p) {
   const draw = () => stBox.querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.s === (o.status || 'unbekannt')));
   Object.entries(STATUS).forEach(([k, v]) => stBox.append(el('button', { 'data-s': k, style: '--c:' + v.color, text: v.label, onclick: () => {
     if ((o.status || 'unbekannt') === k) return;
-    const was = o.status || 'unbekannt'; o.status = k; o.statusTime = new Date().toISOString();
+    const was = o.status || 'unbekannt'; o.status = k; o.statusTime = nowIso();
     addJournal(poiTitle(p) + ': Status ' + STATUS[was].label + ' zu ' + v.label, true);
     draw(); setTime(); refreshIcons(); renderList(); renderCounts(); renderDeps(); save('Status ' + poiTitle(p) + ': ' + v.label);
   } })));
@@ -1373,7 +1454,7 @@ function buildPalette() {
   sel.addEventListener('change', draw); $('#symQ').addEventListener('input', draw); draw();
 }
 function addJournal(text, auto, loc) {
-  state.journal.unshift({ id: uid(), time: new Date().toISOString(), text, auto: !!auto, lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined }); renderJournal(); save();
+  state.journal.unshift({ id: uid(), time: nowIso(), text, auto: !!auto, lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined }); renderJournal(); save();
 }
 function renderJournal() {
   const box = $('#journal'); box.replaceChildren();
@@ -1479,7 +1560,7 @@ function addCas(lat, lng) {
   pushCas(cat, n, $('#casNote').value.trim(), lat, lng);
 }
 function pushCas(cat, n, note, lat, lng) {
-  state.casualties.push({ id: uid(), cat, n, note, time: new Date().toISOString(), lat, lng });
+  state.casualties.push({ id: uid(), cat, n, note, time: nowIso(), lat, lng });
   addJournal('Zahlen: ' + n + ' ' + CAS[cat].label + (note ? ' (' + note + ')' : ''), true, lat != null ? { lat, lng } : null);
   renderCas(); save('Zahl erfasst: ' + n + ' ' + CAS[cat].label);
 }
@@ -1511,7 +1592,7 @@ function renderCas() {
 
 /* Problemliste */
 function addProblem(data) {
-  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 2, status: 'offen', owner: '', time: new Date().toISOString() }, data);
+  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 2, status: 'offen', owner: '', time: nowIso() }, data);
   state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
 }
 function reportProblemFor(p) {
@@ -1709,7 +1790,7 @@ function poiTypeItems(ll) {
   return out;
 }
 function placeSymbolAt(ll, sy) {
-  state.symbols.push({ id: uid(), name: sy.name, title: sy.title, lat: ll.lat, lng: ll.lng, label: '', time: new Date().toISOString() });
+  state.symbols.push({ id: uid(), name: sy.name, title: sy.title, lat: ll.lat, lng: ll.lng, label: '', time: nowIso() });
   rememberRecent('kritis-recent-sym', sy.name, 5); renderSymbols(); save('Zeichen gesetzt: ' + sy.title);
 }
 function symbolItems(ll) {
@@ -1795,7 +1876,7 @@ function sectionItems(sx) {
 }
 function setPoiStatus(p, k) {
   const o = obj(p.id), was = o.status || 'unbekannt'; if (was === k) return;
-  o.status = k; o.statusTime = new Date().toISOString();
+  o.status = k; o.statusTime = nowIso();
   addJournal(poiTitle(p) + ': Status ' + STATUS[was].label + ' zu ' + STATUS[k].label, true);
   refreshIcons(); renderList(); renderCounts(); renderDeps(); save('Status ' + poiTitle(p) + ': ' + STATUS[k].label);
 }
@@ -1824,7 +1905,7 @@ function poiItems(p) {
 function symbolItemsOf(sy) {
   return [
     { label: 'Beschriften…', onclick: async () => { const v = await askText('Beschriftung', sy.label || ''); if (v == null) return; sy.label = v.trim(); renderSymbols(); save('Zeichen beschriftet'); } },
-    { label: 'Duplizieren', onclick: () => { state.symbols.push(Object.assign({}, sy, { id: uid(), lat: sy.lat + 0.0004, lng: sy.lng + 0.0004, time: new Date().toISOString() })); renderSymbols(); save('Zeichen dupliziert'); } },
+    { label: 'Duplizieren', onclick: () => { state.symbols.push(Object.assign({}, sy, { id: uid(), lat: sy.lat + 0.0004, lng: sy.lng + 0.0004, time: nowIso() })); renderSymbols(); save('Zeichen dupliziert'); } },
     { label: 'Zoom', onclick: () => map.setView([sy.lat, sy.lng], Math.max(map.getZoom(), 17)) },
     { sep: true },
     { label: 'Löschen', onclick: () => { state.symbols = state.symbols.filter(x => x !== sy); renderSymbols(); save('Zeichen entfernt'); } }
@@ -1834,7 +1915,7 @@ function casItems(c) {
   return [
     { label: 'Anzahl ändern…', onclick: async () => { const v = await askText('Anzahl ' + CAS[c.cat].label, String(c.n)); if (v == null) return; c.n = Math.max(0, Math.round(parseFloat(v) || 0)); renderCas(); save('Zahl geändert: ' + CAS[c.cat].label); } },
     { label: 'Bemerkung ändern…', onclick: async () => { const v = await askText('Bemerkung', c.note || ''); if (v == null) return; c.note = v.trim(); renderCas(); save('Zahl bemerkt: ' + CAS[c.cat].label); } },
-    { label: 'Duplizieren', onclick: () => { state.casualties.push(Object.assign({}, c, { id: uid(), lat: c.lat + 0.0004, lng: c.lng + 0.0004, time: new Date().toISOString() })); renderCas(); save('Zahl dupliziert: ' + CAS[c.cat].label); } },
+    { label: 'Duplizieren', onclick: () => { state.casualties.push(Object.assign({}, c, { id: uid(), lat: c.lat + 0.0004, lng: c.lng + 0.0004, time: nowIso() })); renderCas(); save('Zahl dupliziert: ' + CAS[c.cat].label); } },
     { label: 'Zoom', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 16)) },
     { sep: true },
     { label: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save('Zahl gelöscht: ' + CAS[c.cat].label); } }
@@ -1845,7 +1926,7 @@ function problemItems(x) {
     { label: 'Titel ändern…', onclick: async () => { const v = await askText('Titel', x.title); if (v == null || !v.trim()) return; x.title = v.trim(); renderProblems(); save('Problem bearbeitet: ' + x.title); } },
     { label: 'Status setzen', sub: Object.entries(PSTAT).map(([k, v]) => ({ label: v, check: x.status === k, onclick: () => { x.status = k; addJournal('Problem „' + x.title + '“: ' + v, true); renderProblems(); renderCounts(); save('Problemstatus: ' + x.title + ' ' + v); } })) },
     { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('probleme'); $('#pfStatus').value = ''; renderProblems(); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) c.scrollIntoView({ block: 'center' }); } },
-    { label: 'Duplizieren', onclick: () => { state.problems.unshift(Object.assign({}, x, { id: uid(), title: x.title + ' (Kopie)', lat: x.lat + 0.0004, lng: x.lng + 0.0004, time: new Date().toISOString() })); renderProblems(); renderCounts(); save('Problem dupliziert: ' + x.title); } },
+    { label: 'Duplizieren', onclick: () => { state.problems.unshift(Object.assign({}, x, { id: uid(), title: x.title + ' (Kopie)', lat: x.lat + 0.0004, lng: x.lng + 0.0004, time: nowIso() })); renderProblems(); renderCounts(); save('Problem dupliziert: ' + x.title); } },
     { label: 'Zoom', onclick: () => map.setView([x.lat, x.lng], Math.max(map.getZoom(), 16)) },
     { sep: true },
     { label: 'Löschen', onclick: () => { state.problems = state.problems.filter(y => y !== x); renderProblems(); renderCounts(); save('Problem gelöscht: ' + x.title); } }
@@ -2005,7 +2086,7 @@ function plumeLine(pl) {
 }
 // Teilaktualisierung ohne Neuaufbau der Eingabefelder (sonst geht beim Tabben der Fokus verloren)
 function refreshKeule() {
-  renderPlumes(); renderWindUi(); if (windCtl) windCtl.refresh();
+  renderPlumes(); renderWindUi(); if (windCtl) windCtl.refresh(); renderCounts();
   document.querySelectorAll('#kList .kcard').forEach(c => {
     const pl = state.plumes.find(x => x.id === c.dataset.kid); if (!pl) return;
     const ln = plumeLine(pl), r = c.querySelector('.kres'); if (r) { r.className = 'kres hint' + (ln.err ? ' err' : ''); r.textContent = ln.text; }
@@ -2048,7 +2129,7 @@ function initKeule() {
   const cs = $('#wCompass'); cs.append(el('option', { value: '', text: '–' })); COMPASS.forEach((n, i) => cs.append(el('option', { value: String(i), text: n + ' (' + Math.round(i * 22.5) + '°)' })));
   Object.entries(COND).forEach(([k, v]) => $('#wCond').append(el('option', { value: k, text: v })));
   $('#wStab').append(el('option', { value: '', text: 'automatisch' })); ['A', 'B', 'C', 'D', 'E', 'F'].forEach(c => $('#wStab').append(el('option', { value: c, text: 'Klasse ' + c })));
-  const upd = label => { state.wind.time = new Date().toISOString(); refreshKeule(); save(label); };
+  const upd = label => { state.wind.time = nowIso(); refreshKeule(); save(label); };
   $('#wDir').addEventListener('change', e => { let v = numOrNull(e.target.value); if (v != null) v = ((v % 360) + 360) % 360; state.wind.dir = v; upd('Wind geändert: Richtung ' + (v == null ? '–' : Math.round(v) + '°')); });
   $('#wCompass').addEventListener('change', e => { if (e.target.value === '') return; state.wind.dir = +e.target.value * 22.5; upd('Wind geändert: Richtung ' + state.wind.dir + '°'); });
   $('#wSpeed').addEventListener('change', e => { const v = numOrNull(e.target.value); state.wind.speed = v != null && v >= 0 ? v : null; upd('Wind geändert: ' + (state.wind.speed == null ? '–' : state.wind.speed + ' m/s')); });
@@ -2178,6 +2259,76 @@ function openShare() {
 }
 $('#btnShare').onclick = openShare;
 
+/* ------------------------------------------------------------------ */
+/* Einsatz: Übungsuhr, Wetter, Takt der Lagebesprechung                */
+/* ------------------------------------------------------------------ */
+const SKY = ['', 'sonnig', 'heiter', 'wolkig', 'bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Starkregen', 'Schneefall', 'Gewitter', 'Sturm'];
+const pad2 = n => String(n).padStart(2, '0');
+const toLocalInput = ms => { const d = new Date(ms); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+const fmtClock = ms => new Date(ms).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+function tickClock() {
+  const e = state.exercise; $('#clock').textContent = fmtClock(nowMs());
+  $('#exTag').hidden = !(e && e.active); $('#exTag').title = e && e.name ? e.name : 'Übungsuhr aktiv';
+  updateMeetingChip();
+}
+function renderEinsatz() {
+  const e = state.exercise, w = state.weather, m = state.meeting;
+  const set = (id, v) => { const x = $(id); if (x && document.activeElement !== x) x.value = v == null ? '' : v; };
+  set('#exName', e.name); $('#exActive').checked = !!e.active; set('#exStart', e.startIso ? toLocalInput(Date.parse(e.startIso)) : toLocalInput(Date.now()));
+  set('#exSpeed', String(e.speed || 1)); $('#exPause').textContent = e.running === false ? 'Weiter' : 'Pause'; $('#exPause').disabled = !e.active;
+  $('#exInfo').textContent = e.active ? 'Übungszeit jetzt: ' + fmtClock(nowMs()) + (e.running === false ? ' (angehalten)' : ', Tempo ' + (e.speed || 1) + '-fach') : 'Es läuft die Uhr des Laptops.';
+  set('#mtInt', m.intervalMin); set('#wxTemp', w.temp); set('#wxSky', w.sky || ''); set('#wxNote', w.note);
+  $('#wxInfo').textContent = w.time ? 'Eingetragen ' + fmtTime(w.time) : 'Noch nicht eingetragen.';
+  $('#mtInfo').textContent = meetingText();
+  tickClock(); renderCounts();
+}
+function meetingDue() { const m = state.meeting; if (!m.intervalMin) return null; const last = m.lastIso ? Date.parse(m.lastIso) : (state.exercise.active && state.exercise.startIso ? Date.parse(state.exercise.startIso) : null); return last == null ? null : last + m.intervalMin * 60000; }
+function meetingText() {
+  const due = meetingDue(); if (due == null) return 'Der Takt beginnt mit der ersten Lagebesprechung' + (state.exercise.active ? '' : ' (oder mit dem Beginn der Übungsuhr)') + '.';
+  const d = due - nowMs(); return d >= 0 ? 'Nächste Lagebesprechung um ' + new Date(due).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' (in ' + fmtDur(d) + ').' : 'Lagebesprechung überfällig seit ' + fmtDur(-d) + '.';
+}
+const fmtDur = ms => { const t = Math.round(ms / 1000), h = Math.floor(t / 3600), mi = Math.floor(t % 3600 / 60), se = t % 60; return (h ? h + ' h ' : '') + pad2(mi) + ':' + pad2(se) + (h ? '' : ' min'); };
+function updateMeetingChip() {
+  const c = $('#mtChip'); if (!c) return; const due = meetingDue();
+  if (due == null) { c.hidden = true; return; }
+  const d = due - nowMs(); c.hidden = false; c.classList.toggle('due', d < 0); c.classList.toggle('soon', d >= 0 && d < 5 * 60000);
+  c.textContent = d >= 0 ? 'Lagebesprechung in ' + fmtDur(d) : 'Lagebesprechung überfällig ' + fmtDur(-d);
+  if (document.activeElement !== $('#mtInt') && $('#tab-einsatz').classList.contains('active')) $('#mtInfo').textContent = meetingText();
+}
+function initEinsatz() {
+  $('#wxSky').append(...SKY.map(x => el('option', { value: x, text: x || '–' })));
+  const commitSoft = label => { renderEinsatz(); save(label); };
+  $('#exName').addEventListener('change', e => { state.exercise.name = e.target.value.trim(); commitSoft(); });
+  $('#exActive').addEventListener('change', e => {
+    const ex = state.exercise;
+    if (e.target.checked) { if (!ex.startIso) { ex.startIso = new Date(Date.parse($('#exStart').value) || Date.now()).toISOString(); } ex.active = true; ex.setAtMs = Date.now(); ex.running = true; addJournal('Übungsuhr eingeschaltet, Übungszeit ' + fmtClock(nowMs()), true); }
+    else { addJournal('Übungsuhr ausgeschaltet', true); ex.active = false; }
+    commitSoft();
+  });
+  $('#exApply').addEventListener('click', () => {
+    const ms = Date.parse($('#exStart').value); if (isNaN(ms)) { say('Bitte Datum und Uhrzeit des Übungsbeginns eintragen.', 4000); return; }
+    const ex = state.exercise; ex.startIso = new Date(ms).toISOString(); ex.setAtMs = Date.now(); ex.active = true; ex.running = true; ex.pausedAt = null;
+    addJournal('Übungsuhr gestellt auf ' + fmtClock(ms), true); commitSoft();
+  });
+  $('#exPause').addEventListener('click', () => {
+    const ex = state.exercise; if (!ex.active) return;
+    if (ex.running !== false) { ex.pausedAt = nowMs(); ex.running = false; addJournal('Übungsuhr angehalten', true); }
+    else { ex.startIso = new Date(ex.pausedAt).toISOString(); ex.setAtMs = Date.now(); ex.running = true; ex.pausedAt = null; addJournal('Übungsuhr läuft weiter', true); }
+    commitSoft();
+  });
+  $('#exSpeed').addEventListener('change', e => {
+    const ex = state.exercise, v = +e.target.value || 1;
+    if (ex.active && ex.running !== false) { ex.startIso = new Date(nowMs()).toISOString(); ex.setAtMs = Date.now(); }
+    ex.speed = v; if (ex.active) addJournal('Tempo der Übungsuhr: ' + v + '-fach', true); commitSoft();
+  });
+  $('#exReal').addEventListener('click', () => { if (state.exercise.active) addJournal('Übungsuhr ausgeschaltet', true); state.exercise.active = false; commitSoft(); });
+  $('#mtInt').addEventListener('change', e => { const v = Math.round(+e.target.value); state.meeting.intervalMin = v >= 1 ? v : 60; commitSoft(); });
+  const wx = () => { state.weather.time = nowIso(); renderEinsatz(); save(); };
+  $('#wxTemp').addEventListener('change', e => { state.weather.temp = numOrNull(e.target.value); wx(); });
+  $('#wxSky').addEventListener('change', e => { state.weather.sky = e.target.value; wx(); });
+  $('#wxNote').addEventListener('change', e => { state.weather.note = e.target.value.trim(); wx(); });
+}
+
 /* Karte anklicken */
 map.on('click', e => {
   if (runtime.edit) { const b = runtime.edit.layer.getBounds ? runtime.edit.layer.getBounds().pad(0.03) : null; if (b && !b.contains(e.latlng)) finishEdit(true); return; }
@@ -2192,7 +2343,7 @@ map.on('click', e => {
   }
   else if (runtime.placing) {
     const s = runtime.placing;
-    state.symbols.push({ id: uid(), name: s.name, title: s.title, lat: e.latlng.lat, lng: e.latlng.lng, label: '', time: new Date().toISOString() });
+    state.symbols.push({ id: uid(), name: s.name, title: s.title, lat: e.latlng.lat, lng: e.latlng.lng, label: '', time: nowIso() });
     renderSymbols(); save('Zeichen gesetzt: ' + s.title);                    // Zeichen bleibt aktiv für mehrfaches Setzen
   }
 });
@@ -2231,6 +2382,10 @@ function renderCounts() {
   const c = { ausgefallen: 0, eingeschraenkt: 0, intakt: 0, unbekannt: 0 };
   visiblePois().forEach(p => { if (state.layerOn[p.layer]) c[(state.objects[p.id] || {}).status || 'unbekannt']++; });
   const total = c.ausgefallen + c.eingeschraenkt + c.intakt + c.unbekannt, box = $('#hdrCounts'); box.replaceChildren();
+  const wx = state.weather, wd = state.wind;
+  const wtxt = [wx.temp != null ? String(wx.temp).replace('.', ',') + ' °C' : '', wx.sky || '', wd.dir != null ? 'Wind ' + compassName(wd.dir) + (wd.speed != null ? ' ' + String(wd.speed).replace('.', ',') + ' m/s' : '') : ''].filter(Boolean).join(', ');
+  if (wtxt) box.append(el('span', { class: 'chip', title: 'Wetter und Wind', text: wtxt }));
+  box.append(el('span', { class: 'chip', id: 'mtChip', hidden: 'hidden' }));
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
   if (openP) box.append(el('span', { class: 'chip', text: openP + ' Probleme offen' }));
@@ -2334,7 +2489,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); histInit(); persist();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -2350,11 +2505,10 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule();
-renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen();
+initKeule(); initEinsatz();
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz();
 if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
-const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
-tick(); setInterval(tick, 20000);
+tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
 liveInit();
 window.__lage = { runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests

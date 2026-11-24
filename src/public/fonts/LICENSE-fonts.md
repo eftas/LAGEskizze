@@ -1,0 +1,1 @@
+Inter (Copyright The Inter Project Authors, https://github.com/rsms/inter) und JetBrains Mono (Copyright 2020 The JetBrains Mono Project Authors, https://github.com/JetBrains/JetBrainsMono) stehen unter der SIL Open Font License 1.1 (https://openfontlicense.org). Die Dateien sind auf lateinische Zeichen verkleinert (Teilmengen).
