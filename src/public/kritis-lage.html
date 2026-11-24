@@ -541,8 +541,12 @@ div.fbox { cursor: default; }
 .rolecard { background: var(--panel, #fff); color: var(--ink); border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.4); padding: 20px 24px; width: min(860px, 96vw); max-height: 94vh; overflow: auto; }
 .rolecard h2 { margin: 0 0 6px; font-size: 22px; text-transform: none; letter-spacing: 0; color: var(--ink); }
 .rolegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 12px; }
-.btn.rolebtn { flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 96px; padding: 12px 14px; text-align: left; }
-.btn.rolebtn b { font-size: 18px; } .btn.rolebtn small { font-weight: 400; opacity: .85; }
+.btn.rolebtn { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 8px; min-height: 96px; padding: 14px 16px; text-align: left; }
+.btn.rolebtn b { font-size: 18px; } .btn.rolebtn small { font-weight: 400; opacity: .85; font-size: 13px; line-height: 1.4; }
+.dlg.rolelay { transition: opacity .4s ease, background-color .4s ease; }
+.dlg.rolelay .rolecard { transition: transform .4s ease, opacity .4s ease; }
+.dlg.rolelay.rolehide { opacity: 0; } .dlg.rolelay.rolehide .rolecard { transform: translateY(18px) scale(.96); opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .dlg.rolelay, .dlg.rolelay .rolecard { transition: none; } }
 .btn.primary small { color: inherit; }
 .uxgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 14px; }
 .uxtile, .uxbtn { display: flex; align-items: flex-start; gap: 10px; min-height: 100px; padding: 12px; border: 2px solid var(--line); border-radius: 12px; background: var(--panel, #fff); color: var(--ink); font: inherit; text-align: left; cursor: pointer; flex-direction: column; justify-content: space-between; }
@@ -4010,11 +4014,14 @@ function applyRole() {
 }
 function chooseRole(forceAsk) {
   return new Promise(resolve => {
-    const done = id => { runtime.role = id; try { localStorage.setItem('kritis-role', id); } catch (e) { /* egal */ } dlg.remove(); applyRole();  resolve(); };
-    const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true', style: 'z-index:5000' }, el('div', { class: 'rolecard' }, el('h2', { text: 'Wer sind Sie?' }),
+    const close = () => { document.removeEventListener('keydown', onKey, true); dlg.classList.add('rolehide'); setTimeout(() => dlg.remove(), 400); };
+    const onKey = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); resolve(); } };
+    const done = id => { runtime.role = id; try { localStorage.setItem('kritis-role', id); } catch (e) { /* egal */ } close(); applyRole(); resolve(); };
+    const dlg = el('div', { class: 'dlg rolelay rolehide', role: 'dialog', 'aria-modal': 'true', style: 'z-index:5000', onmousedown: e => { if (e.target === dlg) { close(); resolve(); } } }, el('div', { class: 'rolecard' }, el('h2', { text: 'Wer sind Sie?' }),
       el('p', { class: 'hint', text: 'Sie sehen danach nur die Aufgaben Ihrer Funktion. S2 kann alles bearbeiten. Ihre Eingaben bleiben auf diesem Gerät, bis Sie sie exportieren.' }),
       el('div', { class: 'rolegrid' }, ...ROLLEN.map(r => el('button', { class: 'btn rolebtn' + (r.id === 'S2' ? ' primary' : ''), onclick: () => done(r.id) }, el('b', { text: r.name }), el('small', { text: r.d }))))));
-    document.body.append(dlg);
+    document.body.append(dlg); document.addEventListener('keydown', onKey, true);
+    void dlg.offsetWidth; requestAnimationFrame(() => dlg.classList.remove('rolehide'));
   });
 }
 function showLagevortrag() { startVortrag(); }
