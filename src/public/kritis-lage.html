@@ -124,7 +124,6 @@ body.beamer header h1 { font-size: 20px; }
 .ovunit .meta { color: var(--muted); font-size: calc(12px * var(--ovs)); }
 .ovunit .st { margin-left: auto; text-align: right; white-space: nowrap; font-weight: 700; font-size: calc(12.5px * var(--ovs)); }
 .ovunit .st i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: 5px; }
-body.beamer #btnUnits { display: inline-block; }
 .licpre { white-space: pre-wrap; font: 11px/1.35 Inter, system-ui, sans-serif; color: var(--muted); background: #f8fafc; border: 1px solid var(--line); padding: 8px; max-height: 220px; overflow: auto; }
 #placeSearch { position: absolute; top: 10px; left: 56px; z-index: 1000; width: min(380px, 52vw); display: flex; flex-wrap: wrap; gap: 4px; }
 #placeSearch input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid #94a3b8; border-radius: 5px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
@@ -239,13 +238,13 @@ table.list tr.clickable:hover { background: #f1f5fa; }
   #app.collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr 0; }
   #panelToggle { left: 50%; top: auto; bottom: 0; margin: 0 0 0 -28px; width: 56px; height: 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
-  #hdrCounts, #hdrArea, #clock, #tacTime, #btnPrint { display: none; }
+  #hdrCounts, #hdrArea, #clock, #tacTime { display: none; }
   #liveBadge { font-size: 0; padding: 4px 7px; gap: 0; }
   header { gap: 8px; padding: 0 8px; overflow-x: auto; }
   header h1 { font-size: 14px; }
   header button { padding: 3px 7px; white-space: nowrap; flex: none; }
 }
-@media (max-width: 520px) { header h1 { display: none; } #btnAddPoi { font-size: 0; } #btnAddPoi::before { content: '+ Objekt'; font-size: 13px; } }
+@media (max-width: 520px) { header h1 { display: none; } }
 @media print {
   header button, #panel, #panelToggle, .leaflet-control-container, #msg { display: none !important; }
   #app { display: block; height: auto; }
@@ -313,7 +312,18 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 #clock:focus-visible, #tacTime:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #mtPop { position: fixed; z-index: 3500; width: 290px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.3); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 #mtPop .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-#btnTheme { display: inline-grid; place-items: center; padding: 5px 8px; }
+#btnTheme { display: flex; }
+#hdrMore { position: relative; flex: none; }
+#btnMore { padding: 4px 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
+#btnMore .car { width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-2px); transition: transform .4s ease; display: inline-block; }
+#btnMore[aria-expanded="true"] .car { transform: rotate(225deg) translate(-2px, 0); }
+#hdrMenu { position: fixed; z-index: 3600; min-width: 230px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.4); padding: 6px; display: flex; flex-direction: column; gap: 2px; opacity: 0; visibility: hidden; transform: translateY(-8px) scale(.97); transform-origin: top right; transition: opacity .4s ease, transform .4s ease, visibility 0s linear .4s; }
+#hdrMore.open #hdrMenu { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+#hdrMenu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: none; color: inherit; font: 600 14px Inter, system-ui, sans-serif; padding: 9px 12px; min-height: 38px; border-radius: 7px; cursor: pointer; }
+#hdrMenu button:hover { background: rgba(30, 64, 175, .12); }
+#hdrMenu button[hidden], body.beamer #hdrMenu #btnPrint { display: none !important; }
+#hdrMenu #btnTheme svg { flex: none; }
+@media (prefers-reduced-motion: reduce) { #hdrMenu, #btnMore .car { transition: none !important; } }
 /* ===== Dunkelmodus ===== */
 :root[data-theme="dark"] { color-scheme: dark; --bg: #0b1220; --panel: #111a2b; --ink: #e6ebf2; --muted: #9aa8bb; --line: #2a3850; --accent: #8ab4ff; --rail: #0e1625; --warn: #f5c26b; --warn-bg: #3a2a0e; }
 [data-theme="dark"] body { background: var(--bg); color: var(--ink); }
@@ -686,12 +696,16 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="roleChip" class="chip" title="Funktion wechseln" hidden></button>
-    <button id="btnExport" title="Ihre Daten als JSON-Datei speichern" hidden>Export</button>
-    <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
-    <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
-    <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Kommunikationsplan">Führungsstruktur</button>
-    <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
-    <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
+    <div id="hdrMore"><button id="btnMore" aria-haspopup="menu" aria-expanded="false" title="Weitere Funktionen">Menü <i class="car"></i></button>
+    <div id="hdrMenu" role="menu" aria-hidden="true">
+      <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
+      <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Kommunikationsplan">Führungsstruktur</button>
+      <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
+      <button id="btnVortrag" title="Karte groß mit einklappbaren Leisten, zum Beispiel für den Lagevortrag">Lagevortrag zeigen</button>
+      <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
+      <button id="btnExport" title="Ihre Daten als JSON-Datei speichern" hidden>Export</button>
+      <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg><span>Dunkelmodus umschalten</span></button>
+    </div></div>
     </div>
     <div id="hdrSub"><div id="hdrCounts"></div></div>
   </header>
@@ -4483,6 +4497,18 @@ $('#jBy').addEventListener('change', e => { state.author = e.target.value; persi
 $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ').click(); });
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
 $('#btnPrint').onclick = () => printLagekarte();
+
+/* ---- Menü im Kopf ---- */
+(function () {
+  const wrap = $('#hdrMore'), btn = $('#btnMore'), menu = $('#hdrMenu');
+  const set = o => { wrap.classList.toggle('open', o); btn.setAttribute('aria-expanded', String(o)); menu.setAttribute('aria-hidden', String(!o));
+    if (o) { const r = btn.getBoundingClientRect(); menu.style.top = (r.bottom + 6) + 'px'; menu.style.right = Math.max(8, innerWidth - r.right) + 'px'; } };
+  btn.onclick = () => set(!wrap.classList.contains('open'));
+  menu.addEventListener('click', e => { if (e.target.closest('button')) set(false); });
+  document.addEventListener('mousedown', e => { if (!e.target.closest('#hdrMore')) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('open')) { set(false); e.stopImmediatePropagation(); btn.focus(); } }, true);
+  $('#btnVortrag').onclick = () => startVortrag();
+})();
 $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
 $('#btnUndoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.past.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => undoTo(i + 1) }))); };
 $('#btnRedoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.future.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => redoTo(i + 1) }))); };
