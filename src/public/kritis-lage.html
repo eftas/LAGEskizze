@@ -63,6 +63,17 @@ textarea { width: 100%; resize: vertical; }
 .sector > .head { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f3f5f8; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
 .sector .state { font-size: 12px; color: var(--muted); }
+.arow { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 6px 0; background: #fff; }
+.arow .top { display: flex; gap: 6px; align-items: center; }
+.arow .nm { flex: 1; min-width: 0; font-weight: 600; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arow .nm-in { flex: 1; min-width: 0; font-weight: 600; }
+.arow input[type=color] { width: 30px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 3px; background: none; }
+.arow .sub { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.arow .sub label { display: inline-flex; gap: 3px; align-items: center; }
+.arow input[type=range] { width: 70px; }
+path.arealyr { cursor: inherit; }
+.arealabel { background: transparent; border: 0; box-shadow: none; font-weight: 700; font-size: 13px; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; }
+.arealabel::before { display: none; }
 .plabel span { position: absolute; transform: translate(-50%, -50%); font: 600 12px system-ui, sans-serif; color: #4a4458; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; white-space: nowrap; pointer-events: none; }
 .plabel.r0 span { font-size: 16px; font-weight: 700; } .plabel.r1 span { font-size: 14px; }
 .sector .state.error { color: #a11; }
@@ -145,7 +156,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 
   <aside id="panel">
     <div id="tabs" role="tablist">
-      <button role="tab" data-tab="gebiet" aria-selected="true">Gebiet</button>
+      <button role="tab" data-tab="gebiet" aria-selected="true">Gebiete</button>
       <button role="tab" data-tab="ebenen" aria-selected="false">Ebenen</button>
       <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
@@ -155,7 +166,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     </div>
 
     <section class="tabpane active" id="tab-gebiet">
-      <h2>Gebiet eingrenzen</h2>
+      <h2>Gebiet hinzufügen</h2>
       <div class="row">
         <button class="btn" id="btnPoly">Polygon</button>
         <button class="btn" id="btnRect">Rechteck</button>
@@ -164,7 +175,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <div class="row">
         <label for="radius">Radius (km)</label>
         <input type="number" id="radius" value="5" min="0.1" max="100" step="0.5" style="width:80px">
-        <span class="hint">Kreis: Punkt auf der Karte anklicken. Eine Radiusänderung wirkt sofort.</span>
+        <span class="hint">Kreis: Punkt auf der Karte anklicken. Der Radius gilt für neue Kreise. Ein neues Gebiet ersetzt kein vorhandenes.</span>
       </div>
 
       <h2>Verwaltungsgrenze</h2>
@@ -186,11 +197,13 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <div class="hint">GeoJSON oder KML mit Polygon, z. B. eine Evakuierungszone.</div>
 
       <div class="row" id="embBox" hidden><label><input type="checkbox" id="useEmb"> Eingebaute Daten statt Online-Abfrage verwenden</label></div>
-      <div id="areaInfo">Noch kein Gebiet gewählt.</div>
+      <h2>Einsatzgebiete</h2>
+      <div id="areaList"></div>
       <div class="row">
         <button class="btn primary" id="btnLoad" disabled>Objekte laden</button>
-        <button class="btn danger" id="btnClearArea" disabled>Gebiet entfernen</button>
       </div>
+      <h2>Abschnitte und Linien</h2>
+      <div id="secList"></div>
       <div class="notice">Die Objekte stammen aus OpenStreetMap und sind keine amtliche KRITIS-Liste. Die Vollständigkeit schwankt je Sektor, am schwächsten bei Rechenzentren, Funkmasten und Finanzwesen. Betreiberdaten des Krisenstabs sind Voraussetzung für eine belastbare Lage.</div>
     </section>
 
@@ -404,12 +417,12 @@ const LAYER_BY_ID = Object.fromEntries(LAYERS.map(l => [l.id, l]));
 /* ------------------------------------------------------------------ */
 function freshState() {
   return {
-    version: 1,
+    version: 2,
     useEmbedded: null,   // true: eingebaute Daten, null: noch nicht entschieden
-    area: null,          // { kind, label, rings:[[ [lat,lng] ]], areaId?, circle?:{lat,lng,km}, km2 }
-    pois: {},            // id -> { id, osm, lat, lng, layer, name, addr }
+    areas: [],           // { id, name, color, opacity, visible, query, kind, rings:[[ [lat,lng] ]], areaId?, circle?:{lat,lng,km} }
+    pois: {},            // Cache: id -> { id, osm, lat, lng, layer, name, addr, manual? }
     layerOn: Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
-    layerLoaded: {},     // layerId -> true
+    loaded: {},          // areaId -> { layerId: true }  (nicht Teil des Rückgängig-Verlaufs)
     objects: {},         // id -> { status, statusTime, contact, note }
     deps: [],            // { from, to, fromName, toName }
     symbols: [],         // { id, name, lat, lng, label, time }
@@ -420,7 +433,28 @@ function freshState() {
   };
 }
 let state = freshState();
-const runtime = { sector: {}, mode: null, placing: null, drawPurpose: null, drawHandler: null };
+const runtime = { sector: {}, mode: null, placing: null, drawPurpose: null, drawHandler: null, vis: new Set() };
+const PAL = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#475569'];
+const safeColor = (c, d) => /^#[0-9a-f]{6}$/i.test(c || '') ? c : (d || PAL[0]);
+
+/* Version 1 (ein Gebiet) -> Version 2 (mehrere Gebiete) */
+function migrate(s) {
+  if (!s || typeof s !== 'object') throw new Error('unbekanntes Format');
+  if (s.version === 1) {
+    s.areas = [];
+    if (s.area) {
+      const a = s.area, id = uid();
+      s.areas.push({ id, name: a.label || 'Gebiet 1', color: PAL[0], opacity: 0.12, visible: true, query: true, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle });
+      s.loaded = { [id]: Object.assign({}, s.layerLoaded || {}) };
+    } else s.loaded = {};
+    delete s.area; delete s.layerLoaded; s.version = 2;
+  }
+  if (s.version !== 2) throw new Error('unbekannte Version ' + s.version);
+  const d = freshState(); Object.keys(d).forEach(k => { if (s[k] === undefined) s[k] = d[k]; });
+  s.areas.forEach(a => { a.color = safeColor(a.color); a.sections = undefined; delete a.sections; });
+  s.sections.forEach(x => { x.color = safeColor(x.color, '#e11d48'); });
+  return s;
+}
 
 /* ------------------------------------------------------------------ */
 /* Hilfsfunktionen                                                     */
@@ -460,7 +494,7 @@ function saveNow() {
   saveTimer = 0;
   {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-    catch (e) { try { const s = Object.assign({}, state, { pois: {}, layerLoaded: {} }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e2) { /* Speicher nicht verfügbar */ } }
+    catch (e) { try { const s = Object.assign({}, state, { pois: Object.fromEntries(Object.entries(state.pois).filter(([, q]) => q.manual)), loaded: {} }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e2) { /* Speicher nicht verfügbar */ } }
   }
 }
 
@@ -545,7 +579,6 @@ const symLayer = L.layerGroup().addTo(map);
 const secLayer = L.layerGroup().addTo(map);
 const casLayer = L.layerGroup().addTo(map);
 const probLayer = L.layerGroup().addTo(map);
-let areaLayer = null;
 
 
 /* ------------------------------------------------------------------ */
@@ -622,42 +655,107 @@ function createOfflineBase(D) {
 /* ------------------------------------------------------------------ */
 /* Gebiet                                                              */
 /* ------------------------------------------------------------------ */
-function setArea(area, opts) {
+/* Gebiete: Verwaltung, Anzeige, Liste */
+const areaGroup = L.layerGroup().addTo(map);
+const areaLayers = {};
+const queryAreas = () => state.areas.filter(a => a.query);
+function prepArea(a) {
+  a.km2 = a.rings.reduce((s, r) => s + ringKm2(r), 0);
+  let b = [90, 180, -90, -180];
+  a.rings.forEach(r => r.forEach(q => { if (q[0] < b[0]) b[0] = q[0]; if (q[1] < b[1]) b[1] = q[1]; if (q[0] > b[2]) b[2] = q[0]; if (q[1] > b[3]) b[3] = q[1]; }));
+  a.bbox = b; return a;
+}
+function inAreaOne(lat, lng, a) {
+  const b = a.bbox; if (lat < b[0] || lat > b[2] || lng < b[1] || lng > b[3]) return false;
+  return a.rings.some(r => pip(lat, lng, r));
+}
+const inAreas = (lat, lng, list) => list.some(a => inAreaOne(lat, lng, a));
+function recomputeVisible() {
+  const qa = queryAreas(), v = new Set();
+  Object.values(state.pois).forEach(p => { if (p.manual || inAreas(p.lat, p.lng, qa)) v.add(p.id); });
+  runtime.vis = v;
+}
+const visiblePois = () => Object.values(state.pois).filter(p => runtime.vis.has(p.id));
+const fmtKm2 = k => (k >= 10 ? String(Math.round(k)) : k.toFixed(1).replace('.', ',')) + ' km²';
+
+function addArea(area, opts) {
   opts = opts || {};
-  const first = !opts.restore;
-  area.km2 = area.rings.reduce((s, r) => s + ringKm2(r), 0);
   area.rings = area.rings.map(r => simplifyRing(r, 500));
-  state.area = area;
-  if (first) clearPois();
-  drawArea(opts.fit !== false);
-  renderAreaInfo();
-  renderMarkers();
-  renderAll(); renderCas();
-  save();
-  if (first && area.km2 <= AUTO_LOAD_MAX_KM2) loadObjects();
-  else if (first) say('Das Gebiet ist sehr groß (' + Math.round(area.km2) + ' km²). Ebenen bitte gezielt laden.', 7000);
+  const n = state.areas.length;
+  const a = prepArea({ id: uid(), name: area.name || 'Gebiet ' + (n + 1), color: area.color || PAL[n % PAL.length], opacity: 0.12, visible: true, query: true,
+    kind: area.kind, rings: area.rings, areaId: area.areaId, circle: area.circle });
+  state.areas.push(a);
+  renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas();
+  if (opts.fit !== false && areaLayers[a.id]) map.fitBounds(areaLayers[a.id].getBounds().pad(0.08));
+  save('Gebiet hinzugefügt: ' + a.name);
+  if (a.km2 <= AUTO_LOAD_MAX_KM2) loadObjects();
+  else say('Das Gebiet „' + a.name + '“ ist sehr groß (' + Math.round(a.km2) + ' km²). Ebenen bitte gezielt laden.', 7000);
+  return a;
 }
-function drawArea(fit) {
-  if (areaLayer) { map.removeLayer(areaLayer); areaLayer = null; }
-  const a = state.area; if (!a) return;
-  const style = { color: '#0f2a47', weight: 3, dashArray: '8 6', fillColor: '#14477d', fillOpacity: 0.06, interactive: false };
-  if (a.kind === 'circle') areaLayer = L.circle([a.circle.lat, a.circle.lng], Object.assign({ radius: a.circle.km * 1000 }, style));
-  else areaLayer = L.polygon(a.rings, style);
-  areaLayer.addTo(map);
-  if (fit) map.fitBounds(areaLayer.getBounds().pad(0.08));
+const setArea = addArea;
+function removeArea(id) {
+  const a = state.areas.find(x => x.id === id); if (!a) return;
+  state.areas = state.areas.filter(x => x !== a);
+  renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas();
+  save('Gebiet gelöscht: ' + a.name);
 }
-function clearArea() {
-  state.area = null; clearPois(); drawArea(false); renderAreaInfo(); renderMarkers(); renderAll(); renderCas(); save();
+function areaStyle(a) { return { color: safeColor(a.color), weight: 3, dashArray: '8 6', fillColor: safeColor(a.color), fillOpacity: a.opacity, className: 'arealyr' }; }
+function makeAreaLayer(a) {
+  const st = areaStyle(a);
+  const lyr = a.kind === 'circle' && a.circle ? L.circle([a.circle.lat, a.circle.lng], Object.assign({ radius: a.circle.km * 1000 }, st))
+    : L.polygon(a.rings.length > 1 ? a.rings.map(r => [r]) : a.rings, st);
+  lyr.bindTooltip(el('span', { text: a.name, style: 'color:' + safeColor(a.color) }), { permanent: true, direction: 'center', className: 'arealabel' });
+  lyr._areaId = a.id;
+  return lyr;
 }
-function renderAreaInfo() {
-  const a = state.area, box = $('#areaInfo');
-  $('#btnLoad').disabled = $('#btnClearArea').disabled = !a;
-  $('#hdrArea').textContent = a ? a.label : '';
-  box.replaceChildren();
-  if (!a) { box.textContent = 'Noch kein Gebiet gewählt.'; return; }
-  box.append(el('strong', { text: a.label }), el('br'),
-    el('span', { text: 'Fläche etwa ' + (a.km2 >= 10 ? Math.round(a.km2) : a.km2.toFixed(1)).toString().replace('.', ',') + ' km², ' + a.rings.length + ' Teilfläche' + (a.rings.length > 1 ? 'n' : '') + ', Abfrage über ' + (a.areaId ? 'Verwaltungsgrenze' : 'Polygon') }));
-  if (a.km2 > WARN_KM2) box.append(el('div', { class: 'notice', text: 'Großes Gebiet: Abfragen können überlaufen oder von Overpass abgelehnt werden. Dann Ebenen einzeln laden oder das Gebiet verkleinern.' }));
+function renderAreas() {
+  areaGroup.clearLayers(); Object.keys(areaLayers).forEach(k => delete areaLayers[k]);
+  state.areas.forEach(a => { if (!a.visible) return; const l = makeAreaLayer(a); areaLayers[a.id] = l; areaGroup.addLayer(l); });
+  const q = queryAreas().map(a => a.name).join(', ');
+  $('#hdrArea').textContent = q;
+}
+function restyleArea(a) {
+  const l = areaLayers[a.id]; if (!l) return;
+  l.setStyle(areaStyle(a)); const t = l.getTooltip(); if (t) t.setContent(el('span', { text: a.name, style: 'color:' + safeColor(a.color) }));
+}
+function flashArea(a) {
+  const l = areaLayers[a.id]; if (!l) return;
+  l.setStyle({ weight: 7 }); setTimeout(() => { if (areaLayers[a.id] === l) l.setStyle({ weight: 3 }); }, 700);
+}
+function zoomArea(a) { const l = areaLayers[a.id]; map.fitBounds(l ? l.getBounds().pad(0.08) : L.latLngBounds(a.rings.flat())); }
+
+function renderAreaList() {
+  const box = $('#areaList'); box.replaceChildren();
+  $('#btnLoad').disabled = !queryAreas().length;
+  if (!state.areas.length) { box.append(el('div', { class: 'hint', text: 'Noch kein Gebiet. Oben eines zeichnen, suchen oder laden.' })); }
+  state.areas.forEach(a => {
+    const nm = el('span', { class: 'nm', title: 'Doppelklick zum Umbenennen', text: a.name, ondblclick: () => inlineRename(nm, a.name, v => renameArea(a, v)) });
+    const col = el('input', { type: 'color', value: safeColor(a.color), title: 'Farbe',
+      oninput: ev => { a.color = ev.target.value; restyleArea(a); }, onchange: ev => { a.color = ev.target.value; restyleArea(a); save('Gebiet umgefärbt: ' + a.name); renderAreaList(); } });
+    const vis = el('input', { type: 'checkbox', onchange: ev => { a.visible = ev.target.checked; renderAreas(); save((a.visible ? 'Gebiet eingeblendet: ' : 'Gebiet ausgeblendet: ') + a.name); } }); vis.checked = a.visible;
+    const qry = el('input', { type: 'checkbox', onchange: ev => { a.query = ev.target.checked; renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas(); save((a.query ? 'Abfragegebiet an: ' : 'Abfragegebiet aus: ') + a.name); if (a.query) loadObjects(); } }); qry.checked = a.query;
+    const op = el('input', { type: 'range', min: '0', max: '0.6', step: '0.02', value: a.opacity, title: 'Deckkraft',
+      oninput: ev => { a.opacity = +ev.target.value; restyleArea(a); }, onchange: () => save('Deckkraft geändert: ' + a.name) });
+    box.append(el('div', { class: 'arow', onmouseenter: () => flashArea(a) },
+      el('div', { class: 'top' }, col, nm,
+        el('button', { class: 'btn small', text: 'Zoom', onclick: () => zoomArea(a) }),
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeArea(a.id) })),
+      el('div', { class: 'sub' }, fmtKm2(a.km2), el('label', {}, vis, 'sichtbar'), el('label', {}, qry, 'Abfragegebiet'), el('label', {}, 'Deckkraft', op)),
+      a.km2 > WARN_KM2 ? el('div', { class: 'hint', text: 'Großes Gebiet: Abfragen können überlaufen.' }) : null));
+  });
+}
+function renameArea(a, name) {
+  name = name.trim(); if (!name || name === a.name) { renderAreaList(); return; }
+  const old = a.name; a.name = name; restyleArea(a); renderAreaList(); renderAreas();
+  save('Gebiet umbenannt: ' + old + ' zu ' + name);
+}
+function inlineRename(node, current, done) {
+  const inp = el('input', { type: 'text', class: 'nm-in', value: current });
+  let fin = false;
+  const end = ok => { if (fin) return; fin = true; ok ? done(inp.value) : done(current); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); end(true); } else if (e.key === 'Escape') { e.stopPropagation(); end(false); } });
+  inp.addEventListener('blur', () => end(true));
+  node.replaceWith(inp); inp.focus(); inp.select();
 }
 
 /* Zeichnen */
@@ -683,12 +781,13 @@ map.on(L.Draw.Event.CREATED, e => {
   const purpose = runtime.drawPurpose; stopDraw();
   if (purpose === 'area') {
     const ring = e.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
-    setArea({ kind: e.layerType === 'rectangle' ? 'rect' : 'polygon', label: e.layerType === 'rectangle' ? 'Rechteck' : 'Eigenes Polygon', rings: [ring] });
+    const rect = e.layerType === 'rectangle', cnt = state.areas.filter(a => a.kind === (rect ? 'rect' : 'polygon')).length + 1;
+    addArea({ kind: rect ? 'rect' : 'polygon', name: (rect ? 'Rechteck ' : 'Polygon ') + cnt, rings: [ring] });
   } else if (purpose === 'section') {
     const isLine = e.layerType === 'polyline';
     const ll = isLine ? e.layer.getLatLngs() : e.layer.getLatLngs()[0];
     state.sections.push({ id: uid(), kind: isLine ? 'line' : 'poly', name: $('#secName').value.trim() || (isLine ? 'Linie' : 'Abschnitt'), color: $('#secColor').value, pts: ll.map(p => [p.lat, p.lng]) });
-    renderSections(); save();
+    renderSections(); save('Abschnitt gezeichnet');
   }
 });
 map.on('draw:drawstop', () => { if (runtime.drawPurpose) stopDraw(); });
@@ -700,11 +799,8 @@ function startCircleMode() {
 function applyCircle(lat, lng) {
   const km = Math.max(0.1, parseFloat($('#radius').value) || 5);
   const ll = L.latLng(lat, lng);
-  setArea({ kind: 'circle', label: 'Kreis ' + km.toString().replace('.', ',') + ' km um ' + lat.toFixed(4) + ', ' + lng.toFixed(4), rings: [circleRing(lat, lng, km)], circle: { lat: ll.lat, lng: ll.lng, km } }, { fit: true });
+  addArea({ kind: 'circle', name: 'Kreis ' + km.toString().replace('.', ',') + ' km ' + (state.areas.filter(a => a.kind === 'circle').length + 1), rings: [circleRing(lat, lng, km)], circle: { lat: ll.lat, lng: ll.lng, km } }, { fit: true });
 }
-$('#radius').addEventListener('change', () => {
-  if (state.area && state.area.kind === 'circle') applyCircle(state.area.circle.lat, state.area.circle.lng);
-});
 
 /* Verwaltungsgrenze */
 $('#nomForm').addEventListener('submit', async ev => {
@@ -734,12 +830,12 @@ function localAdmin() {
 }
 function applyLocalAdmin(x) {
   $('#nomResults').replaceChildren();
-  setArea({ kind: 'admin-local', label: x.name + ' (' + x.levelName + ')', rings: x.rings.map(r => r.slice()) });
+  addArea({ kind: 'admin-local', name: x.name + ' (' + x.levelName + ')', rings: x.rings.map(r => r.slice()) });
 }
 function applyAdmin(x) {
   $('#nomResults').replaceChildren();
   const areaId = x.osm_type === 'relation' ? 3600000000 + Number(x.osm_id) : null;
-  setArea({ kind: 'admin', label: x.display_name.split(',').slice(0, 2).join(','), rings: geomRings(x.geojson), areaId });
+  addArea({ kind: 'admin', name: x.display_name.split(',').slice(0, 2).join(','), rings: geomRings(x.geojson), areaId });
 }
 
 /* Datei */
@@ -751,7 +847,7 @@ $('#areaFile').addEventListener('change', async ev => {
     const feats = gj.type === 'FeatureCollection' ? gj.features : gj.type === 'Feature' ? [gj] : [{ geometry: gj }];
     const rings = feats.flatMap(ft => ft.geometry ? geomRings(ft.geometry) : []);
     if (!rings.length) throw new Error('keine Polygonfläche in der Datei');
-    setArea({ kind: 'file', label: 'Datei ' + f.name, rings });
+    addArea({ kind: 'file', name: f.name.replace(/\.[^.]+$/, ''), rings });
   } catch (e) { say('Datei nicht lesbar: ' + e.message, 6000); }
 });
 
@@ -818,20 +914,22 @@ function ingestEmbedded(layers, area) {
   return n;
 }
 function loadObjects() {
-  if (!state.area) return;
-  const need = LAYERS.filter(l => state.layerOn[l.id] && !state.layerLoaded[l.id]);
-  const bySector = {};
-  need.forEach(l => (bySector[l.sector] = bySector[l.sector] || []).push(l));
-  Object.entries(bySector).forEach(([sec, layers]) => {
-    if (queue.some(j => j.sector === sec && layers.every(l => j.layers.includes(l)))) return;
-    queue.push({ sector: sec, layers }); setSectorState(sec, 'queued');
+  queryAreas().forEach(a => {
+    const ld = state.loaded[a.id] || (state.loaded[a.id] = {});
+    const bySector = {};
+    LAYERS.filter(l => state.layerOn[l.id] && !ld[l.id]).forEach(l => (bySector[l.sector] = bySector[l.sector] || []).push(l));
+    Object.entries(bySector).forEach(([sec, layers]) => {
+      if (queue.some(j => j.sector === sec && j.areaId === a.id && layers.every(l => j.layers.includes(l)))) return;
+      queue.push({ sector: sec, layers, areaId: a.id }); setSectorState(sec, 'queued');
+    });
   });
   pump();
 }
 async function pump() {
   if (running) return; running = true;
   while (queue.length) {
-    const job = queue.shift(), area = state.area; if (!area) break;
+    const job = queue.shift(), area = state.areas.find(a => a.id === job.areaId);
+    if (!area || !area.query) { runtime.sector[job.sector] = { s: 'ok', msg: '' }; renderSectors(); continue; }
     setSectorState(job.sector, 'loading');
     try {
       let data = null, emb = embeddedPreferred(), fell = false;
@@ -841,9 +939,10 @@ async function pump() {
           catch (e) { if (area.areaId) data = await overpass(buildQuery(job.layers, area, true)); else throw e; }
         } catch (e) { if (!hasEmbedded()) throw e; emb = fell = true; }
       }
-      if (state.area !== area) continue;           // Gebiet wurde währenddessen gewechselt
+      if (!state.areas.some(a => a.id === job.areaId)) continue;     // Gebiet wurde währenddessen entfernt
       if (emb) ingestEmbedded(job.layers, area); else ingest(data.elements || [], job.layers);
-      job.layers.forEach(l => { state.layerLoaded[l.id] = true; });
+      const ld = state.loaded[job.areaId] || (state.loaded[job.areaId] = {});
+      job.layers.forEach(l => { ld[l.id] = true; });
       setSectorState(job.sector, 'ok', emb ? (fell ? 'offline: eingebaute Daten' : 'eingebaute Daten') : '');
       renderMarkers(); renderAll(); save();
     } catch (e) {
@@ -854,15 +953,6 @@ async function pump() {
   running = false;
 }
 function setSectorState(sec, s, msg) { runtime.sector[sec] = { s, msg }; renderSectors(); }
-
-function clearPois() {
-  queue.length = 0;
-  state.pois = Object.fromEntries(Object.entries(state.pois).filter(([, p]) => p.manual));
-  state.layerLoaded = {}; runtime.sector = {};
-  Object.values(groups).forEach(g => g.clearLayers());
-  Object.keys(markers).forEach(k => delete markers[k]);
-  depLayer.clearLayers();
-}
 
 /* ------------------------------------------------------------------ */
 /* Marker                                                              */
@@ -885,9 +975,11 @@ function poiIcon(p) {
 const poiTitle = p => p.name || ('(ohne Name) ' + SINGULAR[p.layer]);
 
 function renderMarkers() {
-  affected = computeAffected();
+  recomputeVisible(); affected = computeAffected();
   Object.values(state.pois).forEach(p => {
-    if (markers[p.id]) return;
+    const vis = runtime.vis.has(p.id);
+    if (!vis && markers[p.id]) { groups[p.layer].removeLayer(markers[p.id]); delete markers[p.id]; return; }
+    if (!vis || markers[p.id]) return;
     const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p), draggable: !!p.manual });
     if (p.manual) m.on('dragend', () => { const ll = m.getLatLng(); p.lat = ll.lat; p.lng = ll.lng; save(); renderDeps(); });
     m.bindPopup(() => poiPopup(p), { maxWidth: 300 });
@@ -1120,13 +1212,13 @@ function pip(lat, lng, ring) {
   }
   return c;
 }
-const inArea = (lat, lng) => !state.area || state.area.rings.some(r => pip(lat, lng, r));
+const inArea = (lat, lng) => !state.areas.length || inAreas(lat, lng, queryAreas());
 function casTotals() {
   const t = Object.fromEntries(Object.keys(CAS).map(k => [k, 0])); let outside = 0;
   state.casualties.forEach(c => { if (c.lat != null && !inArea(c.lat, c.lng)) outside++; else t[c.cat] += c.n; });
   const ot = Object.fromEntries(Object.keys(CAS).map(k => [k, 0]));
-  Object.values(state.pois).forEach(p => {
-    const pe = (state.objects[p.id] || {}).persons; if (!pe || !inArea(p.lat, p.lng)) return;
+  visiblePois().forEach(p => {
+    const pe = (state.objects[p.id] || {}).persons; if (!pe || (p.manual && !inArea(p.lat, p.lng))) return;
     Object.keys(CAS).forEach(k => { const n = pe[k] || 0; t[k] += n; ot[k] += n; });
   });
   return { t, outside, ot };
@@ -1142,7 +1234,7 @@ function addCas(lat, lng) {
 function renderCas() {
   const { t, outside, ot } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
   Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, el('b', { text: String(t[k]) }), el('span', { text: v.label + (ot[k] ? ' (davon ' + ot[k] + ' an Objekten)' : '') }))));
-  $('#casHint').textContent = (state.area ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb des Gebiets.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '') + ' Zahlen an Objekten (Objekt-Popup) werden zu den Einträgen addiert: denselben Fall nicht an beiden Stellen erfassen.';
+  $('#casHint').textContent = (state.areas.length ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb der Abfragegebiete.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '') + ' Zahlen an Objekten (Objekt-Popup) werden zu den Einträgen addiert: denselben Fall nicht an beiden Stellen erfassen.';
   const list = $('#casList'); list.replaceChildren();
   if (!state.casualties.length) list.append(el('div', { class: 'hint', text: 'Noch keine Einträge.' }));
   state.casualties.slice().reverse().forEach(c => {
@@ -1239,21 +1331,21 @@ function renderSectors() {
     const txt = { loading: 'lädt…', queued: 'wartet…', ok: rs.msg || '', error: 'Fehler: ' + (rs.msg || '') }[rs.s] || '';
     const head = el('div', { class: 'head' }, el('label', {}, cb, el('span', { class: 'dot', style: 'background:' + sec.color }), sec.name),
       el('span', { class: 'state' + (rs.s === 'error' ? ' error' : ''), text: txt }),
-      rs.s === 'error' ? el('button', { class: 'btn small', text: 'Erneut', onclick: () => { layers.forEach(l => { delete state.layerLoaded[l.id]; }); loadObjects(); } }) : null);
+      rs.s === 'error' ? el('button', { class: 'btn small', text: 'Erneut', onclick: () => { queryAreas().forEach(a => layers.forEach(l => { if (state.loaded[a.id]) delete state.loaded[a.id][l.id]; })); loadObjects(); } }) : null);
     const wrap = el('div', { class: 'sector' }, head);
     layers.forEach(l => {
-      const n = Object.values(state.pois).filter(p => p.layer === l.id).length;
+      const n = visiblePois().filter(p => p.layer === l.id).length, ldd = queryAreas().some(a => (state.loaded[a.id] || {})[l.id]);
       const c = el('input', { type: 'checkbox', onchange: ev => { state.layerOn[l.id] = ev.target.checked; layersChanged(); } }); c.checked = !!state.layerOn[l.id];
-      wrap.append(el('div', { class: 'layer' }, el('label', {}, c, l.name), el('span', { class: 'n', text: state.layerLoaded[l.id] ? String(n) : '' })));
+      wrap.append(el('div', { class: 'layer' }, el('label', {}, c, l.name), el('span', { class: 'n', text: ldd || n ? String(n) : '' })));
     });
     box.append(wrap);
   });
 }
-function layersChanged() { renderMarkers(); renderAll(); save(); if (state.area) loadObjects(); }
+function layersChanged() { renderMarkers(); renderAll(); save(); loadObjects(); }
 
 function renderCounts() {
   const c = { ausgefallen: 0, eingeschraenkt: 0, intakt: 0, unbekannt: 0 };
-  Object.values(state.pois).forEach(p => { if (state.layerOn[p.layer]) c[(state.objects[p.id] || {}).status || 'unbekannt']++; });
+  visiblePois().forEach(p => { if (state.layerOn[p.layer]) c[(state.objects[p.id] || {}).status || 'unbekannt']++; });
   const total = c.ausgefallen + c.eingeschraenkt + c.intakt + c.unbekannt, box = $('#hdrCounts'); box.replaceChildren();
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
@@ -1264,12 +1356,12 @@ function renderCounts() {
 }
 function renderList() {
   const q = $('#fltText').value.trim().toLowerCase(), fs = $('#fltStatus').value, body = $('#listBody'); body.replaceChildren();
-  const rows = Object.values(state.pois).filter(p => state.layerOn[p.layer]).filter(p => {
+  const rows = visiblePois().filter(p => state.layerOn[p.layer]).filter(p => {
     const st = (state.objects[p.id] || {}).status || 'unbekannt';
     if (fs === 'affected') { if (!affected.has(p.id)) return false; } else if (fs && st !== fs) return false;
     return !q || poiTitle(p).toLowerCase().includes(q);
   }).sort((a, b) => poiTitle(a).localeCompare(poiTitle(b), 'de'));
-  $('#listInfo').textContent = state.area ? rows.length + ' Objekte' + (rows.length > 400 ? ' (die ersten 400 angezeigt)' : '') : 'Zuerst ein Gebiet wählen.';
+  $('#listInfo').textContent = state.areas.length ? rows.length + ' Objekte' + (rows.length > 400 ? ' (die ersten 400 angezeigt)' : '') : 'Zuerst ein Gebiet wählen.';
   rows.slice(0, 400).forEach(p => {
     const o = state.objects[p.id] || {}, st = STATUS[o.status || 'unbekannt'];
     const tr = el('tr', { class: 'clickable', onclick: () => { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 16)); const m = markers[p.id]; if (m) { groups[p.layer].zoomToShowLayer(m, () => m.openPopup()); } } },
@@ -1288,8 +1380,7 @@ document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click
 $('#btnPoly').onclick = e => startDraw('polygon', 'area', e.currentTarget);
 $('#btnRect').onclick = e => startDraw('rectangle', 'area', e.currentTarget);
 $('#btnCircle').onclick = startCircleMode;
-$('#btnLoad').onclick = () => { Object.keys(runtime.sector).forEach(k => { if (runtime.sector[k].s === 'error') LAYERS.filter(l => l.sector === k).forEach(l => delete state.layerLoaded[l.id]); }); loadObjects(); };
-$('#btnClearArea').onclick = clearArea;
+$('#btnLoad').onclick = () => { Object.keys(runtime.sector).forEach(k => { if (runtime.sector[k].s === 'error') queryAreas().forEach(a => LAYERS.filter(l => l.sector === k).forEach(l => { if (state.loaded[a.id]) delete state.loaded[a.id][l.id]; })); }); loadObjects(); };
 $('#btnSecPoly').onclick = e => startDraw('polygon', 'section', e.currentTarget);
 $('#btnSecLine').onclick = e => startDraw('polyline', 'section', e.currentTarget);
 $('#btnJ').onclick = () => { const t = $('#jText').value.trim(); if (t) { addJournal(t); $('#jText').value = ''; } };
@@ -1303,9 +1394,9 @@ $('#btnSave').onclick = () => download('lage-' + stamp() + '.json', JSON.stringi
 $('#loadFile').addEventListener('change', async ev => {
   const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
   try {
-    const s = JSON.parse(await f.text()); if (!s || s.version !== 1) throw new Error('unbekanntes Format');
+    const s = migrate(JSON.parse(await f.text()));
     if (!confirm('Aktuelle Lage durch die Datei ersetzen?')) return;
-    applyState(Object.assign(freshState(), s), true);
+    applyState(s, true);
   } catch (e) { say('Lage nicht lesbar: ' + e.message, 6000); }
 });
 $('#btnReset').onclick = () => { if (confirm('Gesamte Lage unwiderruflich löschen?')) { try { localStorage.removeItem(STORE_KEY); } catch (e) { /* egal */ } applyState(freshState(), true); } };
@@ -1313,7 +1404,7 @@ $('#btnReset').onclick = () => { if (confirm('Gesamte Lage unwiderruflich lösch
 function csvCell(v) { v = v == null ? '' : String(v); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
 $('#btnCsv').onclick = () => {
   const head = ['OSM-ID', 'Sektor', 'Art', 'Name', 'Adresse', 'Status', 'Status seit', 'Möglicherweise betroffen', 'Ansprechpartner', 'Notiz', 'Personen', 'Breite', 'Länge', 'Link'];
-  const rows = Object.values(state.pois).map(p => {
+  const rows = visiblePois().map(p => {
     const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
     return [p.manual ? 'manuell' : p.osm, SECTORS[l.sector].name, l.name, poiTitle(p), p.addr, STATUS[o.status || 'unbekannt'].label, o.statusTime || '', affected.has(p.id) ? 'ja' : '', o.contact, o.note, personsText(p.id), p.lat, p.lng, p.manual ? '' : 'https://www.openstreetmap.org/' + p.osm];
   });
@@ -1321,8 +1412,8 @@ $('#btnCsv').onclick = () => {
 };
 $('#btnGeo').onclick = () => {
   const f = [];
-  if (state.area) f.push({ type: 'Feature', properties: { art: 'gebiet', name: state.area.label }, geometry: { type: 'MultiPolygon', coordinates: state.area.rings.map(r => [r.concat([r[0]]).map(p => [p[1], p[0]])]) } });
-  Object.values(state.pois).forEach(p => { const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
+  state.areas.forEach(a => f.push({ type: 'Feature', properties: { art: 'gebiet', name: a.name, farbe: a.color, abfragegebiet: a.query }, geometry: { type: 'MultiPolygon', coordinates: a.rings.map(r => [r.concat([r[0]]).map(p => [p[1], p[0]])]) } }));
+  visiblePois().forEach(p => { const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
     f.push({ type: 'Feature', properties: { art: 'objekt', osm: p.osm, sektor: SECTORS[l.sector].name, typ: l.name, name: poiTitle(p), status: o.status || 'unbekannt', ansprechpartner: o.contact || '', notiz: o.note || '' }, geometry: { type: 'Point', coordinates: [p.lng, p.lat] } }); });
   state.symbols.forEach(s => f.push({ type: 'Feature', properties: { art: 'taktisches_zeichen', zeichen: s.name, label: s.label }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] } }));
   state.sections.forEach(s => f.push({ type: 'Feature', properties: { art: s.kind === 'line' ? 'linie' : 'abschnitt', name: s.name, farbe: s.color },
@@ -1335,7 +1426,9 @@ function applyState(s, fit) {
   Object.values(groups).forEach(g => { g.clearLayers(); if (map.hasLayer(g)) map.removeLayer(g); });
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
-  drawArea(!!fit); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); save();
+  state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); save();
+  if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
 /* ------------------------------------------------------------------ */
@@ -1344,14 +1437,16 @@ function applyState(s, fit) {
 buildPalette();
 try {
   const raw = localStorage.getItem(STORE_KEY);
-  if (raw) { const s = JSON.parse(raw); if (s && s.version === 1) state = Object.assign(freshState(), s); }
+  if (raw) state = migrate(JSON.parse(raw));
 } catch (e) { /* kein Speicher: leerer Start */ }
 state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
 initNewUi();
-drawArea(true); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems();
+state.areas.forEach(prepArea);
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems();
+if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 tick(); setInterval(tick, 20000);
-window.__lage = { get state() { return state; }, map, setArea, loadObjects };   // für Tests
+window.__lage = { get state() { return state; }, map, setArea, addArea, loadObjects, migrate };   // für Tests
 })();
 </script>
 </body>
