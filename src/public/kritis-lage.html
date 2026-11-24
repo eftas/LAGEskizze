@@ -314,6 +314,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 #mtPop .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 #btnTheme { display: inline-grid; place-items: center; padding: 5px 8px; }
 #hdrMore { position: relative; flex: none; }
+#btnVortrag { font-weight: 700; white-space: nowrap; }
 #btnMore { width: 38px; height: 34px; padding: 0; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 #btnMore i { display: block; width: 18px; height: 2.5px; border-radius: 2px; background: currentColor; transition: transform .4s ease, opacity .4s ease; }
 #hdrMore.open #btnMore i:nth-child(1) { transform: translateY(6.5px) rotate(45deg); } #hdrMore.open #btnMore i:nth-child(2) { opacity: 0; } #hdrMore.open #btnMore i:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
@@ -698,13 +699,13 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="roleChip" class="chip" title="Funktion wechseln" hidden></button>
+    <button id="btnVortrag" title="Karte groß mit einklappbaren Leisten, zum Beispiel für den Lagevortrag">Lagevortrag zeigen</button>
     <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
     <div id="hdrMore"><button id="btnMore" aria-label="Menü" aria-haspopup="menu" aria-expanded="false" title="Weitere Funktionen"><i></i><i></i><i></i></button>
     <div id="hdrMenu" role="menu" aria-hidden="true">
       <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
       <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Kommunikationsplan">Führungsstruktur</button>
       <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
-      <button id="btnVortrag" title="Karte groß mit einklappbaren Leisten, zum Beispiel für den Lagevortrag">Lagevortrag zeigen</button>
       <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
       <button id="btnExport" title="Ihre Daten als JSON-Datei speichern" hidden>Export</button>
     </div></div>
