@@ -4,7 +4,7 @@
 const { chromium } = require('playwright');
 const path = require('path'), assert = require('assert');
 const FILE = 'file://' + path.resolve(__dirname, '..', 'src', 'public', 'kritis-lage-einzeldatei.html');
-const SUBSTANZEN = ['benzol', 'aceton', 'ethanol', 'benzin', 'diesel', 'hcl', 'h2so4', 'propan', 'ammoniak', 'chlor', 'methanol', 'natronlauge', 'hno3', 'h2o2'];
+const SUBSTANZEN = ['benzol', 'aceton', 'ethanol', 'benzin', 'diesel', 'hcl', 'h2so4', 'propan', 'ammoniak', 'chlor', 'methanol', 'natronlauge', 'hno3', 'h2o2', 'co'];
 let ok = 0, fail = 0; const errs = [];
 async function t(name, fn) { try { await fn(); ok++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FEHLER ' + name + '\n       ' + String(e.message).split('\n')[0]); } }
 async function seite(b, q, w, h) {
@@ -39,11 +39,11 @@ async function seite(b, q, w, h) {
   await t('ERG Tabelle 3 (Chlor, Ammoniak): Windklassen, Tag/Nacht, Behälter, Grenzen', async () => {
     const p = await seite(b);
     const r = await p.evaluate(() => { const L = window.__lage, c = L.chemSub('chlor'), n = L.chemSub('ammoniak'), w = sp => { L.state.wind = { dir: 1, speed: sp, time: '' }; };
-      const f = (s, inc, sp) => { w(sp); const e = L.chemErg(s, inc); return [e.isolate, e.spill, e.plus]; };
+      const co = L.chemSub('co'); const f = (s, inc, sp) => { w(sp); const e = L.chemErg(s, inc); return [e.isolate, e.spill, e.plus]; };
       return { c1: f(c, { large: true, night: false, cont: 'strasse' }, 2.7), c2: f(c, { large: true, night: false, cont: 'strasse' }, 2.78), c3: f(c, { large: true, night: false, cont: 'strasse' }, 5.56),
-        c4: f(c, { large: true, night: true, cont: 'kesselwagen' }, 1), c5: f(c, { large: false, night: true }, 3), n1: f(n, { large: true, night: true, cont: 'kesselwagen' }, 1), n2: f(n, { large: true, night: false, cont: 'flaschen' }, 4), n3: f(n, { large: true, night: false, cont: 'flaschen' }, null) }; });
+        c4: f(c, { large: true, night: true, cont: 'kesselwagen' }, 1), c5: f(c, { large: false, night: true }, 3), n1: f(n, { large: true, night: true, cont: 'kesselwagen' }, 1), n2: f(n, { large: true, night: false, cont: 'flaschen' }, 4), n3: f(n, { large: true, night: false, cont: 'flaschen' }, null), k1: f(co, { large: true, night: false }, 3), k2: f(co, { large: true, night: true }, 3), k3: f(co, { large: false, night: true }, 3) }; });
     assert.deepStrictEqual(r.c1, [600, 5600, false]); assert.deepStrictEqual(r.c2, [600, 3300, false]); assert.deepStrictEqual(r.c3, [600, 2500, false]);
-    assert.deepStrictEqual(r.c4, [1000, 11000, true]); assert.deepStrictEqual(r.c5, [60, 1500, false]); assert.deepStrictEqual(r.n1, [300, 4100, false]); assert.deepStrictEqual(r.n2, [30, 200, false]); assert.deepStrictEqual(r.n3, [30, 300, false]); await p.close();
+    assert.deepStrictEqual(r.c4, [1000, 11000, true]); assert.deepStrictEqual(r.c5, [60, 1500, false]); assert.deepStrictEqual(r.n1, [300, 4100, false]); assert.deepStrictEqual(r.n2, [30, 200, false]); assert.deepStrictEqual(r.n3, [30, 300, false]); assert.deepStrictEqual(r.k1, [200, 1200, false]); assert.deepStrictEqual(r.k2, [200, 3900, false]); assert.deepStrictEqual(r.k3, [30, 200, false]); await p.close();
   });
   await t('Rechtsklick-Menü je Funktion: S5 ohne Bearbeitung, S3 nur Einheit', async () => {
     const m = async rolle => { const p = await seite(b, '?rolle=' + rolle, 1300, 800); await p.mouse.click(700, 400, { button: 'right' }); await p.waitForTimeout(500); const l = await p.evaluate(() => [...document.querySelectorAll('.ctx-item')].map(x => x.textContent.trim())); await p.close(); return l; };
