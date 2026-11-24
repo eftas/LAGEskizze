@@ -167,7 +167,7 @@ body.beamer #placeSearch { display: none; }
 .keule-src { width: 24px; height: 24px; border-radius: 50%; background: #7f1d1d; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6); font: 700 11px/18px system-ui, sans-serif; text-align: center; }
 .kcard .row > * { min-width: 0; }
 .kcard label { font-size: 12px; color: var(--muted); }
-.kcard .num { max-width: 90px; }
+.kcard .num { max-width: none; width: 100%; }
 .arow { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 6px 0; background: #fff; }
 .arow .top { display: flex; gap: 6px; align-items: center; }
 .arow .nm { flex: 1; min-width: 0; font-weight: 600; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -502,6 +502,25 @@ div.fbox { cursor: default; }
 [data-theme="dark"] .fstab { background: rgba(138, 180, 255, .06); border-color: #4a6fd1; }
 [data-theme="dark"] .fst { background: #152036; }
 @media (max-width: 860px) { .fmid { flex-direction: column; align-items: center; } .fmid .fh, .fmid .fspine { display: none; } }
+
+.fbox.hs { display: flex; gap: 8px; align-items: center; min-width: 190px; }
+.fbox .fsym { width: 54px; height: 40px; object-fit: contain; flex: none; background: #fff; border-radius: 3px; }
+.fbox .ft { display: block; min-width: 0; }
+.fstabw { display: flex; flex-direction: column; gap: 4px; max-width: 360px; }
+.fst select { max-width: 130px; }
+
+/* Keulen-Karte: gleichmäßiges Raster statt umbrechender Felder */
+.kcard .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; align-items: end; }
+.kcard .row > label { display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; line-height: 1.2; }
+.kcard .row > label:has(input[type=checkbox]) { flex-direction: row; align-items: center; gap: 6px; justify-content: flex-start; }
+.kcard .row > select { width: 100%; }
+.kcard .row > .btn { justify-self: start; }
+.kcard input.title { width: 100%; }
+.kcard .kres { margin-top: 6px; overflow-wrap: anywhere; }
+.cm-inc .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; align-items: end; }
+.cm-inc .row > label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+.cm-inc .row > label.cm-chk { flex-direction: row; align-items: center; color: inherit; }
+#tab-keule .row > label[style*="width"] { width: 124px !important; flex: none; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -523,8 +542,8 @@ div.fbox { cursor: default; }
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
-    <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Funkplan">Führung</button>
     <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
+    <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Kommunikationsplan">Führungsstruktur</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
@@ -2920,7 +2939,7 @@ function popStatusText() {
 /* Lange Hinweise im Seitenbereich werden gekürzt, der volle Text erscheint beim Darüberfahren (Klick klappt auf) */
 function tidyLong() {
   document.querySelectorAll('#panel .hint, #panel .notice').forEach(n => {
-    if (n.closest('details') || n.querySelector('input,select,button,textarea')) return;
+    if (n.closest('details') || n.classList.contains('kres') || n.querySelector('input,select,button,textarea')) return;
     const t = (n.textContent || '').trim(), lim = n.classList.contains('notice') ? 100 : 52;
     if (t.length > lim) { n.classList.add('clamp'); if (n.dataset.full !== t) { n.dataset.full = t; n.title = t + '\n(Klick: aufklappen)'; } }
     else if (n.classList.contains('clamp')) { n.classList.remove('clamp', 'open'); n.removeAttribute('title'); delete n.dataset.full; }
@@ -3508,7 +3527,7 @@ function initUnitOverview() {
 /* Führungsstruktur nach FwDV 100: EL, Führungsstab, Leitstelle,       */
 /* Einsatzabschnitte (EA) und Untereinsatzabschnitte (UEA), Funkplan   */
 /* ------------------------------------------------------------------ */
-function fieldsDialog(title, fields, okLabel) {
+function fieldsDialog(title, fields, okLabel, extra) {
   return new Promise(resolve => {
     const inputs = fields.map(f => el(f.area ? 'textarea' : 'input', Object.assign({ placeholder: f.ph || '', 'aria-label': f.l }, f.area ? { rows: '2' } : { type: 'text' })));
     inputs.forEach((i, k) => { i.value = fields[k].v || ''; });
@@ -3516,6 +3535,7 @@ function fieldsDialog(title, fields, okLabel) {
     const ok = () => done(Object.fromEntries(fields.map((f, k) => [f.k, inputs[k].value])));
     const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', {}, el('h3', { text: title }),
       ...fields.map((f, k) => el('label', { class: 'hint' }, f.l, inputs[k])),
+      extra ? el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Taktisches Zeichen wählen', onclick: extra })) : null,
       el('div', { class: 'row' }, el('button', { class: 'btn primary', text: okLabel || 'OK', onclick: ok }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(null) }))));
     dlg.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); ok(); } else if (e.key === 'Escape') { e.stopPropagation(); done(null); } });
     dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(null); });
@@ -3543,10 +3563,10 @@ async function fueRemoveSection(sx) {
   if (await askYesNo((sx.parentId ? 'UEA' : 'EA') + ' „' + sx.name + '“ entfernen?', un + ' Einheiten werden „ohne Abschnitt“.' + (kids ? ' Die ' + kids + ' UEA rücken eine Ebene hoch.' : '') + ' Rückgängig ist möglich.', 'Entfernen')) { state.sections.forEach(x => { if (x.parentId === sx.id) x.parentId = sx.parentId || null; }); removeSection(sx); }
 }
 function fBox(o) {
-  const who = o.name, vw = runtime.viewer;
-  const b = el(vw ? 'div' : 'button', { class: 'fbox' + (who ? '' : ' free'), style: '--c:' + (o.color || '#1e40af'), title: vw ? null : 'Klicken: Person und Funk eintragen', onclick: vw ? null : o.onclick },
-    el('b', { text: o.title }), o.sub ? el('small', { text: o.sub }) : null, el('span', { class: 'who' + (who ? '' : ' free'), text: who || 'unbesetzt' }), o.call ? el('span', { class: 'funk', text: o.call }) : null);
-  return b;
+  const who = o.name, vw = runtime.viewer, sy = !o.sym ? null : typeof o.sym === 'string' ? symUrl(o.sym) : symOf(o.sym).url;
+  return el(vw ? 'div' : 'button', { class: 'fbox' + (who ? '' : ' free') + (sy ? ' hs' : ''), style: '--c:' + (o.color || '#1e40af'), title: vw ? null : 'Klicken: Person und Funk eintragen', onclick: vw ? null : o.onclick },
+    sy ? el('img', { class: 'fsym', src: sy, alt: '' }) : null,
+    el('span', { class: 'ft' }, el('b', { text: o.title }), o.sub ? el('small', { text: o.sub }) : null, el('span', { class: 'who' + (who ? '' : ' free'), text: who || 'unbesetzt' }), o.call ? el('span', { class: 'funk', text: o.call }) : null));
 }
 function fueUnit(u) { const st = ustat(u.status); return el('div', { class: 'fu', style: '--c:' + safeColor(st.color), title: st.label }, el('img', { src: unitSym(u).url, alt: '' }), el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) })); }
 function fueSecBox(sx, level) {
@@ -3554,7 +3574,7 @@ function fueSecBox(sx, level) {
   const tot = us.reduce((a, u) => a + uTotal(u), 0);
   const box = el('div', { class: 'fsec' + (level ? ' uea' : ''), style: '--c:' + safeColor(sx.color, '#2563eb') },
     el('div', { class: 'ftag', text: level ? 'UEA' : 'EA' }),
-    fBox({ title: sx.name, sub: 'Leiter' + (sx.deputy ? ', Stv.: ' + sx.deputy : ''), name: sx.leader, call: sx.radio, color: sx.color, onclick: () => fueEditSection(sx) }),
+    fBox({ title: sx.name, sub: 'Leiter' + (sx.deputy ? ', Stv.: ' + sx.deputy : ''), name: sx.leader, call: sx.radio, color: sx.color, sym: level ? 'tz/Führungsstellen/UEAL' : 'tz/Führungsstellen/EAL', onclick: () => fueEditSection(sx) }),
     sx.task ? el('div', { class: 'ftask', text: sx.task }) : null,
     el('div', { class: 'fsum', text: us.length + ' Einheiten, Stärke ' + tot }),
     ...us.map(fueUnit),
@@ -3567,19 +3587,26 @@ function renderFue() {
   const act = document.activeElement; if (act && body.contains(act) && /^(INPUT|TEXTAREA|SELECT)$/.test(act.tagName)) return;
   body.replaceChildren();
   const roles = state.roles.filter(r => r.id !== 'SL'), sl = state.roles.find(r => r.id === 'SL');
-  const sP = (id, label) => { const p = fuePerson(id); return fBox({ title: label || id, name: p.name, call: p.call, color: '#1e40af', onclick: () => fueEditPerson(id, label || id) }); };
-  const el1 = fuePerson('EL'), ls = fuePerson('LS');
-  const staff = el('div', { class: 'fstab' }, el('div', { class: 'fhd', text: 'Führungsstab' }), sP('SL', sl ? sl.label : 'Leiter des Führungsstabs'),
-    el('div', { class: 'fgrid' }, ...roles.map(r => sP(r.id, r.label))),
-    el('div', { class: 'fhd small', text: 'Fachberater und Verbindungspersonen' }),
-    el('div', { class: 'fgrid' }, ...state.fue.fb.map(f => fBox({ title: f.title || 'Fachberater', name: f.name, call: f.call, color: '#7c3aed', onclick: async () => { const d = await fieldsDialog('Fachberater oder Verbindung', [{ k: 'title', l: 'Bezeichnung', v: f.title }, { k: 'name', l: 'Name, Funktion', v: f.name }, { k: 'call', l: 'Funkrufname', v: f.call }]); if (d) { Object.assign(f, { title: d.title.trim(), name: d.name.trim(), call: d.call.trim() }); renderFue(); save('Führungsstruktur: Fachberater'); } } })),
-      vw ? null : el('button', { class: 'btn small', text: '+ Fachberater oder Verbindung', onclick: async () => { const d = await fieldsDialog('Fachberater oder Verbindung', [{ k: 'title', l: 'Bezeichnung', v: '', ph: 'z. B. Fachberater THW, Verbindung Polizei' }, { k: 'name', l: 'Name, Funktion', v: '' }, { k: 'call', l: 'Funkrufname', v: '' }], 'Anlegen'); if (d && d.title.trim()) { state.fue.fb.push({ id: uid(), title: d.title.trim(), name: d.name.trim(), call: d.call.trim() }); renderFue(); save('Führungsstruktur: Fachberater angelegt'); } } })));
+  const el1 = fuePerson('EL'), ls = fuePerson('LS'), slp = fuePerson('SL'), occ = roles.filter(r => fuePerson(r.id).name).length;
+  const editStab = async () => {
+    if (runtime.viewer) return;
+    const d = await fieldsDialog('Führungsstab', [{ k: 'SL', l: sl ? sl.label : 'Leiter des Führungsstabs', v: slp.name }, { k: 'call', l: 'Funkrufname des Stabs', v: slp.call }, ...roles.map(r => ({ k: r.id, l: r.label, v: fuePerson(r.id).name }))]); if (!d) return;
+    state.fue.people.SL = { name: d.SL.trim(), call: d.call.trim() }; roles.forEach(r => { state.fue.people[r.id] = { name: d[r.id].trim(), call: '' }; });
+    addJournal('Führungsstab besetzt: Leiter ' + (d.SL.trim() || 'unbesetzt') + ', Sachgebiete ' + roles.filter(r => d[r.id].trim()).length + ' von ' + roles.length, true); renderFue(); save('Führungsstruktur: Führungsstab');
+  };
+  const stabBox = fBox({ title: 'Führungsstab', sub: occ + ' von ' + roles.length + ' Sachgebieten besetzt', name: slp.name, call: slp.call, color: '#1e40af', sym: 'tz/Führungsstellen/Führungsstab', onclick: editStab });
+  stabBox.title = roles.map(r => r.label + ': ' + (fuePerson(r.id).name || 'unbesetzt')).join('\n') + (runtime.viewer ? '' : '\n(Klicken: bearbeiten)');
+  const fbList = el('div', { class: 'fgrid' }, ...state.fue.fb.map(f => fBox({ title: f.title || 'Fachberater', sub: 'Fachberater oder Verbindung', name: f.name, call: f.call, color: '#7c3aed', sym: f.sym || null, onclick: async () => {
+      let sym = f.sym || null; const d = await fieldsDialog('Fachberater oder Verbindung', [{ k: 'title', l: 'Bezeichnung', v: f.title }, { k: 'name', l: 'Name, Funktion', v: f.name }, { k: 'call', l: 'Funkrufname', v: f.call }], 'OK', async () => { const v = await pickSymbol(sym); if (v !== undefined) sym = v; });
+      if (d) { Object.assign(f, { title: d.title.trim(), name: d.name.trim(), call: d.call.trim(), sym }); renderFue(); save('Führungsstruktur: Fachberater'); } } })),
+    runtime.viewer ? null : el('button', { class: 'btn small', text: '+ Fachberater oder Verbindung', onclick: async () => { let sym = null; const d = await fieldsDialog('Fachberater oder Verbindung', [{ k: 'title', l: 'Bezeichnung', v: '', ph: 'z. B. Fachberater THW, Verbindung Polizei' }, { k: 'name', l: 'Name, Funktion', v: '' }, { k: 'call', l: 'Funkrufname', v: '' }], 'Anlegen', async () => { const v = await pickSymbol(sym); if (v !== undefined) sym = v; }); if (d && d.title.trim()) { state.fue.fb.push({ id: uid(), title: d.title.trim(), name: d.name.trim(), call: d.call.trim(), sym }); renderFue(); save('Führungsstruktur: Fachberater angelegt'); } } }));
+  const staff = el('div', { class: 'fstabw' }, stabBox, state.fue.fb.length || !runtime.viewer ? el('div', { class: 'fhd small', text: 'Fachberater und Verbindungspersonen' }) : null, fbList);
   const roots = state.sections.filter(x => x.kind !== 'line' && !x.parentId), free = state.units.filter(u => !u.sectionId || !state.sections.some(x => x.id === u.sectionId));
   body.append(el('div', { class: 'forg' },
-    el('div', { class: 'frow c' }, fBox({ title: 'Einsatzleiter (EL)', sub: 'Leiter der Einsatzleitung', name: el1.name, call: el1.call, color: '#0f2a47', onclick: () => fueEditPerson('EL', 'Einsatzleiter (EL)') })),
+    el('div', { class: 'frow c' }, fBox({ title: 'Einsatzleiter (EL)', sub: 'Leiter der Einsatzleitung', name: el1.name, call: el1.call, color: '#0f2a47', sym: 'tz/Führungsstellen/EL', onclick: () => fueEditPerson('EL', 'Einsatzleiter (EL)') })),
     el('div', { class: 'fv' }),
     el('div', { class: 'fmid' }, el('div', { class: 'fl' }, staff), el('div', { class: 'fh' }), el('div', { class: 'fspine' }), el('div', { class: 'fh' }),
-      el('div', { class: 'fr' }, fBox({ title: 'Leitstelle', sub: 'Verbindung zur Leitstelle', name: ls.name, call: ls.call, color: '#475569', onclick: () => fueEditPerson('LS', 'Leitstelle') }))),
+      el('div', { class: 'fr' }, fBox({ title: 'Leitstelle', sub: 'Verbindung zur Leitstelle', name: ls.name, call: ls.call, color: '#475569', sym: 'tz/Einrichtungen/Leitstelle', onclick: () => fueEditPerson('LS', 'Leitstelle') }))),
     el('div', { class: 'fv' }),
     el('div', { class: 'fhd', text: 'Einsatzabschnitte (EA) und Untereinsatzabschnitte (UEA)' }),
     el('div', { class: 'feas' }, ...roots.map(r => el('div', { class: 'fea' }, fueSecBox(r, 0))),
@@ -3587,21 +3614,25 @@ function renderFue() {
       !roots.length && !vw ? el('div', { class: 'hint', text: 'Noch kein Einsatzabschnitt. Mit „+ EA“ anlegen.' }) : null)));
   renderFunk(); if (vw) lockViewer(body);
 }
+const KOMM_ART = ['Funk', 'Telefon', 'Mobilfunk', 'Melder', 'Daten (E-Mail, Fax)', 'Sonstiges'];
 function renderFunk() {
   const box = $('#fueFunk'); if (!box) return; const act = document.activeElement;
   if (act && box.contains(act) && /^(INPUT|TEXTAREA|SELECT)$/.test(act.tagName)) return;
   box.replaceChildren(); const vw = runtime.viewer, rows = state.fue.funk;
-  const cell = (r, k, ph, w) => el('input', { type: 'text', value: r[k] || '', placeholder: ph, style: w ? 'width:' + w : null, onchange: ev => { r[k] = ev.target.value; save('Funkplan geändert'); } });
-  box.append(el('div', { class: 'fhd', text: 'Funkplan (S6 Information und Kommunikation)' }),
-    el('table', { class: 'fst' }, el('thead', {}, el('tr', {}, ...['Kanal oder Gruppe', 'Verwendung', 'Teilnehmer (Rufnamen)', 'Bemerkung', ''].map(h => el('th', { text: h })))),
-      el('tbody', {}, ...(rows.length ? rows : [null]).map(r => r ? el('tr', {}, el('td', {}, cell(r, 'ch', 'z. B. Kanal 1')), el('td', {}, cell(r, 'use', 'z. B. Führung')), el('td', {}, cell(r, 'who', 'Rufnamen')), el('td', {}, cell(r, 'note', '')),
-        el('td', {}, vw ? null : el('button', { class: 'btn small danger', text: '×', 'aria-label': 'Zeile entfernen', onclick: () => { state.fue.funk = state.fue.funk.filter(x => x !== r); renderFunk(); save('Funkplan: Zeile entfernt'); } }))) : el('tr', {}, el('td', { colspan: '5', class: 'hint', text: 'Noch keine Zeile. „+ Zeile“ oder „Aus Abschnitten übernehmen“.' }))))),
-    vw ? null : el('div', { class: 'row' }, el('button', { class: 'btn small', text: '+ Zeile', onclick: () => { state.fue.funk.push({ id: uid(), ch: '', use: '', who: '', note: '' }); renderFunk(); save('Funkplan: Zeile angelegt'); } }),
+  const cell = (r, k, ph) => el('input', { type: 'text', value: r[k] || '', placeholder: ph, onchange: ev => { r[k] = ev.target.value; save('Kommunikationsplan geändert'); } });
+  const art = r => { const sel = el('select', { 'aria-label': 'Art', onchange: ev => { r.med = ev.target.value; save('Kommunikationsplan geändert'); } }, ...KOMM_ART.map(a => el('option', { value: a, text: a }))); sel.value = r.med || 'Funk'; return sel; };
+  const whoOf = sec => state.units.filter(u => u.sectionId === sec).map(u => u.call || u.name).filter(Boolean).join(', ');
+  box.append(el('div', { class: 'fhd', text: 'Kommunikationsplan (S6 Information und Kommunikation)' }),
+    el('table', { class: 'fst' }, el('thead', {}, el('tr', {}, ...['Art', 'Kanal, Gruppe oder Rufnummer', 'Verwendung', 'Teilnehmer (Rufnamen)', 'Bemerkung', ''].map(h => el('th', { text: h })))),
+      el('tbody', {}, ...(rows.length ? rows : [null]).map(r => r ? el('tr', {}, el('td', {}, art(r)), el('td', {}, cell(r, 'ch', 'z. B. Kanal 1 oder 0221 …')), el('td', {}, cell(r, 'use', 'z. B. Führung')), el('td', {}, cell(r, 'who', 'Rufnamen')), el('td', {}, cell(r, 'note', '')),
+        el('td', {}, vw ? null : el('button', { class: 'btn small danger', text: '×', 'aria-label': 'Zeile entfernen', onclick: () => { state.fue.funk = state.fue.funk.filter(x => x !== r); renderFunk(); save('Kommunikationsplan: Zeile entfernt'); } }))) : el('tr', {}, el('td', { colspan: '6', class: 'hint', text: 'Noch keine Zeile. „+ Zeile“ oder „Aus Abschnitten übernehmen“.' }))))),
+    vw ? null : el('div', { class: 'row' }, el('button', { class: 'btn small', text: '+ Zeile', onclick: () => { state.fue.funk.push({ id: uid(), med: 'Funk', ch: '', use: '', who: '', note: '' }); renderFunk(); save('Kommunikationsplan: Zeile angelegt'); } }),
       el('button', { class: 'btn small', text: 'Aus Abschnitten übernehmen', title: 'Je EA und UEA eine Zeile mit dem eingetragenen Funk und den Rufnamen der zugeteilten Einheiten', onclick: () => {
-        let n = 0; state.sections.filter(x => x.kind !== 'line').forEach(sx => { if (state.fue.funk.some(r => r.sec === sx.id)) return; const who = state.units.filter(u => u.sectionId === sx.id).map(u => u.call || u.name).filter(Boolean).join(', ');
-          state.fue.funk.push({ id: uid(), sec: sx.id, ch: sx.radio || '', use: sx.name + (sx.parentId ? ' (UEA von ' + sectionName(sx.parentId) + ')' : ''), who, note: '' }); n++; });
-        renderFunk(); save('Funkplan aus Abschnitten übernommen'); say(n ? n + ' Zeilen übernommen.' : 'Alle Abschnitte stehen schon im Funkplan.', 3000); } })),
-    el('div', { class: 'hint', text: 'Kanäle und Rufnamen trägt der S6 ein. Es werden keine Werte vorgegeben.' }));
+        let n = 0; state.sections.filter(x => x.kind !== 'line').forEach(sx => { if (state.fue.funk.some(r => r.sec === sx.id)) return;
+          state.fue.funk.push({ id: uid(), sec: sx.id, med: 'Funk', ch: sx.radio || '', use: sx.name + (sx.parentId ? ' (UEA von ' + sectionName(sx.parentId) + ')' : ''), who: whoOf(sx.id), note: '' }); n++; });
+        renderFunk(); save('Kommunikationsplan aus Abschnitten übernommen'); say(n ? n + ' Zeilen übernommen.' : 'Alle Abschnitte stehen schon im Plan.', 3000); } }),
+      el('button', { class: 'btn small', text: 'Teilnehmer aktualisieren', title: 'Rufnamen der Einheiten in den übernommenen Zeilen neu aus den Abschnitten setzen', onclick: () => { let n = 0; state.fue.funk.forEach(r => { if (r.sec && state.sections.some(x => x.id === r.sec)) { const w = whoOf(r.sec); if (w !== r.who) { r.who = w; n++; } } }); renderFunk(); if (n) save('Kommunikationsplan: Teilnehmer aktualisiert'); say(n ? n + ' Zeilen aktualisiert.' : 'Nichts zu ändern.', 2500); } })),
+    el('div', { class: 'hint', text: 'Kanäle, Rufnamen und Rufnummern trägt der S6 ein. Es werden keine Werte vorgegeben.' }));
   if (vw) lockViewer(box);
 }
 function openFue() { closeUnitOverview(); $('#fueOv').hidden = false; renderFue(); $('#fueClose').focus(); }
