@@ -579,6 +579,14 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
 [data-theme="dark"] .symicon, [data-theme="dark"] .umk img { box-sizing: border-box; background: #f8fafc; border: 2px solid #0f172a; border-radius: 6px; padding: 3px; filter: none; box-shadow: 0 0 0 2px #f8fafc, 0 3px 10px rgba(0,0,0,.7); object-fit: contain; }
 [data-theme="dark"] #symGrid button img, [data-theme="dark"] .sgrid button img, [data-theme="dark"] .ovunit img, [data-theme="dark"] .fu img, [data-theme="dark"] .ucard img.uimg, [data-theme="dark"] .ucardlg img, [data-theme="dark"] .vbtn img, [data-theme="dark"] .uimg { background: #f8fafc; border-radius: 5px; padding: 2px; box-sizing: border-box; }
 [data-theme="dark"] #symGrid button, [data-theme="dark"] .sgrid button { color: #cbd5e1; }
+
+/* ===== Reiterleiste: etwas breiter, ohne Scrollbalken, Gefahrstoff in einer Zeile ===== */
+#app { grid-template-columns: 444px 1fr; }
+#panel { grid-template-columns: 92px 1fr; }
+#tabs { overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+#tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
+#tabs button { padding: 10px 2px; font-size: 11.5px; white-space: nowrap; }
+@media (max-width: 860px) { #app { grid-template-columns: minmax(0, 1fr); } #panel { grid-template-columns: none; } }
 </style>
 </head>
 <body>
@@ -623,7 +631,7 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
       <button role="tab" data-tab="keule" aria-selected="false" title="Wetter, Wind und Keule">Wetter</button>
-      <button role="tab" data-tab="chem" aria-selected="false" title="Gefahrstoffe: Datenblatt, Absperrzonen, Betroffene, Keule">Gefahr&shy;stoff</button>
+      <button role="tab" data-tab="chem" aria-selected="false" title="Gefahrstoffe: Datenblatt, Absperrzonen, Betroffene, Keule">Gefahrstoff</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="staende" aria-selected="false">Stände</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
