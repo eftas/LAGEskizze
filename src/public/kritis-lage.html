@@ -537,8 +537,6 @@ div.fbox { cursor: default; }
 .uxtile.p, .uxbtn.p { background: #1e40af; border-color: #1e40af; color: #fff; } .uxtile.o, .uxbtn.o { background: #c2410c; border-color: #c2410c; color: #fff; }
 .uxtile b { display: block; font-size: 15.5px; } .uxtile small { display: block; font-size: 12px; opacity: .85; margin-top: 1px; }
 .uxic { width: 30px; height: 30px; flex: none; }
-#bottomBar { position: absolute; left: 50%; transform: translateX(-50%); bottom: 34px; z-index: 1400; display: flex; gap: 8px; background: rgba(255,255,255,.97); padding: 8px; border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
-#bottomBar[hidden] { display: none; }
 .uxbtn { align-items: center; justify-content: center; min-width: 112px; min-height: 74px; font-weight: 700; font-size: 14px; text-align: center; gap: 4px; }
 .steps { display: flex; gap: 6px; margin-bottom: 12px; } .steps i { flex: 1; height: 8px; border-radius: 4px; background: #e2e8f0; } .steps i.on { background: #1e40af; }
 .vgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -553,7 +551,7 @@ div.fbox { cursor: default; }
 .kpi > div { background: var(--panel, #fff); border: 1px solid var(--line); border-left: 8px solid var(--c); border-radius: 10px; padding: 10px 12px; } .kpi b { display: block; font-size: 28px; line-height: 1.1; } .kpi span { font-size: 13px; color: var(--muted); }
 .mtnav { flex-wrap: wrap; margin-bottom: 8px; } .mtg { width: min(980px, 96vw); } .tblwrap { overflow: auto; }
 .chip.ok { background: #dcfce7; color: #14532d; border-color: #86efac; } .chip.bad { background: #fee2e2; color: #7f1d1d; border-color: #fca5a5; } .chip.wa { background: #fef3c7; color: #78350f; border-color: #fcd34d; } .chip.in { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; } .chip.gr { background: #e2e8f0; color: #334155; }
-[data-theme="dark"] .rolecard { background: #152036; } [data-theme="dark"] .btn.sel { background: #22314d; color: #fff; } [data-theme="dark"] #bottomBar { background: rgba(17, 26, 43, .97); }
+[data-theme="dark"] .rolecard { background: #152036; } [data-theme="dark"] .btn.sel { background: #22314d; color: #fff; } 
 [data-theme="dark"] .uxtile, [data-theme="dark"] .uxbtn { background: #152036; } [data-theme="dark"] .uxtile.p, [data-theme="dark"] .uxbtn.p { background: #2f5fc4; } [data-theme="dark"] .steps i { background: #2a3850; }
 @media (max-width: 860px) { .uxgrid { grid-template-columns: 1fr; } .vgrid { grid-template-columns: 1fr 1fr; } }
 
@@ -907,6 +905,7 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
       <div class="hint">Tabelle mit Semikolon als Trennzeichen und Zeichensatz für Excel. Karte als PDF: Drucken, dann „Als PDF speichern“.</div>
       <h2>Zusammenarbeit</h2>
       <div class="row"><button class="btn primary" id="expMine">Meine Daten exportieren (JSON)</button></div>
+      <div class="row"><button class="btn" id="mtGuided">Lagebesprechung führen (5 Schritte)</button><button class="btn" id="lvShow">Lagevortrag zeigen (Karte groß)</button></div>
       <div class="row"><button class="btn" id="impOthers">Daten der anderen einlesen (nur S2)</button><button class="btn" id="expAll">Gesamtstand speichern</button></div>
       <div class="hint">Jede Funktion speichert nur ihren Bereich. Der S2 liest alle Dateien ein, seine Karte wird aktualisiert. Ihre Funktion wechseln Sie oben über den Namen.</div>
       <h2>Zurücksetzen</h2>
@@ -1037,7 +1036,6 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     <form id="placeSearch" role="search" autocomplete="off"><button type="button" id="placeToggle" aria-label="Ortssuche ein- oder ausklappen" aria-expanded="true" title="Ortssuche ein- oder ausklappen"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM15.5 15.5 21 21"/></svg></button><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
     <section id="chemBand" aria-label="Gefahrstoff" hidden></section>
-    <div id="bottomBar" hidden></div>
     <section id="fueOv" aria-label="Führungsstruktur" hidden>
       <div class="fuehd"><h2>Führungsstruktur nach FwDV 100</h2><div class="ovtools"><button class="btn primary" id="fueAddEA">+ EA</button><button class="btn" id="fueClose">Schließen</button></div></div>
       <div id="fueBody"></div>
@@ -2807,7 +2805,7 @@ function openMeetingPicker() {
     el('div', { class: 'row' }, t, el('button', { class: 'btn primary small', text: 'Übernehmen', onclick: apply })),
     el('div', { class: 'row' }, quick(15), quick(30), quick(60)),
     el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Takt (' + (state.meeting.intervalMin || 60) + ' min) verwenden', onclick: () => { state.meeting.nextIso = null; renderEinsatz(); save('Nächste Lagebesprechung nach Takt'); close(); } }),
-      el('button', { class: 'btn small', text: 'Jetzt beginnen', onclick: () => { close(); $('#btnMeeting').click(); } })));
+      el('button', { class: 'btn small', text: 'Jetzt führen', onclick: () => { close(); openGuidedMeeting(); } })));
   const r = $('#clock').getBoundingClientRect(); pop.style.top = (r.bottom + 6) + 'px'; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - 300)) + 'px';
   document.body.append(pop); t.focus();
   function close() { pop.remove(); document.removeEventListener('mousedown', out, true); document.removeEventListener('keydown', key, true); }
@@ -3742,10 +3740,11 @@ function applyRole() {
   document.body.dataset.role = r;
   document.querySelectorAll('#tabs button').forEach(b => { b.hidden = !!(tabs && !tabs.includes(b.dataset.tab)); });
   $('#btnAddPoi').hidden = r !== 'S2' || runtime.viewer;
+  $('#lvShow').hidden = r !== 'S2'; $('#impOthers').hidden = r !== 'S2';
   const chip = $('#roleChip'); chip.hidden = runtime.viewer; chip.textContent = roleName();
   $('#btnExport').hidden = runtime.viewer; $('#btnExport').title = r === 'S2' ? 'Eigene Daten und Gesamtstand als JSON-Datei' : 'Nur Ihre Daten als JSON-Datei speichern';
   const sel = document.querySelector('#tabs button[aria-selected="true"]'); if (!sel || sel.hidden) openTab((tabs && tabs[0]) || 'einsatz');
-  renderBottomBar(); renderUnitOverview(); renderFue();
+  renderUnitOverview(); renderFue();
 }
 function chooseRole(forceAsk) {
   return new Promise(resolve => {
@@ -3756,32 +3755,7 @@ function chooseRole(forceAsk) {
     document.body.append(dlg);
   });
 }
-const START_TILES = {
-  EL: [['org', 'Führung ansehen und besetzen', 'EL, Stab, Leitstelle, Abschnitte', 'org', 'p'], ['meeting', 'Lagebesprechung', 'Kräfte, Gefahren, Aufgaben', 'clock'], ['chem', 'Gefahrstoff ansehen', 'Zonen und Datenblatt', 'flask'], ['units', 'Einheiten ansehen', 'nach Abschnitt', 'users'], ['probleme', 'Probleme', 'offene Punkte', 'doc']],
-  S1: [['persons', 'Personen erfassen', 'SK I, II, III, Tote, Vermisste', 'users', 'p'], ['units', 'Einheiten ansehen', 'Stärke je Abschnitt', 'truck'], ['org', 'Führung ansehen', '', 'org'], ['msg', 'Meldung schreiben', '', 'doc']],
-  S2: [['import', 'Daten der anderen einlesen', 'JSON-Dateien hochladen', 'up', 'p'], ['lagevortrag', 'Lagevortrag zeigen', 'Karte groß mit Band', 'map'], ['meeting', 'Lagebesprechung leiten', '5 Schritte', 'clock'], ['chem', 'Gefahrstoff melden', 'Stoff, Ort, Zonen', 'flask', 'o'], ['unitAdd', 'Einheit melden', 'neue Einheit in 3 Schritten', 'plus'], ['units', 'Einheiten', 'verwalten', 'users'], ['persons', 'Personen erfassen', '', 'users'], ['org', 'Führungsstruktur', 'mit Kommunikationsplan', 'org']],
-  S3: [['unitAdd', 'Einheit melden', 'neue Einheit in 3 Schritten', 'plus', 'p'], ['units', 'Einheiten verwalten', 'Status, Abschnitt, Auftrag', 'users'], ['sections', 'Abschnitte', 'EA und UEA', 'org'], ['meeting', 'Lagebesprechung', 'ansehen', 'clock']],
-  S4: [['units', 'Ablösung und Atemschutz', 'je Einheit eintragen', 'clock', 'p'], ['units', 'Nachforderung und Ausfall', 'je Einheit eintragen', 'truck'], ['meeting', 'Lagebesprechung', 'ansehen', 'clock'], ['probleme', 'Probleme', 'offene Punkte', 'doc']],
-  S5: [['msg', 'Meldung schreiben', 'mit Uhrzeit und Absender', 'doc', 'p'], ['chem', 'Gefahrstoff ansehen', '', 'flask'], ['units', 'Einheiten ansehen', '', 'users'], ['org', 'Führung ansehen', '', 'org']],
-  S6: [['komm', 'Kommunikationsplan', 'Funk, Telefon, Melder', 'radio', 'p'], ['org', 'Führung ansehen', '', 'org'], ['units', 'Einheiten ansehen', 'Rufnamen', 'users'], ['msg', 'Meldung schreiben', '', 'doc']]
-};
-const UX_IC = {
-  plus: '<path d="M16 8v16M8 16h16" stroke-width="3.2"/>', flask: '<path d="M12 4h8M14 4v8L6 26a2 2 0 0 0 2 3h16a2 2 0 0 0 2-3l-8-14V4"/>', doc: '<path d="M8 3h12l6 6v20H8zM20 3v6h6M12 15h10M12 20h10"/>', clock: '<circle cx="16" cy="16" r="12"/><path d="M16 9v8l5 3"/>',
-  users: '<circle cx="12" cy="11" r="4.5"/><path d="M3 27c0-6 4-9 9-9s9 3 9 9M22 8a4 4 0 0 1 0 8M26 26c0-4-1.5-6.5-4-8"/>', org: '<rect x="11" y="3" width="10" height="7" rx="1.5"/><rect x="2" y="22" width="9" height="7" rx="1.5"/><rect x="21" y="22" width="9" height="7" rx="1.5"/><path d="M16 10v6M6 22v-6h20v6"/>',
-  map: '<path d="M3 8l8-3 10 3 8-3v19l-8 3-10-3-8 3zM11 5v19M21 8v19"/>', radio: '<path d="M9 12h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2zM13 12V4M10 18h12M10 23h8"/>',
-  up: '<path d="M16 22V6M9 13l7-7 7 7M5 27h22"/>', truck: '<path d="M2 8h18v14H2zM20 13h6l4 5v4H20z"/><circle cx="8" cy="25" r="2.5"/><circle cx="25" cy="25" r="2.5"/>'
-};
-const uxIcon = k => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 32 32'); s.setAttribute('class', 'uxic'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2.4'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.innerHTML = UX_IC[k] || ''; return s; };
-function startAct(a) {
-  const tab = n => { setPanel(true); openTab(n); };
-  ({ unitAdd: openUnitWizard, units: openUnitOverview, sections: () => tab('abschnitte'), persons: () => tab('zahlen'), chem: () => tab('chem'), msg: () => tab('meldungen'), komm: () => openFue(), org: () => openFue(), meeting: openGuidedMeeting,
-    import: importDlg, probleme: () => tab('probleme'), lagevortrag: () => { closeUnitOverview(); closeFue(); setPanel(false); state.chemBand = true; renderChemBand(); say('Lagevortrag: Karte groß. Mit dem Pfeil am Rand kommt die Leiste zurück.', 4000); } })[a]();
-}
-function renderBottomBar() {
-  const b = $('#bottomBar'); if (!b) return; const open = !$('#app').classList.contains('collapsed');
-  b.hidden = open || runtime.viewer || runtime.beamer; if (b.hidden) return; const tiles = (START_TILES[roleId()] || START_TILES.S2).slice(0, 4);
-  b.replaceChildren(...tiles.map(t => el('button', { class: 'uxbtn ' + (t[4] || ''), onclick: () => startAct(t[0]) }, uxIcon(t[3]), t[1].split(' ')[0])));
-}
+function showLagevortrag() { closeUnitOverview(); closeFue(); setPanel(false); state.chemBand = true; renderChemBand(); say('Lagevortrag: Karte groß. Mit dem Pfeil am Rand kommt die Leiste zurück.', 4000); }
 /* ---- Export und Einlesen ---- */
 function exportRole(all) {
   const r = roleId(), keys = all ? [...new Set(Object.values(ROLE_DOM).flat())] : ROLE_DOM[r];
@@ -3902,7 +3876,7 @@ function openGuidedMeeting() {
 }
 function initRoles() {
   $('#roleChip').onclick = () => chooseRole(true); $('#btnExport').onclick = () => exportRole(false);
-  $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
+  $('#mtGuided').onclick = openGuidedMeeting; $('#lvShow').onclick = showLagevortrag; $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
   const q = qs.get('rolle'), saved = (() => { try { return localStorage.getItem('kritis-role'); } catch (e) { return null; } })();
   if (runtime.viewer) { runtime.role = 'S2'; applyRole(); return; }
   if (q && ROLLEN.some(r => r.id === q)) { runtime.role = q; try { localStorage.setItem('kritis-role', q); } catch (e) { /* egal */ } applyRole();  return; }
@@ -4248,7 +4222,7 @@ function setPanel(open, remember) {
   const t = $('#panelToggle'); t.setAttribute('aria-expanded', String(open));
   t.innerHTML = panelGlyph(open);
   if (remember !== false) { try { localStorage.setItem('kritis-panel', open ? '1' : '0'); } catch (e) { /* egal */ } }
-  setTimeout(() => map.invalidateSize(), 260); if (typeof renderBottomBar === 'function') renderBottomBar();
+  setTimeout(() => map.invalidateSize(), 260);
 }
 function togglePanel() { setPanel($('#app').classList.contains('collapsed')); }
 $('#panelToggle').onclick = togglePanel;
