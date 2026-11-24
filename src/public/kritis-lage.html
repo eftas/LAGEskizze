@@ -397,7 +397,10 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 .ovdel { border: 0; background: none; font: inherit; font-size: 1.25em; line-height: 1; color: #b91c1c; cursor: pointer; border-radius: 4px; padding: 0 6px; }
 .ovdel:hover { background: rgba(185, 28, 28, .12); }
 .ovcol > header { position: relative; }
-.ovplus { position: absolute; right: 8px; top: 8px; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel, #fff); cursor: pointer; font-size: 18px; line-height: 1; color: var(--accent); }
+.ovplus { position: absolute; right: 8px; top: 8px; width: 28px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--panel, #fff); cursor: pointer; color: var(--accent); }
+.ovplus::before, .ovplus::after { content: ''; position: absolute; left: 50%; top: 50%; background: currentColor; border-radius: 1px; transform: translate(-50%, -50%); }
+.ovplus::before { width: 12px; height: 2.5px; } .ovplus::after { width: 2.5px; height: 12px; }
+.ovcol > header, .ovcol header { padding-right: 44px; }
 .ovplus:hover { border-color: var(--accent); }
 [data-theme="dark"] .ovplus { background: #17233a; }
 [data-theme="dark"] .ovdel { color: #f87171; }
@@ -3798,7 +3801,7 @@ function renderUnitOverview() {
     const body = el('div', { class: 'ovbody' });
     g.list.slice().sort((a, b) => state.unitStatus.findIndex(x => x.id === a.status) - state.unitStatus.findIndex(x => x.id === b.status) || (a.name || '').localeCompare(b.name || '', 'de')).forEach(u => body.append(ovTile(u, mode)));
     if (!g.list.length) body.append(el('div', { class: 'ovempty', text: vw ? 'leer' : 'Leer. Einheit hierher ziehen.' }));
-    if (!vw) head.append(el('button', { class: 'ovplus', title: 'Einheit in diese Spalte einfügen', 'aria-label': 'Einheit hinzufügen', text: '+', onclick: () => openUnitWizard(g.st ? { status: g.st.id } : { sectionId: g.sx ? g.sx.id : null }) }));
+    if (!vw) head.append(el('button', { class: 'ovplus', title: 'Einheit in diese Spalte einfügen', 'aria-label': 'Einheit hinzufügen', onclick: () => openUnitWizard(g.st ? { status: g.st.id } : { sectionId: g.sx ? g.sx.id : null }) }));
     cols.append(el('div', { class: 'ovcol', 'data-drop': g.key }, head, body));
   });
 }
