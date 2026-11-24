@@ -1306,15 +1306,18 @@ header { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 6
 #hdrTop > * { flex: none; }
 #hdrTop #mtLine { flex: 0 1 auto; min-width: 0; margin-left: 4px; }
 #hdrTop .sp { flex: 1 1 0; min-width: 0; }
-#hdrTop button { padding: 4px 10px; font-size: 13px; }
+#hdrTop > button { padding: 4px 10px; font-size: 13px; }
 #hdrTop #exTag { margin-left: -2px; }
 #hdrTop #roleChip { padding: 4px 12px; }
-@media (max-width: 1300px) { #hdrTop { gap: 7px; } #hdrTop button { padding: 4px 8px; } #clock { font-size: 14px; } #tacTime { font-size: 13.5px; } }
+@media (max-width: 1300px) { #hdrTop { gap: 7px; } #hdrTop > button { padding: 4px 8px; } #clock { font-size: 14px; } #tacTime { font-size: 13.5px; } }
 header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
 #hdrSub { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 28px; }
-#hdrSub #mtLine { order: -1; flex: 0 0 auto; margin: 0; max-width: 100%; }
-@media (max-width: 1150px) { #hdrTop { gap: 5px; } #hdrTop button { padding: 3px 6px; font-size: 12px; } #clock { font-size: 12.5px; } #tacTime { font-size: 12.5px; } #hdrTop .chip { padding: 2px 8px; } }
+@media (max-width: 1150px) { #hdrTop { gap: 5px; } #hdrTop > button { padding: 3px 6px; font-size: 12px; } #clock { font-size: 12.5px; } #tacTime { font-size: 12.5px; } #hdrTop .chip { padding: 2px 8px; } }
 @media (max-width: 860px) { #hdrTop { overflow-x: auto; } }
+.mts { display: none; }
+@media (max-width: 1700px) { .mtl { display: none; } .mts { display: inline; } }
+@media (max-width: 1480px) { #hdrTop .mtu, #hdrTop .mti { display: none; } }
+@media (max-width: 1180px) { #hdrTop #mtLine { font-size: 12px; } }
 </style>
 </head>
 <body>
@@ -1328,6 +1331,7 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
     <h1>LAGEkarte</h1>
     <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
     <span id="hdrArea"></span>
+    <div id="mtLine" hidden></div>
     <span class="sp"></span>
     <span id="clock" role="button" tabindex="0" title="Klicken: nächste Lagebesprechung festlegen"></span>
     <span id="tacTime" class="chip" role="button" tabindex="0" title="Taktische Zeit (TTHHMM). Klicken: nächste Lagebesprechung festlegen" aria-label="Taktische Zeit"></span>
@@ -1342,7 +1346,7 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
     </div>
-    <div id="hdrSub"><div id="mtLine" hidden></div><div id="hdrCounts"></div></div>
+    <div id="hdrSub"><div id="hdrCounts"></div></div>
   </header>
 
   <aside id="panel">
@@ -3768,7 +3772,8 @@ function updateMeetingChip() {
   const c = $('#mtLine'); if (!c) return; const due = meetingDue();
   if (due == null) { c.hidden = true; } else {
     const d = due - nowMs(); c.hidden = false; c.classList.toggle('due', d < 0); c.classList.toggle('soon', d >= 0 && d < 5 * 60000);
-    c.textContent = 'Nächste Lagebesprechung ' + fmtHM(due) + ' Uhr' + (d >= 0 ? ' · in ' + fmtDur(d) : ' · überfällig ' + fmtDur(-d)); c.title = 'Nächste Lagebesprechung um ' + fmtHM(due) + ' Uhr. Klick auf die Uhr ändert den Termin.';
+    const dd = fmtDur(Math.abs(d)), mins = / min$/.test(dd);
+    c.replaceChildren(el('span', { class: 'mtl', text: 'Nächste Lagebesprechung ' }), el('span', { class: 'mts', text: 'Besprechung ' }), fmtHM(due), el('span', { class: 'mtu', text: ' Uhr' }), ' · ', el('span', { class: 'mti', text: d >= 0 ? 'in ' : 'überfällig ' }), mins ? dd.replace(/ min$/, '') : dd, mins ? el('span', { class: 'mtu', text: ' min' }) : null); c.title = 'Nächste Lagebesprechung um ' + fmtHM(due) + ' Uhr. Klick auf die Uhr ändert den Termin.';
   }
   if (document.activeElement !== $('#mtInt') && $('#tab-einsatz').classList.contains('active')) $('#mtInfo').textContent = meetingText();
 }
