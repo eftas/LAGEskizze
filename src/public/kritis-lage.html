@@ -639,7 +639,11 @@ body.printing .umk .ulb, body.printing .symlabel { background: #fff !important; 
 .vtu { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 16px; font-weight: 600; } .vtu img { width: 46px; height: 34px; object-fit: contain; } .vtu .st { margin-left: auto; text-align: right; }
 .vtc { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 13.5px; font-weight: 700; } .vtc.bad { background: #fee2e2; color: #7f1d1d; }
 #vtCtl { position: absolute; left: 14px; bottom: 36px; z-index: 1600; display: flex; flex-wrap: wrap; gap: 6px; max-width: 214px; }
-.vtb { border: 1px solid var(--line); background: var(--panel, #fff); color: var(--ink); border-radius: 8px; padding: 5px 11px; font-weight: 700; font-size: 12.5px; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer; opacity: .92; } .vtb:not(.on):not(.end):not(.all) { opacity: .6; text-decoration: line-through; } .vtb.end { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+.vtb { border: 1px solid var(--line); background: var(--panel, #fff); color: var(--ink); border-radius: 8px; padding: 5px 11px; font-weight: 700; font-size: 12.5px; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer; opacity: .92; } .vtb.view { background: var(--accent); border-color: var(--accent); color: #fff; opacity: .75; } .vtb.view.on { opacity: 1; outline: 3px solid rgba(30,64,175,.35); }
+.vtb:not(.on):not(.end):not(.all):not(.view) { opacity: .6; text-decoration: line-through; } .vtb.end { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+body.vortrag #unitOv, body.vortrag #fueOv { z-index: 1550; padding-bottom: 170px; background: var(--bg, #eef2f7) !important; }
+body.vortrag #unitOv .ovhead, body.vortrag .fuehd { background: var(--bg, #eef2f7) !important; }
+body.vortrag #vtCtl { z-index: 1700; }
 body.vortrag header, body.vortrag #panel, body.vortrag #panelToggle, body.vortrag #reviewSlider, body.vortrag #placeSearch, body.vortrag #roleChip { display: none !important; }
 body.vortrag #app { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: 1fr !important; height: 100%; }
 body.vortrag #mapWrap { grid-row: 1; grid-column: 1; }
@@ -2895,7 +2899,8 @@ function openMeetingPicker() {
     el('div', { class: 'row' }, t, el('button', { class: 'btn primary small', text: 'Übernehmen', onclick: apply })),
     el('div', { class: 'row' }, quick(15), quick(30), quick(60)),
     el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Takt (' + (state.meeting.intervalMin || 60) + ' min) verwenden', onclick: () => { state.meeting.nextIso = null; renderEinsatz(); save('Nächste Lagebesprechung nach Takt'); close(); } }),
-      el('button', { class: 'btn small', text: 'Jetzt führen', onclick: () => { close(); openGuidedMeeting(); } })));
+      el('button', { class: 'btn small', text: 'Jetzt führen', onclick: () => { close(); openGuidedMeeting(); } })),
+    el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Lagevortrag zeigen', title: 'Vortragsansicht mit großen Zahlen, Kräften und Gefahrstoff', onclick: () => { close(); startVortrag(); } })));
   const r = $('#clock').getBoundingClientRect(); pop.style.top = (r.bottom + 6) + 'px'; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - 300)) + 'px';
   document.body.append(pop); t.focus();
   function close() { pop.remove(); document.removeEventListener('mousedown', out, true); document.removeEventListener('keydown', key, true); }
@@ -3396,7 +3401,8 @@ function vtApply() {
   const b = VT.bars, r = document.documentElement.style;
   ['top', 'left', 'right', 'bottom'].forEach(k => document.body.classList.toggle('vt-no-' + k, !b[k]));
   r.setProperty('--vtL', b.left ? '236px' : '0px'); r.setProperty('--vtR', b.right ? '436px' : '0px'); r.setProperty('--vtT', b.top ? '64px' : '0px');
-  const ctl = $('#vtCtl'); ctl.replaceChildren(...[['top', 'Oben'], ['left', 'Zahlen'], ['right', 'Kräfte'], ['bottom', 'Gefahrstoff']].map(([k, t]) => el('button', { class: 'vtb' + (b[k] ? ' on' : ''), 'aria-pressed': String(!!b[k]), title: t + (b[k] ? ' einklappen' : ' ausklappen'), text: t, onclick: () => { VT.bars[k] = !VT.bars[k]; vtSave(); vtApply(); } })),
+  const ov = !$('#unitOv').hidden ? 'units' : !$('#fueOv').hidden ? 'fue' : 'map';
+  const ctl = $('#vtCtl'); ctl.replaceChildren(...[['map', 'Karte'], ['units', 'Einheiten'], ['fue', 'Führungsstruktur']].map(([k, t]) => el('button', { class: 'vtb view' + (ov === k ? ' on' : ''), 'aria-pressed': String(ov === k), text: t, title: 'Ansicht wechseln: ' + t, onclick: () => { if (k === 'map') { closeUnitOverview(); closeFue(); } else if (k === 'units') openUnitOverview(); else openFue(); vtApply(); } })), ...[['top', 'Oben'], ['left', 'Zahlen'], ['right', 'Kräfte'], ['bottom', 'Gefahrstoff']].map(([k, t]) => el('button', { class: 'vtb' + (b[k] ? ' on' : ''), 'aria-pressed': String(!!b[k]), title: t + (b[k] ? ' einklappen' : ' ausklappen'), text: t, onclick: () => { VT.bars[k] = !VT.bars[k]; vtSave(); vtApply(); } })),
     el('button', { class: 'vtb all', text: Object.values(b).some(Boolean) ? 'Alle einklappen' : 'Alle ausklappen', title: 'Alle Leisten ein- oder ausklappen', onclick: () => { const on = !Object.values(VT.bars).some(Boolean); Object.keys(VT.bars).forEach(k => { VT.bars[k] = on; }); vtSave(); vtApply(); } }),
     el('button', { class: 'vtb end', text: 'Beenden', title: 'Vortragsansicht verlassen (Esc)', onclick: endVortrag }));
   setTimeout(() => map.invalidateSize(), 120);
@@ -3789,8 +3795,8 @@ function initOvDrag() {
   window.addEventListener('pointercancel', () => ovDragEnd(false));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && ovDrag && ovDrag.on) { e.stopPropagation(); ovDragEnd(false); } }, true);
 }
-function openUnitOverview() { closeFue(); $('#unitOv').hidden = false; renderUnitOverview(); $('#ovClose').focus(); }
-function closeUnitOverview() { $('#unitOv').hidden = true; }
+function openUnitOverview() { closeFue(); $('#unitOv').hidden = false; if (runtime.vortrag) vtApply(); renderUnitOverview(); $('#ovClose').focus(); }
+function closeUnitOverview() { $('#unitOv').hidden = true; if (runtime.vortrag) vtApply(); }
 function initUnitOverview() {
   $('#btnUnits').onclick = () => ($('#unitOv').hidden ? openUnitOverview() : closeUnitOverview());
   $('#ovAdd').onclick = () => openUnitWizard({}); $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview); $('#ovGroup').addEventListener('change', renderUnitOverview); initOvDrag();
@@ -3912,8 +3918,8 @@ function renderFunk() {
     el('div', { class: 'hint', text: 'Kanäle, Rufnamen und Rufnummern trägt der S6 ein. Es werden keine Werte vorgegeben.' }));
   if (vw) lockViewer(box);
 }
-function openFue() { closeUnitOverview(); $('#fueOv').hidden = false; renderFue(); $('#fueClose').focus(); }
-function closeFue() { $('#fueOv').hidden = true; }
+function openFue() { closeUnitOverview(); $('#fueOv').hidden = false; if (runtime.vortrag) vtApply(); renderFue(); $('#fueClose').focus(); }
+function closeFue() { $('#fueOv').hidden = true; if (runtime.vortrag) vtApply(); }
 function initFue() {
   $('#btnFue').onclick = () => ($('#fueOv').hidden ? openFue() : closeFue()); $('#fueClose').onclick = closeFue;
   $('#fueAddEA').onclick = () => fueAddSection(null);
