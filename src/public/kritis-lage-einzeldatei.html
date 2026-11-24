@@ -921,6 +921,18 @@ body.beamer #placeSearch { display: none; }
 .tour-card h3 { margin: 4px 0 6px; font-size: 16px; } .tour-card p { margin: 0 0 12px; font-size: 14px; line-height: 1.5; } .tc-n { font-size: 12px; color: var(--muted); font-weight: 700; }
 kbd { font: 700 12.5px ui-monospace, Menlo, monospace; background: var(--bg); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; }
 @media (prefers-reduced-motion: reduce) { .tour-spot, .tour-card { transition: none; } }
+@media (pointer: coarse) {
+  #map, .leaflet-container { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .btn, #hdrTop > button, #btnMore, #btnTheme, #tabs button { min-height: 44px; }
+  #tabs button { padding-top: 12px; padding-bottom: 12px; }
+  .ctx-item { padding: 13px 14px; font-size: 15px; }
+  #hdrMenu button { min-height: 50px; font-size: 15px; }
+  .leaflet-bar a { width: 42px; height: 42px; line-height: 42px; }
+  .ovplus { width: 40px; height: 40px; }
+  .vtm { min-height: 50px; }
+  input[type=checkbox], input[type=radio] { width: 22px; height: 22px; }
+  .cm-evac select, .cm-evac input { min-height: 40px; }
+}
 #fristChip { cursor: pointer; font-weight: 700; background: #fef3c7; border-color: #f59e0b; color: #78350f; }
 #fristChip.soon { background: #c2410c; border-color: #7c2d12; color: #fff; }
 #fristChip.over { background: #b91c1c; border-color: #7f1d1d; color: #fff; }
@@ -1626,6 +1638,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
         <div class="row"><select id="mDir" aria-label="Richtung"><option value="ein">Eingang</option><option value="aus">Ausgang</option><option value="intern">intern</option></select><select id="mKind" aria-label="Art"></select>
           <label class="hint" for="mPrio">Prio</label><input type="number" id="mPrio" min="1" step="1" value="2" style="max-width:62px"></div>
         <div class="row"><input type="text" id="mFrom" placeholder="Absender" list="roleList"><input type="text" id="mTo" placeholder="Empfänger" list="roleList"><datalist id="roleList"></datalist></div>
+        <div class="row"><select id="mTpl" aria-label="Vordruck"></select></div>
         <div class="row"><textarea id="mText" rows="3" placeholder="Inhalt der Nachricht"></textarea></div>
         <div class="row"><select id="mRef" aria-label="Bezug"></select></div>
         <div class="row"><label><input type="checkbox" id="mExtraOn"> Erweiterte Felder (Nachrichtenvordruck)</label></div>
@@ -1786,6 +1799,10 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
         <button class="btn" id="btnGeo">GeoJSON</button>
       </div>
       <div class="hint">Tabelle mit Semikolon als Trennzeichen und Zeichensatz für Excel. Karte als PDF: Drucken, dann „Als PDF speichern“.</div>
+      <h2>Karte ohne Internet</h2>
+      <div class="hint">Angesehene Kartenkacheln merkt sich das Programm auf diesem Gerät und zeigt sie ohne Internet wieder an. Vorladen ist nur für die offenen NRW-Karten (Geobasis NRW, Datenlizenz Deutschland, Namensnennung 2.0) möglich, nicht für Esri oder OpenStreetMap: deren Nutzungsbedingungen erlauben kein Massenladen.</div>
+      <div class="row"><button class="btn" id="tcPre">Sichtbaren Ausschnitt vorladen</button><button class="btn danger" id="tcClr">Kartenspeicher leeren</button></div>
+      <div class="hint" id="tcInfo"></div>
       <h2>Zusammenarbeit</h2>
       <div class="row"><button class="btn primary" id="expMine">Meine Daten exportieren (JSON)</button></div>
       <div class="row"><button class="btn" id="mtGuided">Lagebesprechung führen (5 Schritte)</button><button class="btn" id="lvShow">Lagevortrag zeigen (Karte groß)</button></div>
@@ -2524,15 +2541,38 @@ function geomRings(g) {            // GeoJSON-Geometrie -> Außenringe als [lat,
 /* ------------------------------------------------------------------ */
 // Feinere Zoomstufen: Viertelstufen, Knöpfe in halben Schritten, Mausrad deutlich sanfter
 const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 180, wheelDebounceTime: 30, zoomAnimationThreshold: 6 }).setView([51.1657, 10.4515], 6);
+/* Kartenkacheln lokal zwischenspeichern (IndexedDB): angesehene Kacheln stehen ohne Internet weiter zur Verfügung */
+const TileCache = {
+  db: null, max: 25000,
+  open() { if (this.db) return this.db; this.db = new Promise(res => { try { const r = indexedDB.open('lagekarte-kacheln', 1); r.onupgradeneeded = () => { const st = r.result.createObjectStore('t', { keyPath: 'u' }); st.createIndex('t', 't'); }; r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch (e) { res(null); } }); return this.db; },
+  async get(u) { const d = await this.open(); if (!d) return null; return new Promise(res => { try { const q = d.transaction('t').objectStore('t').get(u); q.onsuccess = () => res(q.result ? q.result.b : null); q.onerror = () => res(null); } catch (e) { res(null); } }); },
+  async put(u, b) { const d = await this.open(); if (!d) return; try { d.transaction('t', 'readwrite').objectStore('t').put({ u, b, t: Date.now() }); if (Math.random() < 0.01) this.trim(); } catch (e) { /* voll oder gesperrt */ } },
+  async count() { const d = await this.open(); if (!d) return 0; return new Promise(res => { try { const q = d.transaction('t').objectStore('t').count(); q.onsuccess = () => res(q.result); q.onerror = () => res(0); } catch (e) { res(0); } }); },
+  async trim() { const d = await this.open(); if (!d) return; const n = await this.count(); if (n <= this.max) return; let del = n - Math.round(this.max * 0.8);
+    try { const tx = d.transaction('t', 'readwrite'), c = tx.objectStore('t').index('t').openCursor(); c.onsuccess = () => { const k = c.result; if (k && del-- > 0) { k.delete(); k.continue(); } }; } catch (e) { /* egal */ } },
+  async clear() { const d = await this.open(); if (!d) return; try { d.transaction('t', 'readwrite').objectStore('t').clear(); } catch (e) { /* egal */ } }
+};
+async function tileSrc(url) {
+  try { const b = await TileCache.get(url); if (b) return URL.createObjectURL(b); } catch (e) { /* weiter */ }
+  try { const r = await fetch(url, { mode: 'cors' }); if (r.ok) { const b = await r.blob(); if (b.size > 0 && /^image\//.test(b.type)) { TileCache.put(url, b); return URL.createObjectURL(b); } } } catch (e) { /* offline oder ohne CORS */ }
+  return url;
+}
+function cachedCreate(coords, done) {
+  const tile = document.createElement('img'); L.DomEvent.on(tile, 'load', L.Util.bind(this._tileOnLoad, this, done, tile)); L.DomEvent.on(tile, 'error', L.Util.bind(this._tileOnError, this, done, tile));
+  tile.alt = ''; tile.setAttribute('role', 'presentation'); tile.addEventListener('load', () => { if (tile.src.startsWith('blob:')) URL.revokeObjectURL(tile.src); });
+  tileSrc(this.getTileUrl(coords)).then(src => { tile.src = src; }); return tile;
+}
+const CachedTile = L.TileLayer.extend({ createTile: cachedCreate });
+const CachedWMS = L.TileLayer.WMS.extend({ createTile: cachedCreate });
 const baseLayers = {
-  'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
-  'Satellit (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
-  'Topografie (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
-  'NRW Topografie (DTK)': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { className: 'bm-inv', layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
-  'NRW Luftbild': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dop', { layers: 'nw_dop_rgb', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' })
+  'Straßenkarte (Esri)': new CachedTile('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
+  'Satellit (Esri)': new CachedTile('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
+  'Topografie (Esri)': new CachedTile('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
+  'NRW Topografie (DTK)': new CachedWMS('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { offlineOk: true, className: 'bm-inv', layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
+  'NRW Luftbild': new CachedWMS('https://www.wms.nrw.de/geobasis/wms_nw_dop', { offlineOk: true, layers: 'nw_dop_rgb', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' })
 };
 // Die OSM-Server sperren Seiten ohne Referer (Datei vom Laufwerk geöffnet, Fehler 403). Die Ebene gibt es nur, wenn die Seite über http(s) kommt.
-if (/^https?:$/.test(location.protocol)) baseLayers['OpenStreetMap'] = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'bm-inv', attribution: '&copy; OpenStreetMap-Mitwirkende' });
+if (/^https?:$/.test(location.protocol)) baseLayers['OpenStreetMap'] = new CachedTile('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'bm-inv', attribution: '&copy; OpenStreetMap-Mitwirkende' });
 baseLayers['Straßenkarte (Esri)'].addTo(map);
 { // Ohne Kartenkacheln (kein Internet) bleibt die Lage benutzbar, nur der Hintergrund fehlt
   let ok = 0, bad = 0, warned = false;
@@ -4216,7 +4256,7 @@ const ghsUrl = c => imgUrl('ghs/' + c);
 const ghsImg = (c, h) => el('img', { class: 'ghs', src: ghsUrl(c), alt: GHS_INFO[c] || c, title: c + ': ' + (GHS_INFO[c] || ''), style: 'height:' + (h || 44) + 'px' });
 const SUBSTANCES = {
   benzol: {
-    id: 'benzol', name: 'Benzol', formula: 'C6H6', cas: '71-43-2', un: '1114', kemler: '33', klasse: '3', vg: 'II', molMass: 78.11,
+    id: 'benzol', gestis: [['010060','Benzol']], name: 'Benzol', formula: 'C6H6', cas: '71-43-2', un: '1114', kemler: '33', klasse: '3', vg: 'II', molMass: 78.11,
     erg: { guide: '130', title: 'Entzündbare Flüssigkeiten (nicht mit Wasser mischbar, gesundheitsschädlich)', isolate: 50, spillDownwind: 300, fire: 800 },
     ghs: ['GHS02', 'GHS08', 'GHS07'], signal: 'Gefahr',
     h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H304', 'Kann bei Verschlucken und Eindringen in die Atemwege tödlich sein.'], ['H315', 'Verursacht Hautreizungen.'], ['H319', 'Verursacht schwere Augenreizung.'],
@@ -4245,7 +4285,7 @@ const SUBSTANCES = {
     ]
   },
   aceton: {
-    id: 'aceton', name: 'Aceton', formula: 'C3H6O', cas: '67-64-1', un: '1090', kemler: '33', klasse: '3', vg: 'II', molMass: 58.08,
+    id: 'aceton', gestis: [['011230','Aceton']], name: 'Aceton', formula: 'C3H6O', cas: '67-64-1', un: '1090', kemler: '33', klasse: '3', vg: 'II', molMass: 58.08,
     erg: { guide: '127', title: 'Entzündbare Flüssigkeiten (mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
     ghs: ['GHS02', 'GHS07'], signal: 'Gefahr',
     h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H319', 'Verursacht schwere Augenreizung.'], ['H336', 'Kann Schläfrigkeit und Benommenheit verursachen.']],
@@ -4272,7 +4312,7 @@ const SUBSTANCES = {
     ]
   },
   ethanol: {
-    id: 'ethanol', name: 'Ethanol', formula: 'C2H6O', cas: '64-17-5', un: '1170', kemler: '33', klasse: '3', vg: 'II (Lösungen auch III)', molMass: 46.07,
+    id: 'ethanol', gestis: [['010420','Ethanol']], name: 'Ethanol', formula: 'C2H6O', cas: '64-17-5', un: '1170', kemler: '33', klasse: '3', vg: 'II (Lösungen auch III)', molMass: 46.07,
     erg: { guide: '127', title: 'Entzündbare Flüssigkeiten (mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
     ghs: ['GHS02', 'GHS07'], signal: 'Gefahr',
     h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H319', 'Verursacht schwere Augenreizung.']],
@@ -4300,7 +4340,7 @@ const SUBSTANCES = {
     ]
   },
   benzin: {
-    id: 'benzin', name: 'Ottokraftstoff (Benzin)', formula: 'Gemisch', cas: '86290-81-5', un: '1203', kemler: '33', klasse: '3', vg: 'II', molMass: 110,
+    id: 'benzin', gestis: [['531390','Ottokraftstoff']], name: 'Ottokraftstoff (Benzin)', formula: 'Gemisch', cas: '86290-81-5', un: '1203', kemler: '33', klasse: '3', vg: 'II', molMass: 110,
     erg: { guide: '128', title: 'Entzündbare Flüssigkeiten (nicht mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
     ghs: ['GHS02', 'GHS08', 'GHS07', 'GHS09'], signal: 'Gefahr',
     h: [['H224', 'Flüssigkeit und Dampf extrem entzündbar.'], ['H304', 'Kann bei Verschlucken und Eindringen in die Atemwege tödlich sein.'], ['H315', 'Verursacht Hautreizungen.'], ['H350', 'Kann Krebs erzeugen.'], ['H361fd', 'Kann vermutlich die Fruchtbarkeit beeinträchtigen und das Kind im Mutterleib schädigen.'], ['H411', 'Giftig für Wasserorganismen, mit langfristiger Wirkung.']],
@@ -4330,7 +4370,7 @@ const SUBSTANCES = {
     ]
   },
   diesel: {
-    id: 'diesel', name: 'Dieselkraftstoff / Heizöl EL', formula: 'Gemisch', cas: '68334-30-5', un: '1202', kemler: '30', klasse: '3', vg: 'III', molMass: null,
+    id: 'diesel', gestis: [['536303','Dieselkraftstoff']], name: 'Dieselkraftstoff / Heizöl EL', formula: 'Gemisch', cas: '68334-30-5', un: '1202', kemler: '30', klasse: '3', vg: 'III', molMass: null,
     erg: { guide: '128', title: 'Entzündbare Flüssigkeiten (nicht mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
     ghs: ['GHS02', 'GHS08', 'GHS07'], signal: 'Gefahr',
     h: [['H226', 'Flüssigkeit und Dampf entzündbar.'], ['H304', 'Kann bei Verschlucken und Eindringen in die Atemwege tödlich sein.'], ['H315', 'Verursacht Hautreizungen.'], ['H332', 'Gesundheitsschädlich bei Einatmen.'], ['H351', 'Kann vermutlich Krebs erzeugen.'], ['H373', 'Kann die Organe bei längerer oder wiederholter Exposition schädigen.']],
@@ -4361,7 +4401,7 @@ const SUBSTANCES = {
     ]
   },
   hcl: {
-    id: 'hcl', name: 'Salzsäure (konzentriert, 32 bis 37 %)', formula: 'HCl (wässrig)', cas: '7647-01-0', un: '1789', kemler: '80', klasse: '8', vg: 'II', molMass: 36.46,
+    id: 'hcl', gestis: [['520030','Salzsäure (36 %)'], ['001050','Chlorwasserstoff, wasserfrei']], name: 'Salzsäure (konzentriert, 32 bis 37 %)', formula: 'HCl (wässrig)', cas: '7647-01-0', un: '1789', kemler: '80', klasse: '8', vg: 'II', molMass: 36.46,
     erg: { guide: '157', title: 'Giftige und/oder ätzende Stoffe (nicht brennbar, wasserempfindlich)', isolate: 50, spillDownwind: null, fire: 800 },
     ghs: ['GHS05', 'GHS07'], signal: 'Gefahr',
     h: [['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.'], ['H335', 'Kann die Atemwege reizen.']],
@@ -4389,7 +4429,7 @@ const SUBSTANCES = {
     ]
   },
   h2so4: {
-    id: 'h2so4', name: 'Schwefelsäure (konzentriert, über 51 %)', formula: 'H2SO4', cas: '7664-93-9', un: '1830', kemler: '80', klasse: '8', vg: 'II', molMass: 98.08,
+    id: 'h2so4', gestis: [['001160','Schwefelsäure']], name: 'Schwefelsäure (konzentriert, über 51 %)', formula: 'H2SO4', cas: '7664-93-9', un: '1830', kemler: '80', klasse: '8', vg: 'II', molMass: 98.08,
     erg: { guide: '137', title: 'Ätzende und/oder giftige Stoffe (wasserreaktiv)', isolate: 50, spillDownwind: null, fire: 800 },
     ghs: ['GHS05'], signal: 'Gefahr',
     h: [['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.']],
@@ -4418,7 +4458,7 @@ const SUBSTANCES = {
     ]
   },
   propan: {
-    id: 'propan', name: 'Propan', formula: 'C3H8', cas: '74-98-6', un: '1978', kemler: '23', klasse: '2.1', vg: 'ohne', molMass: 44.09,
+    id: 'propan', gestis: [['','Propan']], name: 'Propan', formula: 'C3H8', cas: '74-98-6', un: '1978', kemler: '23', klasse: '2.1', vg: 'ohne', molMass: 44.09,
     erg: { guide: '115', title: 'Entzündbare Gase (auch tiefkalt verflüssigt)', isolate: 100, spillDownwind: 800, fire: 1600 },
     ghs: ['GHS02', 'GHS04'], signal: 'Gefahr',
     h: [['H220', 'Extrem entzündbares Gas.'], ['H280', 'Enthält Gas unter Druck, kann bei Erwärmung explodieren.']],
@@ -4446,7 +4486,7 @@ const SUBSTANCES = {
     ]
   },
   ammoniak: {
-    id: 'ammoniak', name: 'Ammoniak, wasserfrei', formula: 'NH3', cas: '7664-41-7', un: '1005', kemler: '268', klasse: '2.3 (8)', vg: 'ohne', molMass: 17.03,
+    id: 'ammoniak', gestis: [['001100','Ammoniak, wasserfrei']], name: 'Ammoniak, wasserfrei', formula: 'NH3', cas: '7664-41-7', un: '1005', kemler: '268', klasse: '2.3 (8)', vg: 'ohne', molMass: 17.03,
     erg: { guide: '125', title: 'Giftige und/oder ätzende Gase', isolate: 100, spillDownwind: null, fire: 1600 },
     tih: {
       defCont: 'strasse', note: 'ERG 2024, Tabelle 1 und 3 (Ammoniak, wasserfrei). Kleines Leck: bis 208 l aus kleiner Packung oder kleinem Leck. Großes Leck: größere Packung oder viele kleine Packungen.',
@@ -4485,7 +4525,7 @@ const SUBSTANCES = {
     ]
   },
   chlor: {
-    id: 'chlor', name: 'Chlor', formula: 'Cl2', cas: '7782-50-5', un: '1017', kemler: '265', klasse: '2.3 (5.1, 8)', vg: 'ohne', molMass: 70.91,
+    id: 'chlor', gestis: [['007170','Chlor']], name: 'Chlor', formula: 'Cl2', cas: '7782-50-5', un: '1017', kemler: '265', klasse: '2.3 (5.1, 8)', vg: 'ohne', molMass: 70.91,
     erg: { guide: '124', title: 'Giftige und/oder ätzende Gase (oxidierend)', isolate: 100, spillDownwind: null, fire: 800 },
     tih: {
       defCont: 'strasse', note: 'ERG 2024, Tabelle 1 und 3 (Chlor). Kleines Leck: bis 208 l aus kleiner Packung oder kleinem Leck. Großes Leck: größere Packung oder viele kleine Packungen.',
@@ -4525,7 +4565,7 @@ const SUBSTANCES = {
     ]
   },
   methanol: {
-    id: 'methanol', name: 'Methanol', formula: 'CH4O', cas: '67-56-1', un: '1230', kemler: '336', klasse: '3 (6.1)', vg: 'II', molMass: 32.04,
+    id: 'methanol', gestis: [['011240','Methanol']], name: 'Methanol', formula: 'CH4O', cas: '67-56-1', un: '1230', kemler: '336', klasse: '3 (6.1)', vg: 'II', molMass: 32.04,
     erg: { guide: '131', title: 'Entzündbare Flüssigkeiten, giftig', isolate: 50, spillDownwind: null, fire: 800 },
     ghs: ['GHS02', 'GHS06', 'GHS08'], signal: 'Gefahr',
     h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H301', 'Giftig bei Verschlucken.'], ['H311', 'Giftig bei Hautkontakt.'], ['H331', 'Giftig bei Einatmen.'], ['H370', 'Schädigt die Organe (Augen, Zentralnervensystem).']],
@@ -4553,7 +4593,7 @@ const SUBSTANCES = {
     ]
   },
   natronlauge: {
-    id: 'natronlauge', name: 'Natronlauge (ca. 32 %)', formula: 'NaOH (wässrig)', cas: '1310-73-2', un: '1824', kemler: '80', klasse: '8', vg: 'II', molMass: 40,
+    id: 'natronlauge', gestis: [['001270','Natriumhydroxid (Feststoff, Lösungen siehe dort)']], name: 'Natronlauge (ca. 32 %)', formula: 'NaOH (wässrig)', cas: '1310-73-2', un: '1824', kemler: '80', klasse: '8', vg: 'II', molMass: 40,
     erg: { guide: '154', title: 'Giftige und/oder ätzende Stoffe (nicht brennbar)', isolate: 50, spillDownwind: null, fire: 800 },
     ghs: ['GHS05'], signal: 'Gefahr',
     h: [['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.']],
@@ -4581,7 +4621,7 @@ const SUBSTANCES = {
     ]
   },
   hno3: {
-    id: 'hno3', name: 'Salpetersäure (65 bis 70 %)', formula: 'HNO3 (wässrig)', cas: '7697-37-2', un: '2031', kemler: '85', klasse: '8 (5.1)', vg: 'II', molMass: 63,
+    id: 'hno3', gestis: [['001370','Salpetersäure']], name: 'Salpetersäure (65 bis 70 %)', formula: 'HNO3 (wässrig)', cas: '7697-37-2', un: '2031', kemler: '85', klasse: '8 (5.1)', vg: 'II', molMass: 63,
     erg: { guide: '157', title: 'Giftige und/oder ätzende Stoffe (nicht brennbar, wasserempfindlich)', isolate: 50, spillDownwind: null, fire: 800 },
     ghs: ['GHS03', 'GHS05'], signal: 'Gefahr',
     h: [['H272', 'Kann Brand verstärken, Oxidationsmittel.'], ['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.']],
@@ -4608,7 +4648,7 @@ const SUBSTANCES = {
     ]
   },
   h2o2: {
-    id: 'h2o2', name: 'Wasserstoffperoxid (20 bis 60 %)', formula: 'H2O2 (wässrig)', cas: '7722-84-1', un: '2014', kemler: '58', klasse: '5.1 (8)', vg: 'II', molMass: 34.02,
+    id: 'h2o2', gestis: [['536372','Wasserstoffperoxid 8 bis unter 35 %'], ['536373','Wasserstoffperoxid 35 bis unter 50 %'], ['536374','Wasserstoffperoxid 50 bis unter 60 %']], name: 'Wasserstoffperoxid (20 bis 60 %)', formula: 'H2O2 (wässrig)', cas: '7722-84-1', un: '2014', kemler: '58', klasse: '5.1 (8)', vg: 'II', molMass: 34.02,
     erg: { guide: '140', title: 'Oxidationsmittel', isolate: 50, spillDownwind: 100, fire: 800 },
     ghs: ['GHS05', 'GHS07'], signal: 'Gefahr',
     h: [['H302', 'Gesundheitsschädlich bei Verschlucken.'], ['H318', 'Verursacht schwere Augenschäden.'], ['H332', 'Gesundheitsschädlich bei Einatmen.']],
@@ -4636,7 +4676,7 @@ const SUBSTANCES = {
     ]
   },
   co: {
-    id: 'co', name: 'Kohlenmonoxid (verdichtet)', formula: 'CO', cas: '630-08-0', un: '1016', kemler: '263', klasse: '2.3 (2.1)', vg: 'ohne', molMass: 28,
+    id: 'co', gestis: [['001110','Kohlenmonoxid']], name: 'Kohlenmonoxid (verdichtet)', formula: 'CO', cas: '630-08-0', un: '1016', kemler: '263', klasse: '2.3 (2.1)', vg: 'ohne', molMass: 28,
     erg: { guide: '119', title: 'Giftige und entzündbare Gase', isolate: 100, spillDownwind: null, fire: 1600 },
     tih: { note: 'ERG 2024, Tabelle 1 (Kohlenmonoxid, verdichtet). Kleines Leck: bis 208 l aus kleiner Packung oder kleinem Leck. Großes Leck: größere Packung oder viele kleine Packungen. Für Kohlenmonoxid gibt es keine Tabelle 3.',
       small: { isolate: 30, day: 100, night: 200 }, large: { isolate: 200, day: 1200, night: 3900 } },
@@ -4777,7 +4817,11 @@ function chemSheet(s) {
     el('div', { class: 'hint', text: lk + ' ' + a.status + ', ' + a.edition + '.' + (mgOnly ? ' Angaben in mg/m³.' : ' mg/m³ bei 20 °C und 1013 hPa umgerechnet (Molmasse ' + nfmt(s.molMass, 2) + ').') + (a.a3 != null && ueg != null && !mgOnly && !a.noUeg ? ' ' + lk + '-3 liegt bei ' + nfmt(100 * a.a3 / ueg) + ' % der unteren Explosionsgrenze' + (a.a3 / ueg > 0.5 ? ', die Explosionsgefahr kommt dort vor der Giftwirkung.' : '.') : '') + (a.note ? ' ' + a.note : '') }),
     el('div', { class: 'hint', text: s.verified ? 'Werte geprüft am ' + s.verifiedAt + ' gegen die unten genannten Quellen. Die deutschen Maßnahmentexte sind sinngemäß nach ERG 2024 übersetzt, die amtliche Fassung gilt.' : 'NICHT GEPRÜFT' }),
     el('details', {}, el('summary', { text: 'Quellen' }), el('ul', { class: 'cm-ul' }, ...s.src.map(r => el('li', {}, el('a', { href: r.u, target: '_blank', rel: 'noopener', text: r.t }), ' (' + r.f + ')'))),
-      el('div', { class: 'hint', text: 'GHS-Piktogramme: UNECE, Dateien von Wikimedia Commons (gemeinfrei, PD-ineligible).' })));
+      el('div', { class: 'hint', text: 'GHS-Piktogramme: UNECE, Dateien von Wikimedia Commons (gemeinfrei, PD-ineligible).' })),
+    el('details', {}, el('summary', { text: 'Deutsche Quellen zur Gegenprobe' }), el('ul', { class: 'cm-ul' },
+      ...(s.gestis || []).map(g => el('li', {}, el('a', { href: g[0] ? 'https://gestis.dguv.de/data?name=' + g[0] : 'https://gestis.dguv.de/search', target: '_blank', rel: 'noopener', text: 'GESTIS-Stoffdatenbank (DGUV): ' + g[1] }), g[0] ? ' (ZVG ' + String(+g[0]) + ')' : ' (Suche nach CAS ' + s.cas + ')')),
+      s.src.filter(r => /dgg\.bam\.de|gefahrgutmanager\.de|gefahrgutbrumme\.de/.test(r.u)).map(r => el('li', {}, el('a', { href: r.u, target: '_blank', rel: 'noopener', text: r.t }), ' (' + r.f + ')'))),
+      el('div', { class: 'hint', text: 'Diese Seiten sind zur Gegenprobe gedacht. Die Werte der GESTIS-Stoffdatenbank wurden nicht automatisch mit den Werten hier verglichen. Bei Abweichungen gilt das aktuelle Sicherheitsdatenblatt des Produkts. GESTIS führt Stoffe oft je Konzentration getrennt.' })));
 }
 function renderChemTab() {
   const box = $('#chemBox'); if (!box) return; const act = document.activeElement;
@@ -5845,14 +5889,65 @@ function fillMsgRefs() {
   if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
   $('#roleList').replaceChildren(...state.roles.map(r => el('option', { value: r.label }))); 
 }
+/* Vordrucke für Meldungen: füllen Zahlen aus der Lage vor, kein amtlicher Vordruck */
+function lageFacts() {
+  const t = casTotals().t, us = state.units, sum = f => us.reduce((a, u) => a + (u[f] || 0), 0), ca = chemActive(), cs = ca && chemSub(ca.sid), w = state.wind, e = state.exercise || {};
+  const st = id => us.filter(u => u.status === id).length, due = typeof meetingDue === 'function' ? meetingDue() : null;
+  return {
+    zeit: fmtTac(nowMs()) + ' (' + fmtHM2(nowMs()) + ' Uhr)', name: (e.active && e.name) ? e.name : 'Einsatz',
+    personen: 'SK I ' + (t.sk1 || 0) + ', SK II ' + (t.sk2 || 0) + ', SK III ' + (t.sk3 || 0) + ', Tote ' + (t.tot || 0) + ', Vermisste ' + (t.vermisst || 0),
+    kraefte: us.length + ' Einheiten, Stärke ' + sum('f') + '/' + sum('u') + '/' + sum('h') + '/' + (sum('f') + sum('u') + sum('h')) + ', im Einsatz ' + st('einsatz') + ', Reserve ' + st('reserve') + ', einsatzbereit ' + st('bereit'),
+    gefahr: cs ? cs.name + ' (UN ' + cs.un + ', Kemler ' + cs.kemler + '), Absperrung ' + chemM(chemErg(cs, ca).isolate) + (ca.fire ? ', Brand ' + chemM(chemErg(cs, ca).fire) : '') : 'kein Gefahrstoff gemeldet',
+    wetter: w && w.dir != null ? 'Wind aus ' + Math.round(w.dir) + ' Grad' + (w.speed != null ? ', ' + w.speed + ' m/s' : '') : 'Wind nicht gesetzt',
+    probleme: state.problems.filter(p => p.status !== 'erledigt').length + ' offen',
+    naechste: due != null ? fmtHM2(due) + ' Uhr' : 'nicht festgelegt'
+  };
+}
+const MSG_TPL = [
+  ['lage', 'Lagemeldung', { dir: 'aus', kind: 'Meldung', to: 'Einsatzleiter', prio: 2 }, f => 'LAGEMELDUNG, Stand ' + f.zeit + '\nEinsatz: ' + f.name + '\nLage: \nPersonen: ' + f.personen + '\nMaßnahmen: \nKräfte: ' + f.kraefte + '\nGefahren: ' + f.gefahr + '\nWetter: ' + f.wetter + '\nProbleme: ' + f.probleme + '\nForderungen: \nNächste Meldung: ' + f.naechste],
+  ['zwischen', 'Zwischenmeldung', { dir: 'aus', kind: 'Meldung', to: 'Einsatzleiter', prio: 2 }, f => 'ZWISCHENMELDUNG, ' + f.zeit + '\nWas: \nWo: \nSeit wann: \nMaßnahme: \nWeitere Hilfe nötig: '],
+  ['eingang', 'Eingehende Meldung (W-Fragen)', { dir: 'ein', kind: 'Meldung', to: '', prio: 2 }, f => 'MELDUNG EINGEGANGEN, ' + f.zeit + '\nWer meldet (Name, Rückruf): \nWo (Ort, Objekt, Zufahrt): \nWas ist geschehen: \nWie viele Betroffene: \nWelche Gefahren: \nWer ist schon vor Ort: \nRückfragen offen: '],
+  ['einheit', 'Statusmeldung Einheit', { dir: 'ein', kind: 'Meldung', to: 'S3 Einsatz', prio: 3 }, f => 'STATUSMELDUNG EINHEIT, ' + f.zeit + '\nEinheit, Funkrufname: \nStatus (Anfahrt, Einsatz, Pause, nicht verfügbar): \nStandort, Abschnitt: \nStärke (Führer/Unterführer/Helfer): \nAtemschutz (Träger, Zeit): \nAuftrag: \nBedarf, Ausfälle: '],
+  ['nachf', 'Nachforderung', { dir: 'aus', kind: 'Anfrage', to: 'S4 Versorgung', prio: 2 }, f => 'NACHFORDERUNG, ' + f.zeit + '\nWas wird benötigt: \nMenge: \nWofür (Abschnitt, Aufgabe): \nBis wann: \nWohin (Bereitstellungsraum): \nAnsprechpartner, Funk: '],
+  ['gefahrstoff', 'Gefahrstoffmeldung', { dir: 'aus', kind: 'Meldung', to: 'Einsatzleiter', prio: 1 }, f => 'GEFAHRSTOFFMELDUNG, ' + f.zeit + '\nStoff: ' + f.gefahr + '\nOrt: \nMenge, Behälter: \nAustritt (Leck, Brand, Größe): \nWetter: ' + f.wetter + '\nBetroffene: ' + f.personen + '\nAbsperrung eingerichtet: \nMessungen (Wert, Ort, Zeit): \nMaßnahmen: \nFachberater angefordert: '],
+  ['abschluss', 'Abschlussmeldung', { dir: 'aus', kind: 'Meldung', to: 'Einsatzleiter', prio: 3 }, f => 'ABSCHLUSSMELDUNG, ' + f.zeit + '\nEinsatz: ' + f.name + '\nEinsatzende: \nPersonen: ' + f.personen + '\nEingesetzte Kräfte: ' + f.kraefte + '\nSchäden, Folgen: \nÜbergabe an: \nOffene Punkte: ' + f.probleme + '\nRückkehr, Wiederherstellung der Einsatzbereitschaft: ']
+];
+/* Kartenspeicher: Ausschnitt vorladen (nur offene NRW-Karten), Größe anzeigen, leeren */
+function initTileCacheUi() {
+  const info = $('#tcInfo'); if (!info) return;
+  const show = async () => { const n = await TileCache.count(); info.textContent = n + ' Kacheln gespeichert.'; };
+  const active = () => Object.entries(baseLayers).find(([k, l]) => map.hasLayer(l));
+  $('#tcClr').onclick = async () => { await TileCache.clear(); show(); say('Kartenspeicher geleert.', 2500); };
+  $('#tcPre').onclick = async () => {
+    const a = active(); if (!a || !a[1].options.offlineOk) { say('Zum Vorladen die Karte „NRW Topografie (DTK)“ oder „NRW Luftbild“ wählen (Ebenen-Schalter oben rechts). Esri und OpenStreetMap lassen kein Massenladen zu.', 9000); return; }
+    const L2 = a[1], b = map.getBounds(), z0 = Math.max(6, Math.round(map.getZoom())), list = [];
+    for (let z = z0; z <= Math.min(z0 + 2, 17); z++) { const p0 = map.project(b.getNorthWest(), z).divideBy(256).floor(), p1 = map.project(b.getSouthEast(), z).divideBy(256).floor();
+      for (let x = p0.x; x <= p1.x; x++) for (let y = p0.y; y <= p1.y; y++) list.push({ x, y, z }); }
+    if (list.length > 600) { say('Der Ausschnitt ist zu groß (' + list.length + ' Kacheln, erlaubt 600). Bitte näher heranzoomen.', 6000); return; }
+    const btn = $('#tcPre'); btn.disabled = true; let n = 0, bad = 0;
+    for (const c of list) { const url = L2.getTileUrl(c); try { if (!(await TileCache.get(url))) { const r = await fetch(url, { mode: 'cors' }); if (r.ok) { const bl = await r.blob(); if (bl.size && /^image\//.test(bl.type)) await TileCache.put(url, bl); else bad++; } else bad++; } } catch (e) { bad++; }
+      if (++n % 20 === 0) info.textContent = n + ' von ' + list.length + ' Kacheln geladen …'; }
+    btn.disabled = false; await show(); say(bad ? 'Vorladen fertig, ' + bad + ' Kacheln fehlten (der Kartendienst erlaubt das Speichern eventuell nicht).' : 'Ausschnitt vorgeladen: ' + list.length + ' Kacheln.', 6000);
+  };
+  show();
+}
+function initMsgTpl() {
+  const sel = $('#mTpl'); if (!sel) return; sel.append(el('option', { value: '', text: 'Vordruck wählen (füllt Zahlen aus der Lage vor)' }), ...MSG_TPL.map(t => el('option', { value: t[0], text: t[1] })));
+  sel.addEventListener('change', () => {
+    const t = MSG_TPL.find(x => x[0] === sel.value); if (!t) return; const f = lageFacts(), o = t[2];
+    $('#mDir').value = o.dir; $('#mKind').value = o.kind; if (o.to) $('#mTo').value = o.to; $('#mPrio').value = o.prio; $('#mText').value = t[3](f); $('#mText').rows = 12; $('#mText').focus(); sel.value = '';
+    say('Vordruck eingefügt. Offene Felder ausfüllen, dann „Erfassen“. Die Zahlen stammen aus der Lage, bitte prüfen.', 5000);
+  });
+}
 function initMeldungen() {
   $('#mKind').append(...MSG_KINDS.map(k => el('option', { value: k, text: k }))); $('#mWay').append(...MSG_WAY.map(w => el('option', { value: w, text: w || '– Weg –' })));
   $('#mExtraOn').addEventListener('change', e => { state.msgExtra = e.target.checked; $('#mExtra').hidden = !e.target.checked; persist(); });
+  initMsgTpl(); initTileCacheUi();
   $('#mAdd').onclick = () => {
     const text = $('#mText').value.trim(); if (!text) { $('#mText').focus(); return; }
     addMessage({ dir: $('#mDir').value, kind: $('#mKind').value, from: $('#mFrom').value.trim(), to: $('#mTo').value.trim(), text, prio: prioNum($('#mPrio').value), ref: $('#mRef').value,
       way: state.msgExtra ? $('#mWay').value : '', sign: state.msgExtra ? $('#mSign').value.trim() : '', dist: state.msgExtra ? $('#mDist').value.trim() : '', quit: state.msgExtra ? $('#mQuit').value.trim() : '' });
-    ['#mText', '#mSign', '#mDist', '#mQuit'].forEach(i => { $(i).value = ''; });
+    ['#mText', '#mSign', '#mDist', '#mQuit'].forEach(i => { $(i).value = ''; }); $('#mText').rows = 3;
   };
   ['#mFDir', '#mFStat'].forEach(i => $(i).addEventListener('change', renderMessages)); $('#mFText').addEventListener('input', renderMessages);
 }
@@ -6105,6 +6200,20 @@ $('#btnPrint').onclick = () => printLagekarte();
 /* Dialoge blenden aus, bevor sie entfernt werden */
 (function () { const orig = Element.prototype.remove; Element.prototype.remove = function () {
   if (this.classList && (this.classList.contains('dlg') && !this.classList.contains('rolelay') || (this.classList.contains('ctx') && this.dataset.level === '0')) && !this._leaving && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { this._leaving = true; this.classList.add('dlgout'); setTimeout(() => orig.call(this), 400); } else orig.call(this); }; })();
+/* Touch: langes Drücken öffnet das Rechtsklick-Menü (Karte und Objekte), große Bedienflächen auf Touchgeräten */
+(function touchLongPress() {
+  const c = map.getContainer(); let timer = null, sx = 0, sy = 0, nativeCtx = false;
+  const clear = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  c.addEventListener('contextmenu', () => { nativeCtx = true; setTimeout(() => { nativeCtx = false; }, 900); }, true);
+  c.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { clear(); return; } const t = e.touches[0]; sx = t.clientX; sy = t.clientY; nativeCtx = false; clear();
+    if (runtime.mode || e.target.closest('.leaflet-control')) return;
+    timer = setTimeout(() => { timer = null; if (nativeCtx) return; const n = document.elementFromPoint(sx, sy) || e.target;
+      n.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: sx, clientY: sy, view: window })); if (navigator.vibrate) { try { navigator.vibrate(30); } catch (x) { /* egal */ } } }, 600);
+  }, { passive: true });
+  c.addEventListener('touchmove', e => { const t = e.touches[0]; if (timer && t && Math.hypot(t.clientX - sx, t.clientY - sy) > 10) clear(); }, { passive: true });
+  ['touchend', 'touchcancel'].forEach(n => c.addEventListener(n, clear, { passive: true }));
+})();
 /* ---- Menü im Kopf ---- */
 (function () {
   const wrap = $('#hdrMore'), btn = $('#btnMore'), menu = $('#hdrMenu');
@@ -6205,7 +6314,7 @@ initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
 liveInit();
-window.__lage = { chemErg, chemSub, renderChem, runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
+window.__lage = { TileCache, lageFacts, chemErg, chemSub, renderChem, runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
 })();
 </script>
 </body>

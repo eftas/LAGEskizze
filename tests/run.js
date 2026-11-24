@@ -84,6 +84,26 @@ async function seite(b, q, w, h) {
     assert.strictEqual(await p.evaluate(() => window.__lage.state.wind.cond), 'bedeckt'); await p.click('#wAuto button:has-text("Klar")'); await p.waitForTimeout(300);
     assert.ok(/^(tag-stark|tag-mittel|nacht-klar)$/.test(await p.evaluate(() => window.__lage.state.wind.cond))); await p.close();
   });
+  await t('Meldungs-Vordruck füllt Zahlen aus der Lage vor', async () => {
+    const p = await seite(b, '?rolle=S2'); await p.click('[data-tab="meldungen"]'); await p.selectOption('#mTpl', 'lage'); await p.waitForTimeout(300);
+    const txt = await p.inputValue('#mText'); assert.ok(/LAGEMELDUNG, Stand/.test(txt) && /SK I 0/.test(txt) && /Kräfte: 0 Einheiten/.test(txt)); assert.strictEqual(await p.inputValue('#mDir'), 'aus');
+    await p.selectOption('#mTpl', 'nachf'); assert.strictEqual(await p.inputValue('#mKind'), 'Anfrage'); await p.close();
+  });
+  await t('Touch: langes Drücken öffnet das Kartenmenü', async () => {
+    const ctx = await b.newContext({ viewport: { width: 1000, height: 700 }, hasTouch: true }), p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
+    await p.goto(FILE + '?rolle=S2'); await p.waitForFunction(() => window.__lage); await p.waitForTimeout(600);
+    const cdp = await ctx.newCDPSession(p); await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 600, y: 400 }] }); await p.waitForTimeout(900);
+    assert.ok((await p.locator('.ctx-item').count()) > 3); await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await ctx.close();
+  });
+  await t('Karten-Zwischenspeicher: Kachel wird gespeichert und ohne Netz angezeigt', async () => {
+    const ctx = await b.newContext({ viewport: { width: 900, height: 600 } }), p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'); let online = true;
+    await ctx.route(/arcgisonline\.com/, r => online ? r.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } }) : r.abort());
+    await p.goto(FILE + '?rolle=S2'); await p.waitForFunction(() => window.__lage); await p.waitForTimeout(2500);
+    const n1 = await p.evaluate(() => window.__lage.TileCache.count()); assert.ok(n1 > 0, 'keine Kacheln gespeichert'); online = false;
+    await p.reload(); await p.waitForFunction(() => window.__lage); await p.waitForTimeout(2500);
+    const ok = await p.evaluate(() => [...document.querySelectorAll('img.leaflet-tile')].filter(i => i.naturalWidth > 0).length); assert.ok(ok > 0, 'keine Kachel ohne Netz sichtbar'); await ctx.close();
+  });
   await b.close();
   console.log('\n' + ok + ' bestanden, ' + fail + ' fehlgeschlagen'); if (errs.length) { console.log('Skriptfehler im Browser:', [...new Set(errs)]); fail++; }
   process.exit(fail ? 1 : 0);
