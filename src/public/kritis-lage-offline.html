@@ -784,9 +784,16 @@ button { cursor: pointer; }
 .ctx-item img { width: 22px; height: 22px; flex: none; }
 .ctx-lb { flex: 1; }
 .ctx-ar, .ctx-ck { color: #5d6b7a; }
+#qat { display: flex; align-items: center; gap: 10px; padding-right: 10px; border-right: 1px solid rgba(255,255,255,.25); }
+.qb { display: inline-flex; border-radius: 4px; }
+header .qb button { background: none; border: 0; color: #fff; width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px 0 0 4px; }
+header .qb button.caret { width: 14px; border-radius: 0 4px 4px 0; }
+header .qb button:hover:not(:disabled) { background: rgba(255,255,255,.2); }
+header .qb button:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+header .qb button:disabled { opacity: .35; }
 header button:disabled { opacity: .4; cursor: default; }
 .dlg { position: fixed; inset: 0; background: rgba(15,42,71,.35); z-index: 3000; display: flex; align-items: center; justify-content: center; }
-.dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(380px, 92vw); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+.dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(460px, 92vw); max-height: 92vh; overflow: auto; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
 .dlg h3 { margin: 0 0 8px; font-size: 15px; }
 .dlg input { width: 100%; }
 header { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 0 14px; background: #0f2a47; color: #fff; }
@@ -800,8 +807,8 @@ header .sp { flex: 1; }
 header button { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); color: #fff; border-radius: 4px; padding: 3px 10px; }
 
 #panel { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
-#tabs { display: flex; border-bottom: 1px solid var(--line); }
-#tabs button { flex: 1; padding: 9px 2px; font-size: 12.5px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
+#tabs { display: flex; border-bottom: 1px solid var(--line); overflow-x: auto; }
+#tabs button { flex: 1 0 auto; padding: 9px 7px; font-size: 12.5px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
 #tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 .tabpane { display: none; padding: 12px; overflow: auto; flex: 1; min-height: 0; }
 .tabpane.active { display: block; }
@@ -828,7 +835,21 @@ textarea { width: 100%; resize: vertical; }
 .sector { border: 1px solid var(--line); border-radius: 4px; margin-bottom: 8px; }
 .sector > .head { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f3f5f8; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+body.viewer #qat, body.viewer #btnAddPoi, body.viewer #btnShare, body.viewer .editonly,
+body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
+body.beamer #app { grid-template-columns: 0 1fr; }
+body.beamer #panel, body.beamer #panelToggle, body.beamer #btnPanel, body.beamer #btnPrint, body.beamer #btnShare { display: none !important; }
+body.beamer #clock { font-size: 20px; }
+body.beamer header h1 { font-size: 20px; }
+#liveBadge::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #16a34a; display: inline-block; }
+#liveBadge.off::before { background: #dc2626; }
 .sector .state { font-size: 12px; color: var(--muted); }
+.windctl { background: #fff; padding: 4px 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; line-height: 1.2; min-width: 96px; }
+.windctl svg { flex: none; }
+.keule-src { width: 24px; height: 24px; border-radius: 50%; background: #7f1d1d; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6); font: 700 11px/18px system-ui, sans-serif; text-align: center; }
+.kcard .row > * { min-width: 0; }
+.kcard label { font-size: 12px; color: var(--muted); }
+.kcard .num { max-width: 90px; }
 .arow { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 6px 0; background: #fff; }
 .arow .top { display: flex; gap: 6px; align-items: center; }
 .arow .nm { flex: 1; min-width: 0; font-weight: 600; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -893,6 +914,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .card .row { margin: 4px 0; }
 .card .row > * { flex: 1; min-width: 0; }
 .card .row > button { flex: none; }
+.card .row > label.prio { flex: none; display: inline-flex; align-items: center; gap: 4px; }
 .btn.wide { width: 100%; }
 @media (max-width: 860px) {
   #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; transition: grid-template-rows .2s ease; }
@@ -917,14 +939,18 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 <body>
 <div id="app">
   <header>
+    <div id="qat" role="toolbar" aria-label="Schnellzugriff">
+      <span class="qb"><button id="btnUndo" disabled aria-label="Rückgängig"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button><button id="btnUndoMenu" class="caret" disabled aria-label="Rückgängig-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
+      <span class="qb"><button id="btnRedo" disabled aria-label="Wiederholen"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button><button id="btnRedoMenu" class="caret" disabled aria-label="Wiederholen-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
+    </div>
     <h1>Lagekarte KRITIS</h1>
     <span id="hdrArea"></span>
     <span class="sp"></span>
     <div id="hdrCounts"></div>
     <span id="clock"></span>
     <button id="btnPanel" title="Seitenleiste ein- oder ausklappen (Umschalt+P)">Leiste</button>
-    <button id="btnUndo" disabled>Zurück</button>
-    <button id="btnRedo" disabled>Wiederholen</button>
+    <span id="liveBadge" class="chip" hidden></span>
+    <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
@@ -936,6 +962,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
+      <button role="tab" data-tab="keule" aria-selected="false">Keule</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
     </div>
@@ -1016,18 +1043,21 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     </section>
 
     <section class="tabpane" id="tab-probleme">
+      <div class="editonly">
       <h2>Problem erfassen</h2>
       <div class="row"><input type="text" id="pTitle" placeholder="Kurzbeschreibung, z. B. Trinkwasser Stadtteil Mitte ausgefallen"></div>
       <div class="row">
-        <select id="pPrio"><option value="hoch">Priorität hoch</option><option value="mittel" selected>Priorität mittel</option><option value="niedrig">Priorität niedrig</option></select>
+        <label for="pPrio">Prio</label>
+        <input type="number" id="pPrio" min="1" step="1" value="2" style="max-width:70px" title="Priorität als Zahl ab 1, 1 = höchste">
         <input type="text" id="pOwner" placeholder="Zuständig">
       </div>
       <div class="row"><textarea id="pText" rows="2" placeholder="Einzelheiten, Maßnahmen, Rückfragen"></textarea></div>
       <div class="row"><button class="btn primary" id="btnPAdd">Problem anlegen</button><span class="hint">Ort und Objektbezug lassen sich danach an der Karte setzen. Aus dem Objekt-Popup geht es mit „Problem melden“ direkt.</span></div>
+      </div>
       <h2>Liste</h2>
       <div class="row">
         <select id="pfStatus"><option value="aktiv">offen und in Arbeit</option><option value="">alle</option><option value="offen">offen</option><option value="inArbeit">in Arbeit</option><option value="erledigt">erledigt</option></select>
-        <select id="pfPrio"><option value="">alle Prioritäten</option><option value="hoch">hoch</option><option value="mittel">mittel</option><option value="niedrig">niedrig</option></select>
+        <input type="number" id="pfPrio" min="1" step="1" placeholder="Prio bis" style="max-width:100px" title="Nur Probleme bis zu dieser Prio-Zahl anzeigen">
       </div>
       <div class="row"><input type="search" id="pfText" placeholder="Suchen"></div>
       <div class="hint" id="pInfo"></div>
@@ -1038,6 +1068,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <h2>Personen im Gebiet</h2>
       <div id="casTiles"></div>
       <div class="hint" id="casHint"></div>
+      <div class="editonly">
       <h2>Zahl erfassen</h2>
       <div class="row">
         <select id="casCat"></select>
@@ -1049,8 +1080,28 @@ table.list tr.clickable:hover { background: #f1f5fa; }
         <button class="btn" id="btnCasPlace">Auf Karte setzen</button>
       </div>
       <div class="hint">Einträge mit Ort zählen nur, solange sie im gewählten Gebiet liegen. Die Zahlen sind Meldungen, die der Stab einträgt, keine berechneten Werte.</div>
+      </div>
       <h2>Einträge</h2>
       <div id="casList"></div>
+    </section>
+
+    <section class="tabpane" id="tab-keule">
+      <h2>Wind</h2>
+      <div class="row"><label for="wDir" style="width:92px">Wind aus</label><input type="number" id="wDir" min="0" max="360" step="5" style="max-width:76px"><span>°</span><select id="wCompass" aria-label="Himmelsrichtung"></select></div>
+      <div class="row"><label for="wSpeed" style="width:92px">Geschwindigkeit</label><input type="number" id="wSpeed" min="0" step="0.5" style="max-width:76px"><span>m/s</span><span id="wBft" class="hint"></span></div>
+      <div class="row"><label for="wCond" style="width:92px">Wetterlage</label><select id="wCond"></select></div>
+      <div class="row"><label for="wStab" style="width:92px">Ausbreitungsklasse</label><select id="wStab" style="max-width:150px"></select><span id="wStabInfo" class="hint"></span></div>
+      <div class="row"><label for="wTer" style="width:92px">Gelände</label><select id="wTer"><option value="land">offen, ländlich</option><option value="stadt">bebaut, städtisch</option></select></div>
+      <div class="hint" id="wInfo"></div>
+      <div class="hint">Bei Zwischenstufen der Pasquill-Tabelle (A-B, B-C, C-D) rechnet die Karte mit der stabileren Klasse, das ergibt die längere Keule.</div>
+
+      <h2>Keulen</h2>
+      <div class="row">
+        <select id="kMode" aria-label="Art der Keule"><option value="gauss">Gauß-Fahne (Berechnung)</option><option value="takt">Taktische Keule (Sektor)</option></select>
+        <button class="btn primary" id="btnKeulePlace">Auf Karte setzen</button>
+      </div>
+      <div class="notice" id="kNotice">Orientierungswert, keine amtliche Ausbreitungsrechnung. Gauß-Fahne: ebenes Gelände, Dauerfreisetzung, Gas mit etwa Luftdichte. Schwergase (zum Beispiel Chlor oder Propan) und Aerosole bildet das Modell nicht richtig ab. Unter etwa 100 m und über 10 km Entfernung nicht belastbar. Gebäude und Gelände fehlen im Modell. Quellstärke und Grenzwert tragen Sie selbst ein, es gibt keine voreingestellten Stoffwerte. Das ersetzt weder Fachberater noch Messung. Taktische Keule: reiner Sektor aus Ihren Angaben, ohne Berechnung.</div>
+      <div id="kList"></div>
     </section>
 
     <section class="tabpane" id="tab-lage">
@@ -1133,6 +1184,7 @@ this._selectedPathOptions&&(e instanceof L.Marker?this._toggleMarkerHighlight(e)
 //# sourceMappingURL=leaflet.markercluster.js.map</script>
 <script>var toGeoJSON=function(){"use strict";function e(e){if(!e||!e.length)return 0;for(var t=0,r=0;t<e.length;t++)r=(r<<5)-r+e.charCodeAt(t)|0;return r}function t(e,t){return e.getElementsByTagName(t)}function r(e,t){return e.getAttribute(t)}function n(e,t){return parseFloat(r(e,t))}function i(e,r){var n=t(e,r);return n.length?n[0]:null}function o(e){return e.normalize&&e.normalize(),e}function a(e){for(var t=0,r=[];t<e.length;t++)r[t]=parseFloat(e[t]);return r}function s(e){return e&&o(e),e&&e.textContent||""}function l(e,t){var r,n,o={};for(n=0;n<t.length;n++)(r=i(e,t[n]))&&(o[t[n]]=s(r));return o}function u(e,t){for(var r in t)e[r]=t[r]}function f(e){return a(e.replace(y,"").split(","))}function c(e){for(var t=e.replace(d,"").split(v),r=[],n=0;n<t.length;n++)r.push(f(t[n]));return r}function g(e){var t,r=[n(e,"lon"),n(e,"lat")],o=i(e,"ele"),a=i(e,"gpxtpx:hr")||i(e,"hr"),l=i(e,"time");return o&&(t=parseFloat(s(o)),isNaN(t)||r.push(t)),{coordinates:r,time:l?s(l):null,heartRate:a?parseFloat(s(a)):null}}function h(){return{type:"FeatureCollection",features:[]}}function p(e){return void 0!==e.xml?e.xml:m.serializeToString(e)}var m,y=/\s*/g,d=/^\s*|\s*$/g,v=/\s+/;return"undefined"!=typeof XMLSerializer?m=new XMLSerializer:"object"!=typeof exports||"object"!=typeof process||process.browser||(m=new(require("xmldom").XMLSerializer)),{kml:function(n){function o(e){var t,r;return e=e||"","#"===e.substr(0,1)&&(e=e.substr(1)),6!==e.length&&3!==e.length||(t=e),8===e.length&&(r=parseInt(e.substr(0,2),16)/255,t="#"+e.substr(6,2)+e.substr(4,2)+e.substr(2,2)),[t,isNaN(r)?void 0:r]}function l(e){return a(e.split(" "))}function u(e){var r=t(e,"coord","gx"),n=[],i=[];0===r.length&&(r=t(e,"gx:coord"));for(var o=0;o<r.length;o++)n.push(l(s(r[o])));for(var a=t(e,"when"),u=0;u<a.length;u++)i.push(s(a[u]));return{coords:n,times:i}}function g(e){var r,n,o,a,l,h=[],p=[];if(i(e,"MultiGeometry"))return g(i(e,"MultiGeometry"));if(i(e,"MultiTrack"))return g(i(e,"MultiTrack"));if(i(e,"gx:MultiTrack"))return g(i(e,"gx:MultiTrack"));for(o=0;o<S.length;o++)if(n=t(e,S[o]))for(a=0;a<n.length;a++)if(r=n[a],"Point"===S[o])h.push({type:"Point",coordinates:f(s(i(r,"coordinates")))});else if("LineString"===S[o])h.push({type:"LineString",coordinates:c(s(i(r,"coordinates")))});else if("Polygon"===S[o]){var m=t(r,"LinearRing"),y=[];for(l=0;l<m.length;l++)y.push(c(s(i(m[l],"coordinates"))));h.push({type:"Polygon",coordinates:y})}else if("Track"===S[o]||"gx:Track"===S[o]){var d=u(r);h.push({type:"LineString",coordinates:d.coords}),d.times.length&&p.push(d.times)}return{geoms:h,coordTimes:p}}for(var m=h(),y={},d={},v={},S=["Polygon","LineString","Point","Track","gx:Track"],k=t(n,"Placemark"),T=t(n,"Style"),x=t(n,"StyleMap"),b=0;b<T.length;b++){var L=e(p(T[b])).toString(16);y["#"+r(T[b],"id")]=L,d[L]=T[b]}for(var N=0;N<x.length;N++){y["#"+r(x[N],"id")]=e(p(x[N])).toString(16);for(var M=t(x[N],"Pair"),P={},F=0;F<M.length;F++)P[s(i(M[F],"key"))]=s(i(M[F],"styleUrl"));v["#"+r(x[N],"id")]=P}for(var w=0;w<k.length;w++)m.features=m.features.concat(function(e){var n,a=g(e),l={},u=s(i(e,"name")),f=s(i(e,"styleUrl")),c=s(i(e,"description")),h=i(e,"TimeSpan"),p=i(e,"TimeStamp"),m=i(e,"ExtendedData"),S=i(e,"LineStyle"),k=i(e,"PolyStyle"),T=i(e,"visibility");if(!a.geoms.length)return[];if(u&&(l.name=u),f){"#"!==f[0]&&(f="#"+f),l.styleUrl=f,y[f]&&(l.styleHash=y[f]),v[f]&&(l.styleMapHash=v[f],l.styleHash=y[v[f].normal]);var x=d[l.styleHash];x&&(S||(S=i(x,"LineStyle")),k||(k=i(x,"PolyStyle")))}if(c&&(l.description=c),h){var b=s(i(h,"begin")),L=s(i(h,"end"));l.timespan={begin:b,end:L}}if(p&&(l.timestamp=s(i(p,"when"))),S){var N=o(s(i(S,"color"))),M=N[0],P=N[1],F=parseFloat(s(i(S,"width")));M&&(l.stroke=M),isNaN(P)||(l["stroke-opacity"]=P),isNaN(F)||(l["stroke-width"]=F)}if(k){var w=o(s(i(k,"color"))),R=w[0],z=w[1],G=s(i(k,"fill")),A=s(i(k,"outline"));R&&(l.fill=R),isNaN(z)||(l["fill-opacity"]=z),G&&(l["fill-opacity"]="1"===G?l["fill-opacity"]||1:0),A&&(l["stroke-opacity"]="1"===A?l["stroke-opacity"]||1:0)}if(m){var C=t(m,"Data"),H=t(m,"SimpleData");for(n=0;n<C.length;n++)l[C[n].getAttribute("name")]=s(i(C[n],"value"));for(n=0;n<H.length;n++)l[H[n].getAttribute("name")]=s(H[n])}T&&(l.visibility=s(T)),a.coordTimes.length&&(l.coordTimes=1===a.coordTimes.length?a.coordTimes[0]:a.coordTimes);var D={type:"Feature",geometry:1===a.geoms.length?a.geoms[0]:{type:"GeometryCollection",geometries:a.geoms},properties:l};return r(e,"id")&&(D.id=r(e,"id")),[D]}(k[w]));return m},gpx:function(e){function n(e,r){var n=t(e,r),i=[],o=[],a=[],s=n.length;if(s<2)return{};for(var l=0;l<s;l++){var u=g(n[l]);i.push(u.coordinates),u.time&&o.push(u.time),u.heartRate&&a.push(u.heartRate)}return{line:i,times:o,heartRates:a}}function i(e){var n,i;n=l(e,["name","cmt","desc","time","keywords"]),i=t(e,"link"),i.length&&(n.links=[]);for(var o,a=0;a<i.length;a++)o={href:r(i[a],"href")},u(o,l(i[a],["text","type"])),n.links.push(o);return n}var o,a,s=t(e,"trk"),f=t(e,"rte"),c=t(e,"wpt"),p=h();for(o=0;o<s.length;o++)(a=function(e){for(var r,o=t(e,"trkseg"),a=[],s=[],l=[],u=0;u<o.length;u++)(r=n(o[u],"trkpt"))&&(r.line&&a.push(r.line),r.times&&r.times.length&&s.push(r.times),r.heartRates&&r.heartRates.length&&l.push(r.heartRates));if(0!==a.length){var f=i(e);return s.length&&(f.coordTimes=1===a.length?s[0]:s),l.length&&(f.heartRates=1===a.length?l[0]:l),{type:"Feature",properties:f,geometry:{type:1===a.length?"LineString":"MultiLineString",coordinates:1===a.length?a[0]:a}}}}(s[o]))&&p.features.push(a);for(o=0;o<f.length;o++)(a=function(e){var t=n(e,"rtept");if(t.line){return{type:"Feature",properties:i(e),geometry:{type:"LineString",coordinates:t.line}}}}(f[o]))&&p.features.push(a);for(o=0;o<c.length;o++)p.features.push(function(e){var t=i(e);return u(t,l(e,["sym","type"])),{type:"Feature",properties:t,geometry:{type:"Point",coordinates:g(e).coordinates}}}(c[o]));return p}}}();"undefined"!=typeof module&&(module.exports=toGeoJSON);
 //# sourceMappingURL=togeojson.min.js.map</script>
+<script>var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(l=4*u+17),e(0,0),e(l-7,0),e(0,l-7),i(),o(),v(t,r),7<=u&&h(t),null==n&&(n=w(u,f,c)),d(n,r)}var u=t,f=y[r],g=null,l=0,n=null,c=[],s={},e=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||l<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||l<=r+n||(g[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},o=function(){for(var t=8;t<l-8;t+=1)null==g[t][6]&&(g[t][6]=t%2==0);for(var r=8;r<l-8;r+=1)null==g[6][r]&&(g[6][r]=r%2==0)},i=function(){for(var t=B.getPatternPosition(u),r=0;r<t.length;r+=1)for(var e=0;e<t.length;e+=1){var n=t[r],o=t[e];if(null==g[n][o])for(var i=-2;i<=2;i+=1)for(var a=-2;a<=2;a+=1)g[n+i][o+a]=-2==i||2==i||-2==a||2==a||0==i&&0==a}},h=function(t){for(var r=B.getBCHTypeNumber(u),e=0;e<18;e+=1){var n=!t&&1==(r>>e&1);g[Math.floor(e/3)][e%3+l-8-3]=n}for(e=0;e<18;e+=1){n=!t&&1==(r>>e&1);g[e%3+l-8-3][Math.floor(e/3)]=n}},v=function(t,r){for(var e=f<<3|r,n=B.getBCHTypeInfo(e),o=0;o<15;o+=1){var i=!t&&1==(n>>o&1);o<6?g[o][8]=i:o<8?g[o+1][8]=i:g[l-15+o][8]=i}for(o=0;o<15;o+=1){i=!t&&1==(n>>o&1);o<8?g[8][l-o-1]=i:o<9?g[8][15-o-1+1]=i:g[8][15-o-1]=i}g[l-8][8]=!t},d=function(t,r){for(var e=-1,n=l-1,o=7,i=0,a=B.getMaskFunction(r),u=l-1;0<u;u-=2)for(6==u&&(u-=1);;){for(var f=0;f<2;f+=1)if(null==g[n][u-f]){var c=!1;i<t.length&&(c=1==(t[i]>>>o&1)),a(n,u-f)&&(c=!c),g[n][u-f]=c,-1==(o-=1)&&(i+=1,o=7)}if((n+=e)<0||l<=n){n-=e,e=-e;break}}},w=function(t,r,e){for(var n=b.getRSBlocks(t,r),o=M(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=C(i[u],l.getLength()-1).mod(l);a[u]=new Array(l.getLength()-1);for(g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=0<=s?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};s.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=x(t);break;case"Alphanumeric":e=m(t);break;case"Byte":e=L(t);break;case"Kanji":e=D(t);break;default:throw"mode:"+r}c.push(e),n=null},s.isDark=function(t,r){if(t<0||l<=t||r<0||l<=r)throw t+","+r;return g[t][r]},s.getModuleCount=function(){return l},s.make=function(){if(u<1){for(var t=1;t<40;t++){for(var r=b.getRSBlocks(t,f),e=M(),n=0;n<c.length;n++){var o=c[n];e.put(o.getMode(),4),e.put(o.getLength(),B.getLengthInBits(o.getMode(),t)),o.write(e)}var i=0;for(n=0;n<r.length;n++)i+=r[n].dataCount;if(e.getLengthInBits()<=8*i)break}u=t}a(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){a(!0,e);var n=B.getLostPoint(s);(0==e||n<t)&&(t=n,r=e)}return r}())},s.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<s.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<s.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=s.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},s.createSvgTag=function(t,r,e,n){var o={};"object"==typeof t&&(t=(o=t).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,f,c=s.getModuleCount()*t+2*r,g="";for(f="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",g+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',g+=o.scalable?"":' width="'+c+'px" height="'+c+'px"',g+=' viewBox="0 0 '+c+" "+c+'" ',g+=' preserveAspectRatio="xMinYMin meet"',g+=n.text||e.text?' role="img" aria-labelledby="'+p([n.id,e.id].join(" ").trim())+'"':"",g+=">",g+=n.text?'<title id="'+p(n.id)+'">'+p(n.text)+"</title>":"",g+=e.text?'<description id="'+p(e.id)+'">'+p(e.text)+"</description>":"",g+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',g+='<path d="',a=0;a<s.getModuleCount();a+=1)for(u=a*t+r,i=0;i<s.getModuleCount();i+=1)s.isDark(a,i)&&(g+="M"+(i*t+r)+","+u+f);return g+='" stroke="transparent" fill="black"/>',g+="</svg>"},s.createDataURL=function(o,t){o=o||2,t=void 0===t?4*o:t;var r=s.getModuleCount()*o+2*t,i=t,a=r-t;return I(r,r,function(t,r){if(i<=t&&t<a&&i<=r&&r<a){var e=Math.floor((t-i)/o),n=Math.floor((r-i)/o);return s.isDark(n,e)?0:1}return 1})},s.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=s.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=s.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=p(e),o+='"'),o+="/>"};var p=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return s.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*s.getModuleCount()+2*t,u=t,f=a-t,c={"██":"█","█ ":"▀"," █":"▄","  ":" "},g={"██":"▀","█ ":"▀"," █":" ","  ":" "},l="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<f&&u<=r&&r<f&&s.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<f&&u<=r+1&&r+1<f&&s.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",l+=t<1&&f<=r+1?g[i]:c[i];l+="\n"}return a%2&&0<t?l.substring(0,l.length-a-1)+Array(1+a).join("▀"):l.substring(0,l.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=s.getModuleCount()*t+2*r,u=r,f=a-r,c=Array(t+1).join("██"),g=Array(t+1).join("  "),l="",h="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),h="",n=0;n<a;n+=1)i=1,u<=n&&n<f&&u<=e&&e<f&&s.isDark(o,Math.floor((n-u)/t))&&(i=0),h+=i?c:g;for(o=0;o<t;o+=1)l+=h+"\n"}return l.substring(0,l.length-1)},s.renderTo2dContext=function(t,r){r=r||2;for(var e=s.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=s.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},s}i.stringToBytes=(i.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,i.createStringToBytes=function(u,f){var i=function(){function t(){var t=r.read();if(-1==t)throw"eof";return t}for(var r=S(u),e=0,n={};;){var o=r.read();if(-1==o)break;var i=t(),a=t()<<8|t();n[String.fromCharCode(o<<8|i)]=a,e+=1}if(e!=f)throw e+" != "+f;return n}(),a="?".charCodeAt(0);return function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);if(n<128)r.push(n);else{var o=i[t.charAt(e)];"number"==typeof o?(255&o)==o?r.push(o):(r.push(o>>>8),r.push(255&o)):r.push(a)}}return r}};var r,t,a=1,u=2,o=4,f=8,y={L:1,M:0,Q:3,H:2},e=0,n=1,c=2,g=3,l=4,h=5,s=6,v=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],(t={}).getBCHTypeInfo=function(t){for(var r=t<<10;0<=d(r)-d(1335);)r^=1335<<d(r)-d(1335);return 21522^(t<<10|r)},t.getBCHTypeNumber=function(t){for(var r=t<<12;0<=d(r)-d(7973);)r^=7973<<d(r)-d(7973);return t<<12|r},t.getPatternPosition=function(t){return r[t-1]},t.getMaskFunction=function(t){switch(t){case e:return function(t,r){return(t+r)%2==0};case n:return function(t,r){return t%2==0};case c:return function(t,r){return r%3==0};case g:return function(t,r){return(t+r)%3==0};case l:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case h:return function(t,r){return t*r%2+t*r%3==0};case s:return function(t,r){return(t*r%2+t*r%3)%2==0};case v:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},t.getErrorCorrectPolynomial=function(t){for(var r=C([1],0),e=0;e<t;e+=1)r=r.multiply(C([1,w.gexp(e)],0));return r},t.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case o:case f:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case o:return 16;case f:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case o:return 16;case f:return 12;default:throw"mode:"+t}}},t.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);5<i&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},t);function d(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r}var w=function(){for(var r=new Array(256),e=new Array(256),t=0;t<8;t+=1)r[t]=1<<t;for(t=8;t<256;t+=1)r[t]=r[t-4]^r[t-5]^r[t-6]^r[t-8];for(t=0;t<255;t+=1)e[r[t]]=t;var n={glog:function(t){if(t<1)throw"glog("+t+")";return e[t]},gexp:function(t){for(;t<0;)t+=255;for(;256<=t;)t-=255;return r[t]}};return n}();function C(n,o){if(void 0===n.length)throw n.length+"/"+o;var r=function(){for(var t=0;t<n.length&&0==n[t];)t+=1;for(var r=new Array(n.length-t+o),e=0;e<n.length-t;e+=1)r[e]=n[e+t];return r}(),i={getAt:function(t){return r[t]},getLength:function(){return r.length},multiply:function(t){for(var r=new Array(i.getLength()+t.getLength()-1),e=0;e<i.getLength();e+=1)for(var n=0;n<t.getLength();n+=1)r[e+n]^=w.gexp(w.glog(i.getAt(e))+w.glog(t.getAt(n)));return C(r,0)},mod:function(t){if(i.getLength()-t.getLength()<0)return i;for(var r=w.glog(i.getAt(0))-w.glog(t.getAt(0)),e=new Array(i.getLength()),n=0;n<i.getLength();n+=1)e[n]=i.getAt(n);for(n=0;n<t.getLength();n+=1)e[n]^=w.gexp(w.glog(t.getAt(n))+r);return C(e,0).mod(t)}};return i}function p(){var e=[],o={writeByte:function(t){e.push(255&t)},writeShort:function(t){o.writeByte(t),o.writeByte(t>>>8)},writeBytes:function(t,r,e){r=r||0,e=e||t.length;for(var n=0;n<e;n+=1)o.writeByte(t[n+r])},writeString:function(t){for(var r=0;r<t.length;r+=1)o.writeByte(t.charCodeAt(r))},toByteArray:function(){return e},toString:function(){var t="";t+="[";for(var r=0;r<e.length;r+=1)0<r&&(t+=","),t+=e[r];return t+="]"}};return o}var k,A,b=(k=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],(A={}).getRSBlocks=function(t,r){var e=function(t,r){switch(r){case y.L:return k[4*(t-1)+0];case y.M:return k[4*(t-1)+1];case y.Q:return k[4*(t-1)+2];case y.H:return k[4*(t-1)+3];default:return}}(t,r);if(void 0===e)throw"bad rs block @ typeNumber:"+t+"/errorCorrectionLevel:"+r;for(var n,o,i=e.length/3,a=[],u=0;u<i;u+=1)for(var f=e[3*u+0],c=e[3*u+1],g=e[3*u+2],l=0;l<f;l+=1)a.push((n=g,o=void 0,(o={}).totalCount=c,o.dataCount=n,o));return a},A),M=function(){var e=[],n=0,o={getBuffer:function(){return e},getAt:function(t){var r=Math.floor(t/8);return 1==(e[r]>>>7-t%8&1)},put:function(t,r){for(var e=0;e<r;e+=1)o.putBit(1==(t>>>r-e-1&1))},getLengthInBits:function(){return n},putBit:function(t){var r=Math.floor(n/8);e.length<=r&&e.push(0),t&&(e[r]|=128>>>n%8),n+=1}};return o},x=function(t){var r=a,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+2<r.length;)t.put(o(r.substring(e,e+3)),10),e+=3;e<r.length&&(r.length-e==1?t.put(o(r.substring(e,e+1)),4):r.length-e==2&&t.put(o(r.substring(e,e+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return e},m=function(t){var r=u,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+1<r.length;)t.put(45*o(r.charAt(e))+o(r.charAt(e+1)),11),e+=2;e<r.length&&t.put(o(r.charAt(e)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return e},L=function(t){var r=o,e=i.stringToBytes(t),n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=0;r<e.length;r+=1)t.put(e[r],8)}};return n},D=function(t){var r=f,e=i.stringToBytesFuncs.SJIS;if(!e)throw"sjis not supported.";!function(){var t=e("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=e(t),n={getMode:function(){return r},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return n},S=function(t){var e=t,n=0,o=0,i=0,r={read:function(){for(;i<8;){if(n>=e.length){if(0==i)return-1;throw"unexpected end of file./"+i}var t=e.charAt(n);if(n+=1,"="==t)return i=0,-1;t.match(/^\s$/)||(o=o<<6|a(t.charCodeAt(0)),i+=6)}var r=o>>>i-8&255;return i-=8,r}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return r},I=function(t,r,e){for(var n=function(t,r){var n=t,o=r,l=new Array(t*r),e={setPixel:function(t,r,e){l[r*n+t]=e},write:function(t){t.writeString("GIF87a"),t.writeShort(n),t.writeShort(o),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(n),t.writeShort(o),t.writeByte(0);var r=i(2);t.writeByte(2);for(var e=0;255<r.length-e;)t.writeByte(255),t.writeBytes(r,e,255),e+=255;t.writeByte(r.length-e),t.writeBytes(r,e,r.length-e),t.writeByte(0),t.writeString(";")}},i=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,o=h(),i=0;i<r;i+=1)o.add(String.fromCharCode(i));o.add(String.fromCharCode(r)),o.add(String.fromCharCode(e));var a=p(),u=function(t){var e=t,n=0,o=0,r={write:function(t,r){if(t>>>r!=0)throw"length over";for(;8<=n+r;)e.writeByte(255&(t<<n|o)),r-=8-n,t>>>=8-n,n=o=0;o|=t<<n,n+=r},flush:function(){0<n&&e.writeByte(o)}};return r}(a);u.write(r,n);var f=0,c=String.fromCharCode(l[f]);for(f+=1;f<l.length;){var g=String.fromCharCode(l[f]);f+=1,o.contains(c+g)?c+=g:(u.write(o.indexOf(c),n),o.size()<4095&&(o.size()==1<<n&&(n+=1),o.add(c+g)),c=g)}return u.write(o.indexOf(c),n),u.write(e,n),u.flush(),a.toByteArray()},h=function(){var r={},e=0,n={add:function(t){if(n.contains(t))throw"dup key:"+t;r[t]=e,e+=1},size:function(){return e},indexOf:function(t){return r[t]},contains:function(t){return void 0!==r[t]}};return n};return e}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=p();n.write(a);for(var u=function(){function e(t){a+=String.fromCharCode(r(63&t))}var n=0,o=0,i=0,a="",t={},r=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return t.writeByte=function(t){for(n=n<<8|255&t,o+=8,i+=1;6<=o;)e(n>>>o-6),o-=6},t.flush=function(){if(0<o&&(e(n<<6-o),o=n=0),i%3!=0)for(var t=3-i%3,r=0;r<t;r+=1)a+="="},t.toString=function(){return a},t}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return i}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||57344<=n?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});</script>
 <script>var symbolProperties = {
 	"symbols": [
 		{"name":"Entstehungsbrand", "title":"Entstehung", "keywords": "Gefahren", "category": 5},
@@ -1417,15 +1469,23 @@ function freshState() {
     symbols: [],         // { id, name, lat, lng, label, time }
     sections: [],        // { id, kind:'poly'|'line', name, color, pts:[[lat,lng]] }
     journal: [],         // { id, time, text, auto }
+    wind: { dir: null, speed: null, cond: 'bedeckt', stab: '', terrain: 'land', time: null },   // dir: Wind AUS dieser Richtung in Grad
+    plumes: [],          // { id, name, lat, lng, mode:'gauss'|'takt', follow, dir, speed, Q, H, thr1, thr2, len, angle, r0 }
     casualties: [],      // { id, cat, n, note, time, lat?, lng? }
     problems: []         // { id, title, text, prio, status, owner, time, poi?, poiName?, lat?, lng? }
   };
 }
 let state = freshState();
 const runtime = { sector: {}, mode: null, placing: null, drawPurpose: null, drawHandler: null, vis: new Set() };
+const qs = new URLSearchParams(location.search);
+runtime.viewer = qs.has('ansicht'); runtime.beamer = qs.has('beamer'); runtime.pin = qs.get('k') || '';
+if (runtime.viewer) document.body.classList.add('viewer');
+if (runtime.beamer) document.body.classList.add('beamer');
 const PAL = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#475569'];
 const safeColor = (c, d) => /^#[0-9a-f]{6}$/i.test(c || '') ? c : (d || PAL[0]);
 
+const PRIO_OLD = { hoch: 1, mittel: 2, niedrig: 3 };
+function fixProblems(list) { (list || []).forEach(x => { x.prio = typeof x.prio === 'string' && PRIO_OLD[x.prio] ? PRIO_OLD[x.prio] : prioNum(x.prio); }); return list; }
 /* Version 1 (ein Gebiet) -> Version 2 (mehrere Gebiete) */
 function migrate(s) {
   if (!s || typeof s !== 'object') throw new Error('unbekanntes Format');
@@ -1442,6 +1502,7 @@ function migrate(s) {
   const d = freshState(); Object.keys(d).forEach(k => { if (s[k] === undefined) s[k] = d[k]; });
   s.areas.forEach(a => { a.color = safeColor(a.color); a.sections = undefined; delete a.sections; });
   s.sections.forEach(x => { x.color = safeColor(x.color, '#e11d48'); });
+  fixProblems(s.problems);
   return s;
 }
 
@@ -1490,21 +1551,24 @@ function snapshot() {
   return JSON.stringify({
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
-    manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems
+    manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
+    wind: state.wind, plumes: state.plumes
   });
 }
 function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
 function commit(label) {
+  if (runtime.viewer) return;
   const after = snapshot(); if (after === hist.cur) return;
   hist.past.push({ label, before: hist.cur, after }); if (hist.past.length > HIST_MAX) hist.past.shift();
   hist.cur = after; hist.future = []; updateUndoButtons();
 }
 function updateUndoButtons() {
   const u = $('#btnUndo'), r = $('#btnRedo'); if (!u) return;
+  $('#btnUndoMenu').disabled = !hist.past.length; $('#btnRedoMenu').disabled = !hist.future.length;
   const pu = hist.past[hist.past.length - 1], fr = hist.future[hist.future.length - 1];
   u.disabled = !pu; r.disabled = !fr;
-  u.title = pu ? 'Rückgängig: ' + pu.label : 'Nichts rückgängig zu machen';
-  r.title = fr ? 'Wiederholen: ' + fr.label : 'Nichts zu wiederholen';
+  u.title = pu ? 'Rückgängig: ' + pu.label + ' (Strg+Z)' : 'Nichts rückgängig zu machen';
+  r.title = fr ? 'Wiederholen: ' + fr.label + ' (Strg+Y)' : 'Nichts zu wiederholen';
 }
 function undo() {
   commit('Änderung'); const e = hist.past.pop(); if (!e) return;
@@ -1514,14 +1578,27 @@ function redo() {
   commit('Änderung'); const e = hist.future.pop(); if (!e) return;
   hist.past.push(e); restore(e.after); addJournal('Wiederholt: ' + e.label, true); updateUndoButtons();
 }
+function undoTo(n) {            // n Schritte auf einmal zurück (Liste wie in Word)
+  commit('Änderung'); n = Math.min(n, hist.past.length); if (!n) return;
+  const taken = []; for (let i = 0; i < n; i++) { const e = hist.past.pop(); hist.future.push(e); taken.push(e); }
+  restore(taken[taken.length - 1].before);
+  addJournal('Rückgängig: ' + taken[0].label + (n > 1 ? ' und ' + (n - 1) + ' weitere' : ''), true); updateUndoButtons();
+}
+function redoTo(n) {
+  commit('Änderung'); n = Math.min(n, hist.future.length); if (!n) return;
+  const taken = []; for (let i = 0; i < n; i++) { const e = hist.future.pop(); hist.past.push(e); taken.push(e); }
+  restore(taken[taken.length - 1].after);
+  addJournal('Wiederholt: ' + taken[0].label + (n > 1 ? ' und ' + (n - 1) + ' weitere' : ''), true); updateUndoButtons();
+}
 function restore(snap) {
   cancelEdit(); closeMenu(); stopDraw(); map.closePopup();
   const d = JSON.parse(snap);
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || [];
   d.manual.forEach(q => { state.pois[q.id] = q; });
-  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems();
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen();
   hist.cur = snapshot(); persist();
 }
 
@@ -1541,8 +1618,10 @@ function askText(title, value) {
 let saveTimer;
 window.addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); saveNow(); } });
 function persist() {
+  if (runtime.viewer) return;                 // Ansicht schreibt nie in den Browserspeicher
   clearTimeout(saveTimer);
   saveTimer = setTimeout(saveNow, 300);
+  if (runtime.live) schedulePush();
 }
 // save('Bezeichnung') legt einen Rückgängig-Schritt an, save() sichert nur im Browser.
 function save(label) {
@@ -1605,7 +1684,8 @@ function geomRings(g) {            // GeoJSON-Geometrie -> Außenringe als [lat,
 /* ------------------------------------------------------------------ */
 /* Karte                                                               */
 /* ------------------------------------------------------------------ */
-const map = L.map('map', { zoomControl: true, preferCanvas: false }).setView([50.9375, 6.9603], 12);
+// Feinere Zoomstufen: Viertelstufen, Knöpfe in halben Schritten, Mausrad deutlich sanfter
+const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 180, wheelDebounceTime: 30, zoomAnimationThreshold: 6 }).setView([50.9375, 6.9603], 12);
 const baseLayers = {
   'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
   'Satellit (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
@@ -1986,6 +2066,7 @@ function ingestEmbedded(layers, area) {
   return n;
 }
 function loadObjects() {
+  if (runtime.viewer) return;
   queryAreas().forEach(a => {
     const ld = state.loaded[a.id] || (state.loaded[a.id] = {});
     const bySector = {};
@@ -2262,7 +2343,9 @@ const CAS = {
   evakuiert: { label: 'Evakuierte',      short: 'E',  color: '#0369a1' },
   gerettet:  { label: 'Gerettete',       short: 'G',  color: '#15803d' }
 };
-const PRIO = { hoch: { label: 'hoch', color: '#dc2626', ord: 0 }, mittel: { label: 'mittel', color: '#f59e0b', ord: 1 }, niedrig: { label: 'niedrig', color: '#64748b', ord: 2 } };
+const PRIO_COL = ['#dc2626', '#ea580c', '#f59e0b', '#84cc16', '#64748b'];
+const prioNum = v => { const n = Math.round(parseFloat(v)); return n >= 1 ? n : 1; };
+const prioColor = n => PRIO_COL[Math.min(prioNum(n), PRIO_COL.length) - 1];
 const PSTAT = { offen: 'offen', inArbeit: 'in Arbeit', erledigt: 'erledigt' };
 
 function initOffline() {
@@ -2291,10 +2374,10 @@ function initNewUi() {
   $('#btnCasPlace').onclick = () => { stopDraw(); runtime.mode = 'cas'; $('#btnCasPlace').classList.add('active'); map.getContainer().style.cursor = 'crosshair'; say('Ort für die Zahl anklicken. Mehrfach möglich, Esc beendet.'); };
   $('#btnPAdd').onclick = () => {
     const t = $('#pTitle').value.trim(); if (!t) { $('#pTitle').focus(); return; }
-    addProblem({ title: t, text: $('#pText').value.trim(), prio: $('#pPrio').value, owner: $('#pOwner').value.trim() });
+    addProblem({ title: t, text: $('#pText').value.trim(), prio: prioNum($('#pPrio').value), owner: $('#pOwner').value.trim() });
     $('#pTitle').value = ''; $('#pText').value = '';
   };
-  ['pfStatus', 'pfPrio'].forEach(id => $('#' + id).addEventListener('change', renderProblems));
+  $('#pfStatus').addEventListener('change', renderProblems); $('#pfPrio').addEventListener('input', renderProblems);
   $('#pfText').addEventListener('input', renderProblems);
 }
 
@@ -2363,6 +2446,7 @@ function renderCas() {
       c.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
       el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save('Zahl gelöscht: ' + CAS[c.cat].label); } })));
   });
+  if (runtime.viewer) lockViewer(list);
   casLayer.clearLayers();
   state.casualties.filter(c => c.lat != null).forEach(c => {
     const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: [34, 24], iconAnchor: [17, 12], html: '<div class="cas" style="--c:' + CAS[c.cat].color + '">' + CAS[c.cat].short + ' ' + c.n + '</div>' }), draggable: true });
@@ -2376,7 +2460,7 @@ function renderCas() {
 
 /* Problemliste */
 function addProblem(data) {
-  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 'mittel', status: 'offen', owner: '', time: new Date().toISOString() }, data);
+  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 2, status: 'offen', owner: '', time: new Date().toISOString() }, data);
   state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
 }
 function reportProblemFor(p) {
@@ -2387,18 +2471,18 @@ function reportProblemFor(p) {
   if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); inp.scrollIntoView({ block: 'nearest' }); }
 }
 function renderProblems() {
-  const fs = $('#pfStatus').value, fp = $('#pfPrio').value, q = $('#pfText').value.trim().toLowerCase();
-  const rows = state.problems.filter(x => (!fs || (fs === 'aktiv' ? x.status !== 'erledigt' : x.status === fs)) && (!fp || x.prio === fp)
+  const fs = $('#pfStatus').value, fp = parseInt($('#pfPrio').value, 10) || 0, q = $('#pfText').value.trim().toLowerCase();
+  const rows = state.problems.filter(x => (!fs || (fs === 'aktiv' ? x.status !== 'erledigt' : x.status === fs)) && (!fp || x.prio <= fp)
     && (!q || (x.title + ' ' + x.text + ' ' + x.owner + ' ' + (x.poiName || '')).toLowerCase().includes(q)))
-    .sort((a, b) => (a.status === 'erledigt') - (b.status === 'erledigt') || PRIO[a.prio].ord - PRIO[b.prio].ord || (a.time < b.time ? 1 : -1));
+    .sort((a, b) => (a.status === 'erledigt') - (b.status === 'erledigt') || a.prio - b.prio || (a.time < b.time ? 1 : -1));
   $('#pInfo').textContent = rows.length + ' von ' + state.problems.length + ' Problemen';
   const box = $('#pList'); box.replaceChildren();
   rows.forEach(x => {
     const sel = (opts, cur, fn) => { const s = el('select', { onchange: ev => fn(ev.target.value) }, Object.entries(opts).map(([k, v]) => el('option', { value: k, text: v.label || v }))); s.value = cur; return s; };
-    const card = el('div', { class: 'card' + (x.status === 'erledigt' ? ' done' : ''), 'data-pid': x.id, style: '--c:' + PRIO[x.prio].color },
+    const card = el('div', { class: 'card' + (x.status === 'erledigt' ? ' done' : ''), 'data-pid': x.id, style: '--c:' + prioColor(x.prio) },
       el('input', { type: 'text', class: 'title', value: x.title, oninput: ev => { x.title = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
       el('div', { class: 'row' },
-        sel(PRIO, x.prio, v => { x.prio = v; save('Priorität geändert: ' + x.title); renderProblems(); }),
+        el('label', { class: 'hint prio' }, 'Prio ', el('input', { type: 'number', min: '1', step: '1', value: x.prio, title: 'Priorität, 1 = höchste', style: 'width:56px', onchange: ev => { x.prio = prioNum(ev.target.value); save('Priorität geändert: ' + x.title + ' auf ' + x.prio); renderProblems(); } })),
         sel(PSTAT, x.status, v => { x.status = v; addJournal('Problem „' + x.title + '“: ' + PSTAT[v], true); save('Problemstatus: ' + x.title + ' ' + PSTAT[v]); renderProblems(); renderCounts(); }),
         el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); }, onchange: () => save('Zuständig geändert: ' + x.title) })),
       el('textarea', { rows: '2', placeholder: 'Einzelheiten, Maßnahmen', oninput: ev => { x.text = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
@@ -2411,12 +2495,13 @@ function renderProblems() {
     box.append(card);
   });
   if (!rows.length) box.append(el('div', { class: 'hint', text: 'Keine Probleme in dieser Ansicht.' }));
+  if (runtime.viewer) lockViewer(box);
   probLayer.clearLayers();
   state.problems.filter(x => x.lat != null && x.status !== 'erledigt').forEach(x => {
-    const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + PRIO[x.prio].color + '">!</div>' }) });
-    m.bindTooltip(el('span', { text: x.title + ' (' + PRIO[x.prio].label + ')' }));
+    const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + prioColor(x.prio) + '">' + prioNum(x.prio) + '</div>' }) });
+    m.bindTooltip(el('span', { text: x.title + ' (Prio ' + x.prio + ')' }));
     m.on('contextmenu', e => ctxOpen(e, problemItems(x), null, 'Problem: ' + x.title));
-    m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + PRIO[x.prio].color; setTimeout(() => { c.style.outline = ''; }, 1800); } });
+    m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + prioColor(x.prio); setTimeout(() => { c.style.outline = ''; }, 1800); } });
     m.addTo(probLayer);
   });
 }
@@ -2518,6 +2603,7 @@ function openSub(row, level) {
   return box;
 }
 function showMenu(x, y, items) {
+  if (runtime.viewer) return;
   closeMenu();
   const box = menuNode(items, 0); menuStack.push(box); placeBox(box, x, y); box.focus();
 }
@@ -2616,6 +2702,7 @@ function mapItems(ll) {
     { label: 'Taktisches Zeichen hier setzen', sub: () => symbolItems(ll) },
     { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
     { sep: true },
+    { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
     { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
     { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: () => askNumberCas(k, ll) })) },
     { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
@@ -2673,6 +2760,7 @@ function poiItems(p) {
       renderCas(); renderList(); save('Personen am Objekt: ' + poiTitle(p)); } })) },
     { label: 'Umkreis als Gebiet', sub: [1, 2, 5].map(km => ({ label: km + ' km', onclick: () => circleArea({ lat: p.lat, lng: p.lng }, km, 'Umkreis ' + km + ' km: ' + poiTitle(p)) })) },
     { sep: true },
+    { label: 'Keule ab diesem Objekt', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume({ lat: p.lat, lng: p.lng }, 'gauss', poiTitle(p)) }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume({ lat: p.lat, lng: p.lng }, 'takt', poiTitle(p)) }] },
     { label: 'Zoom auf Objekt', onclick: () => { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 17)); } },
     { label: 'Koordinaten kopieren', onclick: () => copyText(fmtLL(p), 'Koordinaten kopiert: ' + fmtLL(p)) }
   ];
@@ -2713,11 +2801,349 @@ function problemItems(x) {
   ];
 }
 
+/* ------------------------------------------------------------------ */
+/* Wind und Ausbreitungskeule                                          */
+/* ------------------------------------------------------------------ */
+map.createPane('plumes').style.zIndex = 392;       // über den Gebieten, unter Abschnitten und Markern
+const plumeGroup = L.layerGroup().addTo(map);
+const COMPASS = ['N', 'NNO', 'NO', 'ONO', 'O', 'OSO', 'SO', 'SSO', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+const compassName = d => COMPASS[Math.round((((d % 360) + 360) % 360) / 22.5) % 16];
+const BFT = [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7];
+const beaufort = u => { const i = BFT.findIndex(t => u < t); return i < 0 ? 12 : i; };
+const COND = { bedeckt: 'Bedeckt (Tag oder Nacht) oder unbekannt', 'tag-stark': 'Tag, starke Einstrahlung', 'tag-mittel': 'Tag, mäßige Einstrahlung', 'tag-schwach': 'Tag, schwache Einstrahlung', 'nacht-bewoelkt': 'Nacht, mehr als 4/8 bewölkt', 'nacht-klar': 'Nacht, höchstens 3/8 bewölkt' };
+// Pasquill-Tabelle (Turner): Spalten sind die Windbänder <2, 2-3, 3-5, 5-6, >6 m/s
+const PQ = { 'tag-stark': ['A', 'A-B', 'B', 'C', 'C'], 'tag-mittel': ['A-B', 'B', 'B-C', 'C-D', 'D'], 'tag-schwach': ['B', 'C', 'C', 'D', 'D'], 'nacht-bewoelkt': ['E', 'E', 'D', 'D', 'D'], 'nacht-klar': ['F', 'F', 'E', 'D', 'D'] };
+const STABLER = { 'A-B': 'B', 'B-C': 'C', 'C-D': 'D' };
+function pasquill(cond, u) {
+  if (cond === 'bedeckt' || !PQ[cond]) return { raw: 'D', cls: 'D' };
+  const band = u < 2 ? 0 : u < 3 ? 1 : u < 5 ? 2 : u < 6 ? 3 : 4, raw = PQ[cond][band];
+  return { raw, cls: STABLER[raw] || raw };
+}
+// Briggs (1973): sigma_y = ay*x*(1+by*x)^-1/2, sigma_z = az*x*(1+bz*x)^cz, x in m. Werte nach der veröffentlichten Tabelle (CCST, Appendix 1.B, Table B-1)
+const BRIGGS = {
+  land:  { A: [0.22, 0.0001, 0.20, 0, 1], B: [0.16, 0.0001, 0.12, 0, 1], C: [0.11, 0.0001, 0.08, 0.0002, -0.5], D: [0.08, 0.0001, 0.06, 0.0015, -0.5], E: [0.06, 0.0001, 0.03, 0.0003, -1], F: [0.04, 0.0001, 0.016, 0.0003, -1] },
+  stadt: { AB: [0.32, 0.0004, 0.24, 0.001, 0.5], C: [0.22, 0.0004, 0.20, 0, 1], D: [0.16, 0.0004, 0.14, 0.0003, -0.5], EF: [0.11, 0.0004, 0.08, 0.00015, -0.5] }
+};
+function sigmas(cls, terrain, x) {
+  const t = terrain === 'stadt' ? ({ A: 'AB', B: 'AB', C: 'C', D: 'D', E: 'EF', F: 'EF' }[cls]) : cls;
+  const k = BRIGGS[terrain === 'stadt' ? 'stadt' : 'land'][t];
+  return [k[0] * x * Math.pow(1 + k[1] * x, -0.5), k[2] * x * Math.pow(1 + k[3] * x, k[4])];
+}
+const numOrNull = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+function effWind(pl) {
+  const w = state.wind, f = pl.follow !== false;
+  const dir = f ? w.dir : pl.dir, speed = f ? w.speed : pl.speed;
+  const pq = pasquill(w.cond, Math.max(speed || 0, 1));
+  const cls = w.stab || pq.cls;
+  return { dir, speed, cls, raw: w.stab ? w.stab : pq.raw, terrain: w.terrain || 'land' };
+}
+// Punkte aus dem Windkoordinatensystem (x in Windrichtung, y quer) in Lat/Lng; Wind AUS dir => Fahne zeigt nach dir+180
+function toLL(src, dir, x, y) {
+  const th = rad((dir + 180) % 360), e = x * Math.sin(th) + y * Math.cos(th), n = x * Math.cos(th) - y * Math.sin(th);
+  return [src.lat + n / 111320, src.lng + e / (111320 * Math.cos(rad(src.lat)))];
+}
+function gaussPlume(pl) {
+  const ew = effWind(pl), out = { mode: 'gauss', cls: ew.cls, raw: ew.raw, rings: [], notes: [] };
+  if (ew.dir == null || ew.speed == null) { out.error = 'Wind fehlt'; return out; }
+  if (pl.Q == null || !(pl.Q > 0)) { out.error = 'Quellstärke fehlt'; return out; }
+  if (pl.thr1 == null || !(pl.thr1 > 0)) { out.error = 'Grenzwert fehlt'; return out; }
+  const u = Math.max(ew.speed, 1); if (ew.speed < 1) out.notes.push('Wind unter 1 m/s, gerechnet mit 1 m/s');
+  const H = Math.max(0, pl.H || 0), QQ = pl.Q * 1000;           // g/s in mg/s, Ergebnis in mg/m³
+  const levels = [pl.thr2 > 0 && pl.thr2 < pl.thr1 ? pl.thr2 : null, pl.thr1];
+  let any = false;
+  levels.forEach(thr => {
+    if (thr == null) { out.rings.push(null); return; }
+    const pts = [], cen = x => { const [sy, sz] = sigmas(ew.cls, ew.terrain, x); return [QQ / (Math.PI * u * sy * sz) * Math.exp(-H * H / (2 * sz * sz)), sy]; };
+    const F = 1.01; let prevOk = false, prevX = 10;
+    for (let x = 10; x <= 20000; x *= F) {
+      const [c0, sy] = cen(x);
+      if (c0 >= thr) {
+        if (!prevOk && pts.length === 0 && x > 10.5) {             // Beginn bei angehobener Quelle: Grenze per Halbierung verfeinern
+          let a = prevX, b = x; for (let i = 0; i < 30; i++) { const m = (a + b) / 2; cen(m)[0] >= thr ? b = m : a = m; }
+          const [c1, sy1] = cen(b); pts.push([b, sy1 * Math.sqrt(2 * Math.log(Math.max(c1, thr) / thr))]);
+        }
+        pts.push([x, sy * Math.sqrt(2 * Math.log(c0 / thr))]); prevOk = true;
+      } else if (prevOk) {                                       // Ende: Grenze per Halbierung verfeinern
+        let a = prevX, b = x; for (let i = 0; i < 30; i++) { const m = (a + b) / 2; cen(m)[0] >= thr ? a = m : b = m; }
+        const [c1, sy1] = cen(a); pts.push([a, sy1 * Math.sqrt(2 * Math.log(Math.max(c1, thr) / thr))]); prevOk = false; break;
+      }
+      prevX = x;
+    }
+    if (!pts.length) { out.rings.push({ thr, none: true }); return; }
+    any = true;
+    const left = pts.map(q => [q[0], q[1]]), right = pts.slice().reverse().map(q => [q[0], -q[1]]);
+    const start = pts[0][0] <= 10.5 && H === 0 ? [[0, 0]] : [];
+    const poly = start.concat(left, right);
+    const lenX = pts[pts.length - 1][0], maxW = 2 * Math.max(...pts.map(q => q[1]));
+    out.rings.push({ thr, poly, len: lenX, width: maxW, first: pts[0][0] });
+  });
+  if (!any) out.error = 'Grenzwert wird nirgends erreicht';
+  else { const r = out.rings[1] && !out.rings[1].none ? out.rings[1] : out.rings[0]; out.len = r.len; out.width = r.width; }
+  if (out.rings[1] && out.rings[1].len > 10000) out.notes.push('Reichweite über 10 km, nicht belastbar');
+  if (out.rings[1] && out.rings[1].len < 100) out.notes.push('Reichweite unter 100 m, nicht belastbar');
+  return out;
+}
+function taktPlume(pl) {
+  const ew = effWind(pl), out = { mode: 'takt', rings: [], notes: [] };
+  if (ew.dir == null) { out.error = 'Wind fehlt'; return out; }
+  if (!(pl.len > 0) || !(pl.angle > 0)) { out.error = 'Länge und Öffnungswinkel fehlen'; return out; }
+  const th = (ew.dir + 180) % 360, half = Math.min(pl.angle, 360) / 2, pts = [[pl.lat, pl.lng]];
+  for (let a = -half; a <= half + 1e-9; a += Math.max(1, half / 12)) {
+    const b = rad(th + a); pts.push([pl.lat + pl.len * Math.cos(b) / 111320, pl.lng + pl.len * Math.sin(b) / (111320 * Math.cos(rad(pl.lat)))]);
+  }
+  out.sector = pts; out.len = pl.len; out.width = 2 * pl.len * Math.sin(rad(Math.min(half, 90)));
+  return out;
+}
+const plumeCalc = pl => pl.mode === 'takt' ? taktPlume(pl) : gaussPlume(pl);
+const fmtM = m => m >= 1000 ? (m / 1000).toFixed(2).replace('.', ',') + ' km' : Math.round(m) + ' m';
+function plumeSummary(pl, g) {
+  if (g.error) return g.error;
+  const parts = [];
+  if (pl.mode === 'takt') parts.push('Sektor ' + pl.angle + '°, Länge ' + fmtM(g.len));
+  else parts.push('Länge ' + fmtM(g.len) + ', Breite bis ' + fmtM(g.width) + ', Klasse ' + g.cls + (g.raw !== g.cls ? ' (aus ' + g.raw + ')' : ''));
+  return parts.concat(g.notes).join('; ');
+}
+function renderPlumes() {
+  plumeGroup.clearLayers();
+  state.plumes.forEach(pl => {
+    const g = plumeCalc(pl), ew = effWind(pl);
+    if (!g.error) {
+      if (g.mode === 'gauss') {
+        g.rings.forEach((r, i) => { if (!r || r.none) return;
+          L.polygon(r.poly.map(q => toLL(pl, ew.dir, q[0], q[1])), { pane: 'plumes', color: i === 1 ? '#b91c1c' : '#ea580c', weight: 2, fillOpacity: i === 1 ? 0.4 : 0.25, interactive: true, className: 'plumelyr' })
+            .on('contextmenu', e => ctxOpen(e, plumeItems(pl), e.latlng, 'Keule: ' + pl.name))
+            .bindTooltip('≥ ' + r.thr + ' mg/m³', { sticky: true }).addTo(plumeGroup); });
+      } else {
+        L.polygon(g.sector, { pane: 'plumes', color: '#b91c1c', weight: 2, dashArray: '6 4', fillOpacity: 0.3 }).on('contextmenu', e => ctxOpen(e, plumeItems(pl), e.latlng, 'Keule: ' + pl.name)).addTo(plumeGroup);
+        if (pl.r0 > 0) L.circle([pl.lat, pl.lng], { pane: 'plumes', radius: pl.r0, color: '#b91c1c', weight: 2, fillOpacity: 0.2 }).addTo(plumeGroup);
+      }
+    }
+    const m = L.marker([pl.lat, pl.lng], { draggable: true, icon: L.divIcon({ className: '', iconSize: [24, 24], iconAnchor: [12, 12], html: '<div class="keule-src">K</div>' }) });
+    m.bindTooltip(el('span', { text: pl.name + ': ' + plumeSummary(pl, g) }));
+    m.on('dragend', () => { const ll = m.getLatLng(); pl.lat = ll.lat; pl.lng = ll.lng; refreshKeule(); save('Keule verschoben: ' + pl.name); });
+    m.on('contextmenu', e => ctxOpen(e, plumeItems(pl), null, 'Keule: ' + pl.name));
+    m.addTo(plumeGroup);
+  });
+}
+function plumeItems(pl) {
+  return [
+    { label: 'Umbenennen…', onclick: async () => { const v = await askText('Keule umbenennen', pl.name); if (v == null || !v.trim()) return; pl.name = v.trim(); renderKeulen(); save('Keule umbenannt: ' + pl.name); } },
+    { label: pl.follow !== false ? 'Eigenen Wind verwenden' : 'Dem Wind der Karte folgen', onclick: () => { togglePlumeFollow(pl); } },
+    { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('keule'); const c = document.querySelector('[data-kid="' + pl.id + '"]'); if (c) c.scrollIntoView({ block: 'center' }); } },
+    { label: 'Zoom', onclick: () => map.setView([pl.lat, pl.lng], Math.max(map.getZoom(), 15)) },
+    { label: 'Duplizieren', onclick: () => { state.plumes.push(Object.assign({}, pl, { id: uid(), name: pl.name + ' (Kopie)', lat: pl.lat + 0.0006, lng: pl.lng + 0.0006 })); renderKeulen(); save('Keule dupliziert: ' + pl.name); } },
+    { sep: true },
+    { label: 'Löschen', onclick: () => removePlume(pl) }
+  ];
+}
+function togglePlumeFollow(pl) {
+  if (pl.follow !== false) { pl.follow = false; pl.dir = state.wind.dir; pl.speed = state.wind.speed; } else pl.follow = true;
+  renderKeulen(); save('Keule ' + pl.name + ': ' + (pl.follow ? 'folgt dem Wind' : 'eigener Wind'));
+}
+function removePlume(pl) { state.plumes = state.plumes.filter(x => x !== pl); renderKeulen(); save('Keule gelöscht: ' + pl.name); }
+function addPlume(ll, mode, name) {
+  const n = state.plumes.length + 1;
+  const pl = { id: uid(), name: name ? 'Keule ' + name : 'Keule ' + n, lat: ll.lat, lng: ll.lng, mode, follow: true, dir: null, speed: null, Q: null, H: 0, thr1: null, thr2: null, len: null, angle: null, r0: null };
+  state.plumes.push(pl); renderKeulen(); save('Keule angelegt: ' + pl.name);
+  setPanel(true); openTab('keule');
+  const f = document.querySelector('[data-kid="' + pl.id + '"] input[data-first]'); if (f) { f.focus(); f.scrollIntoView({ block: 'nearest' }); }
+}
+function plumeLine(pl) {
+  const g = plumeCalc(pl), ew = effWind(pl);
+  return { err: !!g.error, text: plumeSummary(pl, g) + (!g.error && ew.dir != null ? ' · Wind aus ' + Math.round(ew.dir) + '° (' + compassName(ew.dir) + '), ' + String(ew.speed).replace('.', ',') + ' m/s' : '') };
+}
+// Teilaktualisierung ohne Neuaufbau der Eingabefelder (sonst geht beim Tabben der Fokus verloren)
+function refreshKeule() {
+  renderPlumes(); renderWindUi(); if (windCtl) windCtl.refresh();
+  document.querySelectorAll('#kList .kcard').forEach(c => {
+    const pl = state.plumes.find(x => x.id === c.dataset.kid); if (!pl) return;
+    const ln = plumeLine(pl), r = c.querySelector('.kres'); if (r) { r.className = 'kres hint' + (ln.err ? ' err' : ''); r.textContent = ln.text; }
+  });
+}
+function renderKeulen() {
+  renderPlumes(); renderWindUi(); windCtl && windCtl.refresh();
+  const box = $('#kList'); if (!box) return; box.replaceChildren();
+  if (!state.plumes.length) box.append(el('div', { class: 'hint', text: 'Noch keine Keule. Mit „Auf Karte setzen“ oder per Rechtsklick auf die Karte anlegen.' }));
+  state.plumes.forEach(pl => {
+    const g = plumeCalc(pl), ew = effWind(pl);
+    const num = (key, label, step, first, ph) => { const at = { type: 'number', step: String(step || 'any'), min: '0', class: 'num', value: pl[key] == null ? '' : pl[key], placeholder: ph || '',
+      onchange: ev => { pl[key] = numOrNull(ev.target.value); refreshKeule(); save('Keule geändert: ' + pl.name); } }; if (first) at['data-first'] = '1'; return el('label', {}, label, el('input', at)); };
+    const modeSel = el('select', { onchange: ev => { pl.mode = ev.target.value; renderKeulen(); save('Keulenart geändert: ' + pl.name); } },
+      el('option', { value: 'gauss', text: 'Gauß-Fahne' }), el('option', { value: 'takt', text: 'Taktische Keule' })); modeSel.value = pl.mode;
+    const follow = el('input', { type: 'checkbox', onchange: () => togglePlumeFollow(pl) }); follow.checked = pl.follow !== false;
+    const card = el('div', { class: 'card kcard', 'data-kid': pl.id, style: '--c:#b91c1c' },
+      el('input', { type: 'text', class: 'title', value: pl.name, onchange: ev => { pl.name = ev.target.value.trim() || pl.name; refreshKeule(); save('Keule umbenannt: ' + pl.name); } }),
+      el('div', { class: 'row' }, modeSel, el('label', {}, follow, ' folgt dem Wind')),
+      pl.follow === false ? el('div', { class: 'row' }, num('dir', 'Wind aus ° ', 5), num('speed', 'm/s ', 0.5)) : null,
+      pl.mode === 'takt'
+        ? el('div', { class: 'row' }, num('len', 'Länge m ', 10, true), num('angle', 'Winkel ° ', 5), num('r0', 'Radius um Quelle m ', 10))
+        : el('div', { class: 'row' }, num('Q', 'Quelle g/s ', 'any', true), num('H', 'Höhe m ', 1), num('thr1', 'Grenzwert mg/m³ ', 'any'), num('thr2', 'äußerer Wert mg/m³ ', 'any')),
+      el('div', { class: 'kres hint' + (g.error ? ' err' : ''), text: plumeLine(pl).text }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([pl.lat, pl.lng], Math.max(map.getZoom(), 15)) }),
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removePlume(pl) })));
+    box.append(card);
+  });
+}
+function renderWindUi() {
+  const w = state.wind; if (!$('#wDir')) return;
+  const set = (id, v) => { const e = $(id); if (document.activeElement !== e) e.value = v == null ? '' : v; };
+  set('#wDir', w.dir); set('#wSpeed', w.speed); $('#wCond').value = w.cond; $('#wStab').value = w.stab || ''; $('#wTer').value = w.terrain || 'land';
+  $('#wCompass').value = w.dir == null ? '' : String(Math.round((((w.dir % 360) + 360) % 360) / 22.5) % 16);
+  const bf = w.speed != null ? 'Bft ' + beaufort(w.speed) + ', ' + Math.round(w.speed * 3.6) + ' km/h' : ''; $('#wBft').textContent = bf;
+  const pq = pasquill(w.cond, Math.max(w.speed || 0, 1)); $('#wStabInfo').textContent = w.stab ? 'manuell' : 'aus Tabelle: ' + pq.raw + (pq.raw !== pq.cls ? ' → ' + pq.cls : '');
+  $('#wInfo').textContent = w.dir == null ? 'Wind noch nicht gesetzt. Ohne Wind entsteht keine Keule.' : 'Wind aus ' + w.dir + '° (' + compassName(w.dir) + '): die Fahne zieht nach ' + ((w.dir + 180) % 360) + '° (' + compassName(w.dir + 180) + ')' + (w.time ? ', gesetzt ' + fmtTime(w.time) : '') + '.';
+}
+function initKeule() {
+  const cs = $('#wCompass'); cs.append(el('option', { value: '', text: '–' })); COMPASS.forEach((n, i) => cs.append(el('option', { value: String(i), text: n + ' (' + Math.round(i * 22.5) + '°)' })));
+  Object.entries(COND).forEach(([k, v]) => $('#wCond').append(el('option', { value: k, text: v })));
+  $('#wStab').append(el('option', { value: '', text: 'automatisch' })); ['A', 'B', 'C', 'D', 'E', 'F'].forEach(c => $('#wStab').append(el('option', { value: c, text: 'Klasse ' + c })));
+  const upd = label => { state.wind.time = new Date().toISOString(); refreshKeule(); save(label); };
+  $('#wDir').addEventListener('change', e => { let v = numOrNull(e.target.value); if (v != null) v = ((v % 360) + 360) % 360; state.wind.dir = v; upd('Wind geändert: Richtung ' + (v == null ? '–' : Math.round(v) + '°')); });
+  $('#wCompass').addEventListener('change', e => { if (e.target.value === '') return; state.wind.dir = +e.target.value * 22.5; upd('Wind geändert: Richtung ' + state.wind.dir + '°'); });
+  $('#wSpeed').addEventListener('change', e => { const v = numOrNull(e.target.value); state.wind.speed = v != null && v >= 0 ? v : null; upd('Wind geändert: ' + (state.wind.speed == null ? '–' : state.wind.speed + ' m/s')); });
+  $('#wCond').addEventListener('change', e => { state.wind.cond = e.target.value; upd('Wetterlage geändert'); });
+  $('#wStab').addEventListener('change', e => { state.wind.stab = e.target.value; upd('Ausbreitungsklasse geändert'); });
+  $('#wTer').addEventListener('change', e => { state.wind.terrain = e.target.value; upd('Gelände geändert'); });
+  $('#btnKeulePlace').onclick = () => { stopDraw(); runtime.mode = 'plume'; $('#btnKeulePlace').classList.add('active'); map.getContainer().style.cursor = 'crosshair'; say('Quelle der Keule anklicken. Esc bricht ab.'); };
+}
+// Windanzeige auf der Karte
+const WindCtl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd() {
+    const d = L.DomUtil.create('div', 'windctl leaflet-bar'); d.setAttribute('role', 'button'); d.tabIndex = 0; d.title = 'Wind einstellen';
+    const go = () => { if (runtime.viewer) return; setPanel(true); openTab('keule'); };
+    d.addEventListener('click', go); d.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    L.DomEvent.disableClickPropagation(d); this._d = d; this.refresh(); return d;
+  },
+  refresh() {
+    const d = this._d; if (!d) return; d.replaceChildren(); const w = state.wind;
+    if (w.dir == null) { d.append(el('span', { text: 'Wind: nicht gesetzt' })); return; }
+    const arrow = L.DomUtil.create('div'); arrow.innerHTML = '<svg width="26" height="26" viewBox="-13 -13 26 26" aria-hidden="true"><g transform="rotate(' + ((w.dir + 180) % 360) + ')"><path d="M0 -11 L7 3 L0 0 L-7 3 Z" fill="#14477d"/><path d="M0 0 L0 11" stroke="#14477d" stroke-width="2"/></g></svg>';
+    d.append(arrow.firstChild, el('span', {}, 'aus ' + Math.round(w.dir) + '° ' + compassName(w.dir), el('br'), (w.speed == null ? '?' : String(w.speed).replace('.', ',')) + ' m/s'));
+  }
+});
+const windCtl = new WindCtl().addTo(map);
+
+/* ------------------------------------------------------------------ */
+/* Live-Freigabe (Server: tools/lage-server.js)                        */
+/* ------------------------------------------------------------------ */
+L.Marker.addInitHook(function () { if (runtime.viewer) this.options.draggable = false; });
+function lockViewer(root) {
+  if (!root) return;
+  root.querySelectorAll('input,textarea,select').forEach(x => { x.disabled = true; });
+  root.querySelectorAll('button').forEach(b => { if (/Löschen|Ort setzen|Entfernen|Versorgt|melden/.test(b.textContent)) b.disabled = true; });
+}
+map.on('popupopen', e => { if (runtime.viewer) lockViewer(e.popup.getElement()); });
+let pushTimer = null;
+function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(pushLive, 700); }
+async function pushLive() {
+  if (!runtime.live) return;
+  recomputeVisible();
+  const vis = {}; visiblePois().forEach(p => { if (p.manual || state.layerOn[p.layer]) vis[p.id] = p; });
+  const share = Object.assign({}, state, { pois: vis, loaded: {}, journal: state.journal.slice(0, 300) });
+  try {
+    const r = await fetch('/api/state?k=' + encodeURIComponent(runtime.live.pin || ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: share }) });
+    runtime.live.ok = r.ok; if (r.ok) runtime.live.rev = (await r.json()).rev;
+  } catch (e) { runtime.live.ok = false; }
+  updateBadge();
+}
+function updateBadge() {
+  const b = $('#liveBadge'); if (!b) return;
+  if (runtime.viewer) { b.hidden = false; b.classList.toggle('off', !runtime.connected); b.textContent = (runtime.connected ? 'Ansicht live' : 'getrennt') + (runtime.stand ? ' · Stand ' + new Date(runtime.stand).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''); return; }
+  if (!runtime.live) { b.hidden = true; return; }
+  b.hidden = false; b.classList.toggle('off', runtime.live.ok === false);
+  b.textContent = runtime.live.ok === false ? 'Freigabe getrennt' : 'Freigabe aktiv · ' + (runtime.live.viewers || 0) + ' Zuschauer';
+}
+async function liveInit() {
+  if (!/^https?:$/.test(location.protocol)) { if (runtime.viewer) { runtime.connected = false; updateBadge(); say('Ansicht braucht den Lagekarten-Server (Link aus dem QR-Code).', 8000); } return; }
+  try {
+    const j = await (await fetch('/api/info', { cache: 'no-store' })).json(); if (!j.server) return;
+    runtime.server = j;
+    if (runtime.viewer) { openTab('objekte'); viewerStart(); }
+    else if (j.master) {
+      runtime.live = { pin: j.pin || '', urls: j.urls || [], ok: null, viewers: j.viewers || 0 }; pushLive();
+      setInterval(async () => { try { const i = await (await fetch('/api/info', { cache: 'no-store' })).json(); runtime.live.viewers = i.viewers; runtime.live.urls = i.urls || runtime.live.urls; updateBadge(); } catch (e) { runtime.live.ok = false; updateBadge(); } }, 5000);
+    }
+  } catch (e) { if (runtime.viewer) { runtime.connected = false; updateBadge(); } }
+}
+async function viewerFetch() {
+  try {
+    const r = await fetch('/api/state?k=' + encodeURIComponent(runtime.pin), { cache: 'no-store' });
+    if (r.status === 403) { say('PIN falsch oder fehlt. Bitte den Link aus dem QR-Code verwenden.', 0); runtime.connected = false; updateBadge(); return; }
+    const j = await r.json(); runtime.connected = true;
+    if (j.state && j.rev !== runtime.rev) { runtime.rev = j.rev; runtime.stand = j.time; applyRemote(j.state); }
+    else if (!j.state) { say('Noch kein Stand vom Server-Rechner empfangen.', 4000); }
+    updateBadge();
+  } catch (e) { runtime.connected = false; updateBadge(); }
+}
+function applyRemote(data) {
+  const first = !runtime.remoteOnce; runtime.remoteOnce = true;
+  const keep = map.getCenter(), z = map.getZoom();
+  applyState(migrate(Object.assign(freshState(), data)), first);
+  if (!first) map.setView(keep, z, { animate: false });
+  if (runtime.beamer && first && !state.areas.length) say('Warte auf Gebiete…', 3000);
+}
+function viewerStart() {
+  viewerFetch();
+  try {
+    const es = new EventSource('/api/events?k=' + encodeURIComponent(runtime.pin));
+    es.onmessage = () => viewerFetch();
+    es.onerror = () => { runtime.connected = false; updateBadge(); };
+    es.onopen = () => { runtime.connected = true; updateBadge(); };
+  } catch (e) { /* Ersatz: Abfrage im Takt */ }
+  setInterval(viewerFetch, 10000);
+}
+
+/* Dialog "Teilen" */
+function openShare() {
+  const close = () => { clearInterval(tick); dlg.remove(); };
+  let tick = null;
+  const body = el('div', {}, el('h3', { text: 'Lage live teilen' }));
+  const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, body);
+  dlg.addEventListener('mousedown', e => { if (e.target === dlg) close(); });
+  dlg.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } });
+  if (!runtime.live) {
+    body.append(
+      el('p', { text: 'Damit andere Geräte dieselbe laufende Lagekarte sehen, muss ein kleiner Server auf diesem Rechner laufen. Eine einzelne HTML-Datei kann von anderen Geräten nicht erreicht werden.' }),
+      el('ol', {}, el('li', { text: 'Node.js auf diesem Rechner installieren (einmalig, nodejs.org).' }),
+        el('li', {}, 'Im Ordner der Lagekarte starten: ', el('code', { text: 'node tools/lage-server.js' })),
+        el('li', { text: 'Die Karte auf diesem Rechner über http://localhost:8080 öffnen, nicht als Datei.' }),
+        el('li', { text: 'Hier erneut auf „Teilen“ klicken: Der QR-Code erscheint.' })),
+      el('p', { class: 'hint', text: 'Der Server arbeitet nur im lokalen Netz (zum Beispiel Einsatz-WLAN). Die Windows-Firewall fragt beim ersten Start nach Zugriff im privaten Netz.' }),
+      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Schließen', onclick: close })));
+    document.body.append(dlg); dlg.querySelector('button.primary').focus(); return;
+  }
+  const urls = runtime.live.urls.length ? runtime.live.urls : [location.origin];
+  const sel = el('select', { 'aria-label': 'Adresse' }, urls.map(u => el('option', { value: u, text: u })));
+  const beam = el('input', { type: 'checkbox' });
+  const qrBox = el('div', { style: 'width:min(280px,70vw);margin:8px auto;background:#fff' }), link = el('input', { type: 'text', readonly: 'readonly' });
+  const build = () => {
+    const url = sel.value + '/?ansicht=1' + (runtime.live.pin ? '&k=' + runtime.live.pin : '') + (beam.checked ? '&beamer=1' : '');
+    link.value = url; qrBox.replaceChildren();
+    try { const qr = qrcode(0, 'M'); qr.addData(url); qr.make(); qrBox.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); qrBox.firstChild.setAttribute('role', 'img'); qrBox.firstChild.setAttribute('aria-label', 'QR-Code zur Ansicht'); qrBox.firstChild.style.width = '100%'; qrBox.firstChild.style.height = 'auto'; }
+    catch (e) { qrBox.textContent = 'QR-Code nicht möglich: ' + e.message; }
+  };
+  sel.addEventListener('change', build); beam.addEventListener('change', build); build();
+  const vw = el('div', { class: 'hint' });
+  const upd = () => { vw.textContent = runtime.live.viewers + ' Zuschauer verbunden. ' + (runtime.live.ok === false ? 'Server nicht erreichbar.' : 'Stand wird bei jeder Änderung übertragen.'); };
+  upd(); tick = setInterval(upd, 2000);
+  body.append(
+    el('p', { text: 'Andere Geräte im selben Netz scannen den Code und sehen diese Lagekarte live. Sie können nur ansehen, nicht ändern.' }),
+    urls.length > 1 ? el('div', { class: 'row' }, el('label', { text: 'Adresse dieses Rechners', for: 'x' }), sel) : null,
+    qrBox, el('div', { class: 'row' }, link, el('button', { class: 'btn small', text: 'Kopieren', onclick: () => copyText(link.value, 'Link kopiert') })),
+    el('div', { class: 'row' }, el('label', {}, beam, ' Beamer-Ansicht (Vollbild ohne Leisten)')),
+    el('div', { class: 'hint', text: runtime.live.pin ? 'PIN: ' + runtime.live.pin + ' (steckt im Link und im Code).' : 'Ohne PIN. Nur in einem abgeschotteten Netz verwenden.' }),
+    vw, el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Schließen', onclick: close })));
+  document.body.append(dlg); dlg.querySelector('button.primary').focus();
+}
+$('#btnShare').onclick = openShare;
+
 /* Karte anklicken */
 map.on('click', e => {
   if (runtime.edit) { const b = runtime.edit.layer.getBounds ? runtime.edit.layer.getBounds().pad(0.03) : null; if (b && !b.contains(e.latlng)) finishEdit(true); return; }
   if (runtime.mode === 'measure') { measureAdd(e.latlng); return; }
   if (runtime.mode === 'circle') { stopDraw(); applyCircle(e.latlng.lat, e.latlng.lng); }
+  else if (runtime.mode === 'plume') { const m = $('#kMode').value; stopDraw(); addPlume(e.latlng, m); }
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode && runtime.mode.type === 'probloc') {
@@ -2806,6 +3232,8 @@ $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ')
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
 $('#btnPrint').onclick = () => window.print();
 $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
+$('#btnUndoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.past.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => undoTo(i + 1) }))); };
+$('#btnRedoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.future.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => redoTo(i + 1) }))); };
 const typing = t => !!t && (t.tagName === 'TEXTAREA' || t.isContentEditable || (t.tagName === 'INPUT' && !/^(checkbox|radio|range|color|button|file)$/.test(t.type)));
 document.addEventListener('keydown', e => {
   if (typing(e.target)) return;
@@ -2866,7 +3294,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); histInit(); persist();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -2876,17 +3304,21 @@ function applyState(s, fit) {
 buildPalette();
 try {
   const raw = localStorage.getItem(STORE_KEY);
-  if (raw) state = migrate(JSON.parse(raw));
+  if (raw && !runtime.viewer) state = migrate(JSON.parse(raw));
 } catch (e) { /* kein Speicher: leerer Start */ }
 state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems();
+initKeule();
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen();
 if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 tick(); setInterval(tick, 20000);
-window.__lage = { get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
+$('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
+if (runtime.beamer) $('#app').classList.add('collapsed');
+liveInit();
+window.__lage = { runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
 })();
 </script>
 </body>
