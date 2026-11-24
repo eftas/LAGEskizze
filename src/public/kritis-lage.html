@@ -172,6 +172,16 @@ body.beamer #placeSearch { display: none; }
 .seg button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent); }
 .chip.ex { background: #b45309; color: #fff; border-color: #92400e; letter-spacing: .08em; }
 .chip.due { background: #b91c1c; color: #fff; border-color: #7f1d1d; }
+.tour-shield { position: fixed; inset: 0; z-index: 7000; background: transparent; }
+.tour-spot { position: fixed; z-index: 7001; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(8, 15, 30, .62), 0 0 0 3px #fbbf24 inset; pointer-events: none; transition: left .4s ease, top .4s ease, width .4s ease, height .4s ease; }
+.tour-card { position: fixed; z-index: 7002; width: 320px; background: var(--panel, #fff); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 34px rgba(0, 0, 0, .5); padding: 14px 16px; transition: left .4s ease, top .4s ease; }
+.tour-card h3 { margin: 4px 0 6px; font-size: 16px; } .tour-card p { margin: 0 0 12px; font-size: 14px; line-height: 1.5; } .tc-n { font-size: 12px; color: var(--muted); font-weight: 700; }
+kbd { font: 700 12.5px ui-monospace, Menlo, monospace; background: var(--bg); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; }
+@media (prefers-reduced-motion: reduce) { .tour-spot, .tour-card { transition: none; } }
+#fristChip { cursor: pointer; font-weight: 700; background: #fef3c7; border-color: #f59e0b; color: #78350f; }
+#fristChip.soon { background: #c2410c; border-color: #7c2d12; color: #fff; }
+#fristChip.over { background: #b91c1c; border-color: #7f1d1d; color: #fff; }
+.cm-evac select, .pfrist { font: inherit; }
 .chip.soon { background: #fef3c7; color: #78350f; border-color: #d97706; }
 .windctl { background: #fff; padding: 4px 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; line-height: 1.2; min-width: 96px; }
 .windctl svg { flex: none; }
@@ -456,6 +466,8 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 .cm-chk { display: flex; gap: 6px; align-items: center; font-size: 12.5px; margin: 4px 0; }
 .cm-inc { border-left-color: #f97316 !important; }
 .cm-ohd { font-weight: 700; font-size: 12px; margin: 6px 0 2px; }
+.cm-evac { display: grid; grid-template-columns: 1fr; gap: 4px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
+.cm-evac select, .cm-evac input { width: 100%; font-size: 13px; }
 .cm-ob { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 3px 6px; font-size: 12.5px; cursor: pointer; border-radius: 4px; color: inherit; }
 .cm-ob:hover { background: rgba(30, 64, 175, .1); }
 #chemBand { position: absolute; left: 40px; right: 40px; bottom: 36px; z-index: 1300; background: rgba(255, 255, 255, .97); color: var(--ink); border: 1px solid #cbd5e1; border-top: 6px solid #f97316; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.25); padding: 10px 40px 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
@@ -711,6 +723,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
     <span class="sp"></span>
     <span id="clock" role="button" tabindex="0" title="Klicken: nächste Lagebesprechung festlegen"></span>
     <span id="tacTime" class="chip" role="button" tabindex="0" title="Taktische Zeit (TTHHMM). Klicken: nächste Lagebesprechung festlegen" aria-label="Taktische Zeit"></span>
+    <button id="fristChip" class="chip" hidden title="Fristen: Probleme mit Frist und Nachforderungen mit Lieferzeit"></button>
     <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
@@ -724,6 +737,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
       <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
       <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
       <button id="btnExport" title="Ihre Daten als JSON-Datei speichern" hidden>Export</button>
+      <button id="btnHelp" title="Einweisung und Tastenkürzel">Einweisung und Tastenkürzel</button>
     </div></div>
     </div>
     <div id="hdrSub"><div id="hdrCounts"></div></div>
@@ -967,6 +981,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
       <div class="row"><label for="wDir" style="width:92px">Wind aus</label><input type="number" id="wDir" min="0" max="360" step="5" style="max-width:76px"><span>°</span><select id="wCompass" aria-label="Himmelsrichtung"></select></div>
       <div class="row"><label for="wSpeed" style="width:92px">Geschwindigkeit</label><input type="number" id="wSpeed" min="0" step="0.5" style="max-width:76px"><span>m/s</span><span id="wBft" class="hint"></span></div>
       <div class="row"><label for="wCond" style="width:92px">Wetterlage</label><select id="wCond"></select></div>
+      <div id="wAuto"></div>
       <div class="row"><label for="wStab" style="width:92px">Ausbreitungsklasse</label><select id="wStab" style="max-width:150px"></select><span id="wStabInfo" class="hint"></span></div>
       <div class="row"><label for="wTer" style="width:92px">Gelände</label><select id="wTer"><option value="land">offen, ländlich</option><option value="stadt">bebaut, städtisch</option></select></div>
       <div class="hint" id="wInfo"></div>
@@ -2242,7 +2257,8 @@ function renderProblems() {
       el('div', { class: 'row' },
         el('label', { class: 'hint prio' }, 'Prio ', el('input', { type: 'number', min: '1', step: '1', value: x.prio, title: 'Priorität, 1 = höchste', style: 'width:56px', onchange: ev => { x.prio = prioNum(ev.target.value); save('Priorität geändert: ' + x.title + ' auf ' + x.prio); renderProblems(); } })),
         sel(PSTAT, x.status, v => { x.status = v; addJournal('Problem „' + x.title + '“: ' + PSTAT[v], true); save('Problemstatus: ' + x.title + ' ' + PSTAT[v]); renderProblems(); renderCounts(); }),
-        el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); }, onchange: () => save('Zuständig geändert: ' + x.title) })),
+        el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); }, onchange: () => save('Zuständig geändert: ' + x.title) }),
+        el('label', { class: 'hint prio' }, 'Frist ', el('input', { type: 'time', class: 'pfrist', value: x.due ? fmtHM2(Date.parse(x.due)) : '', title: 'Uhrzeit, bis zu der das Problem erledigt sein soll', onchange: ev => { x.due = ev.target.value ? toIsoToday(ev.target.value) : ''; save('Frist ' + (x.due ? 'gesetzt: ' + x.title + ' ' + ev.target.value : 'entfernt: ' + x.title)); updateFristChip(); } }))),
       el('textarea', { rows: '2', placeholder: 'Einzelheiten, Maßnahmen', oninput: ev => { x.text = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
       el('div', { class: 'row' },
         el('span', { class: 'hint', text: fmtTime(x.time) + (x.poiName ? ' · ' + x.poiName : '') + (x.lat == null ? ' · ohne Ort' : '') }),
@@ -2759,10 +2775,24 @@ function renderWindUi() {
   const pq = pasquill(w.cond, Math.max(w.speed || 0, 1)); $('#wStabInfo').textContent = w.stab ? 'manuell' : 'aus Tabelle: ' + pq.raw + (pq.raw !== pq.cls ? ' → ' + pq.cls : '');
   $('#wInfo').textContent = w.dir == null ? 'Wind noch nicht gesetzt. Ohne Wind entsteht keine Keule.' : 'Wind aus ' + w.dir + '° (' + compassName(w.dir) + '): die Fahne zieht nach ' + ((w.dir + 180) % 360) + '° (' + compassName(w.dir + 180) + ')' + (w.time ? ', gesetzt ' + fmtTime(w.time) : '') + '.';
 }
+/* Wetterlage aus Tageszeit und Bewölkung vorschlagen (vereinfachte Pasquill-Einstufung, Tag 6 bis 18 Uhr) */
+const CLOUD = [['klar', 'Klar'], ['teils', 'Teils bewölkt'], ['bedeckt', 'Bedeckt']];
+function autoCond(cloud) {
+  const h = new Date(nowMs()).getHours(), tag = h >= 6 && h < 18, mittag = h >= 10 && h < 16;
+  if (cloud === 'bedeckt') return 'bedeckt';
+  if (tag) return cloud === 'klar' ? (mittag ? 'tag-stark' : 'tag-mittel') : (mittag ? 'tag-mittel' : 'tag-schwach');
+  return cloud === 'klar' ? 'nacht-klar' : 'nacht-bewoelkt';
+}
+function setAutoCond(cloud) {
+  const c = autoCond(cloud); state.wind.cond = c; state.wind.time = nowIso(); refreshKeule(); renderWindUi(); renderChem(); save('Wetterlage automatisch: ' + COND[c]);
+  say('Wetterlage gesetzt: ' + COND[c] + '. Bitte mit der Lage vor Ort abgleichen.', 5000);
+}
+function condButtons() { return el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Wetterlage nach Uhrzeit vorschlagen:' }), ...CLOUD.map(([k, t]) => el('button', { class: 'btn small', text: t, disabled: ro('wind') ? 'disabled' : null, onclick: () => setAutoCond(k) }))); }
 function initKeule() {
   const cs = $('#wCompass'); cs.append(el('option', { value: '', text: '–' })); COMPASS.forEach((n, i) => cs.append(el('option', { value: String(i), text: n + ' (' + Math.round(i * 22.5) + '°)' })));
   Object.entries(COND).forEach(([k, v]) => $('#wCond').append(el('option', { value: k, text: v })));
   $('#wStab').append(el('option', { value: '', text: 'automatisch' })); ['A', 'B', 'C', 'D', 'E', 'F'].forEach(c => $('#wStab').append(el('option', { value: c, text: 'Klasse ' + c })));
+  $('#wAuto').append(condButtons());
   const upd = label => { state.wind.time = nowIso(); refreshKeule(); save(label); };
   $('#wDir').addEventListener('change', e => { let v = numOrNull(e.target.value); if (v != null) v = ((v % 360) + 360) % 360; state.wind.dir = v; upd('Wind geändert: Richtung ' + (v == null ? '–' : Math.round(v) + '°')); });
   $('#wCompass').addEventListener('change', e => { if (e.target.value === '') return; state.wind.dir = +e.target.value * 22.5; upd('Wind geändert: Richtung ' + state.wind.dir + '°'); });
@@ -2901,10 +2931,27 @@ const pad2 = n => String(n).padStart(2, '0');
 const toLocalInput = ms => { const d = new Date(ms); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const fmtTac = ms => { const d = new Date(ms), z = n => String(n).padStart(2, '0'); return z(d.getDate()) + z(d.getHours()) + z(d.getMinutes()); };
 const fmtClock = ms => new Date(ms).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+/* Fristen: Probleme mit Frist, Nachforderungen mit Lieferzeit */
+function fristItems() {
+  const out = [];
+  state.problems.forEach(p => { if (p.due && p.status !== 'erledigt') out.push({ key: 'p' + p.id, t: Date.parse(p.due), text: p.title || 'Problem', tab: 'probleme' }); });
+  state.units.forEach(u => { const l = state.logi[u.id]; if (l && l.req && l.eta) out.push({ key: 'l' + u.id + l.eta, t: Date.parse(l.eta), text: 'Nachforderung ' + (u.name || 'Einheit') + ': ' + l.req, tab: 'kraefte' }); });
+  return out.filter(x => isFinite(x.t)).sort((a, b) => a.t - b.t);
+}
+const fristSeen = new Set();
+function updateFristChip() {
+  const c = $('#fristChip'); if (!c) return; const now = nowMs(), it = fristItems(), over = it.filter(x => x.t <= now), soon = it.filter(x => x.t > now && x.t - now <= 15 * 60000);
+  if (!it.length) { c.hidden = true; return; }
+  const nx = over[0] || soon[0] || it[0];
+  c.hidden = false; c.className = 'chip' + (over.length ? ' over' : soon.length ? ' soon' : ''); c.dataset.tab = nx.tab;
+  c.textContent = over.length ? over.length + (over.length === 1 ? ' Frist überfällig' : ' Fristen überfällig') : 'Frist ' + fmtHM2(nx.t) + (soon.length ? ' in ' + Math.max(1, Math.round((nx.t - now) / 60000)) + ' min' : '');
+  c.title = it.map(x => fmtHM2(x.t) + ' ' + x.text).join('\n');
+  over.forEach(x => { if (!fristSeen.has(x.key)) { fristSeen.add(x.key); if (!runtime.viewer) say('Frist erreicht: ' + x.text, 8000); } });
+}
 function tickClock() {
   const e = state.exercise; $('#clock').textContent = fmtClock(nowMs()); $('#tacTime').textContent = fmtTac(nowMs());
   $('#exTag').hidden = !(e && e.active); $('#exTag').title = e && e.name ? e.name : 'Übungsuhr aktiv';
-  updateMeetingChip();
+  updateMeetingChip(); updateFristChip();
 }
 function renderEinsatz() {
   const e = state.exercise, w = state.weather, m = state.meeting;
@@ -3740,12 +3787,14 @@ function renderChemTab() {
       el('table', { class: 'cm-zt' }, el('thead', {}, el('tr', {}, ...['Zone', 'Einwohner', 'unter 18', 'ab 65', 'Ø Alter'].map(x => el('th', { text: x })))),
         el('tbody', {}, zrow('z1', '#ef4444', chemM(E.isolate)), R2.z2 ? zrow('z2', '#ea580c', chemM(E.spill) + ' Wind') : null, inc.fire ? zrow('z3', '#7c2d12', chemM(E.fire) + ' Brand') : null)),
       el('div', { class: 'hint', text: 'Zensus 2022, Wohnbevölkerung, nicht die tatsächlich Anwesenden. Die Zonen überlappen, die Zahlen nicht addieren. Unter etwa 100 m Zonenbreite ist das 100-m-Raster zu grob, die Zahl der 50-m-Zone ist nur ein Anhalt.' }),
-      el('h3', { class: 'cm-h', text: 'Objekte in den Zonen' }), el('div', { 'data-c': 'objs', class: 'cm-objs', text: '…' }),
+      el('h3', { class: 'cm-h', text: 'Objekte in den Zonen, Evakuierung' }), el('div', { 'data-c': 'objs', class: 'cm-objs', text: '…' }),
       el('h3', { class: 'cm-h', text: 'Ausbreitungskeule' }),
       ...(!chemHasPlume(s) ? [el('div', { class: 'hint', text: 'Für ' + s.name + ' wird keine Ausbreitungskeule gerechnet: ' + (s.aegl.note || 'Der Stoff ist bei Umgebungstemperatur kaum flüchtig.') })] : [
       el('div', { class: 'row' }, el('label', {}, 'Quelle g/s ', q), el('label', {}, 'Höhe m ', h)),
       el('div', { class: 'hint', text: 'Äußere Linie ' + (s.aegl.kind || 'AEGL') + '-1 (' + fmtLim(limMg(s, s.aegl.a1)) + ' mg/m³), innere Linie ' + (s.aegl.kind || 'AEGL') + '-2 (' + fmtLim(limMg(s, s.aegl.a2)) + ' mg/m³), jeweils ' + s.aegl.t + (s.aegl.status.startsWith('vorl') ? ', vorläufig' : '') + '. Die Quellstärke muss die Einsatzleitung schätzen, sie wird nicht vorgegeben.' }),
       el('div', { class: 'notice', text: s.plumeNote || ('Das Gauß-Modell rechnet mit einem Gas, das sich wie Luft verhält.' + (s.heavy ? ' ' + s.name + '-Dampf ist schwerer als Luft und sammelt sich in Senken.' : '') + ' Die Keule ist eine grobe Schätzung, Messungen gehen vor.') })]),
+      !chemHasPlume(s) ? null : el('div', { class: 'hint', text: 'Ausbreitungsklasse ' + effWind(pl || { follow: true }).cls + ' (Wetterlage: ' + (COND[state.wind.cond] || state.wind.cond) + (state.wind.stab ? ', Klasse von Hand gesetzt' : '') + ').' }),
+      !chemHasPlume(s) ? null : condButtons(),
       !chemHasPlume(s) ? null : pl ? el('div', { class: 'kres hint', 'data-c': 'plume', text: plumeLine(pl).text }) : el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Die zugehörige Keule wurde gelöscht.' }), el('button', { class: 'btn small', text: 'Keule neu anlegen', onclick: () => { const np = { id: uid(), name: 'Keule ' + s.name, lat: inc.lat, lng: inc.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: inc.Q, H: inc.H || 0, thr1: thrRound(limMg(s, s.aegl.a2)), thr2: thrRound(limMg(s, s.aegl.a1)), len: null, angle: null, r0: null }; state.plumes.push(np); inc.plumeId = np.id; renderKeulen(); renderChem(); save('Keule neu: ' + s.name); } })),
       el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => { map.setView([inc.lat, inc.lng], Math.max(map.getZoom(), 15)); runtime.chemActive = inc.id; renderChemBand(); } }),
         el('button', { class: 'btn small', text: 'Problem eintragen', onclick: () => { const pr = addProblemFromChem(inc, s); if (pr) say('Problem eingetragen.', 2500); } }),
@@ -3775,9 +3824,18 @@ async function fillChemNumbers() {
       const E = chemErg(s, inc), z = circ(p, E.isolate) ? 'z1' : (R.z2 && pip(p.lat, p.lng, R.z2)) ? 'z2' : (R.z3 && circ(p, E.fire)) ? 'z3' : null; if (z) named[z].push({ p, lay }); });
     const box = card.querySelector('[data-c="objs"]'); if (!box) continue; box.replaceChildren();
     const E2 = chemErg(s, inc), names = { z1: chemM(E2.isolate), z2: chemM(E2.spill) + ' Wind', z3: chemM(E2.fire) + ' Brand' }; let any = false;
+    inc.evac = inc.evac || {}; const ES = [['offen', 'offen'], ['info', 'informiert'], ['evak', 'evakuiert'], ['nein', 'nicht nötig']], allRows = []; let upEvSum = () => {};
+    const ed = !ro('chem');
     ['z1', 'z2', 'z3'].forEach(z => { if (!R[z] || !named[z].length) return; any = true;
-      box.append(el('div', { class: 'cm-ohd', text: names[z] + ': ' + named[z].length + ' Objekte' }), ...named[z].slice(0, 8).map(o => el('button', { class: 'cm-ob', title: 'Auf Karte zeigen', onclick: () => map.setView([o.p.lat, o.p.lng], Math.max(map.getZoom(), 17)) }, poiTitle(o.p) + ' (' + (o.lay ? o.lay.name : '') + ')')),
-        named[z].length > 8 ? el('div', { class: 'hint', text: '… und ' + (named[z].length - 8) + ' weitere' }) : null); });
+      box.append(el('div', { class: 'cm-ohd', text: names[z] + ': ' + named[z].length + ' Objekte' }), ...named[z].slice(0, 25).map(o => { const ev = inc.evac[o.p.id] || (inc.evac[o.p.id] = { st: 'offen', ct: '' }); allRows.push([names[z], o, ev]);
+        return el('div', { class: 'cm-evac' }, el('button', { class: 'cm-ob', title: 'Auf Karte zeigen', onclick: () => map.setView([o.p.lat, o.p.lng], Math.max(map.getZoom(), 17)) }, poiTitle(o.p) + ' (' + (o.lay ? o.lay.name : '') + ')'),
+          el('select', { 'aria-label': 'Stand der Evakuierung', disabled: ed ? null : 'disabled', onchange: e => { ev.st = e.target.value; save('Evakuierung ' + poiTitle(o.p) + ': ' + (ES.find(x => x[0] === ev.st) || [])[1]); upEvSum(); } }, ...ES.map(x => el('option', { value: x[0], text: x[1], selected: ev.st === x[0] ? 'selected' : null }))),
+          el('input', { type: 'text', placeholder: 'Ansprechpartner, Telefon', value: ev.ct || '', disabled: ed ? null : 'disabled', onchange: e => { ev.ct = e.target.value.trim(); save('Evakuierung Kontakt: ' + poiTitle(o.p)); } })); }),
+        named[z].length > 25 ? el('div', { class: 'hint', text: '… und ' + (named[z].length - 25) + ' weitere (Liste ist auf 25 je Zone begrenzt)' }) : null); });
+    if (any) { const sum = el('div', { class: 'hint', 'data-c': 'evsum' });
+      upEvSum = () => { const n = k => allRows.filter(r => r[2].st === k).length; sum.textContent = 'Evakuierung: ' + n('offen') + ' offen, ' + n('info') + ' informiert, ' + n('evak') + ' evakuiert, ' + n('nein') + ' nicht nötig.'; }; upEvSum();
+      box.append(sum, el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Liste kopieren', onclick: () => copyText(['Evakuierungsliste ' + inc.name, ...allRows.map(r => r[0] + ' · ' + poiTitle(r[1].p) + ' (' + (r[1].lay ? r[1].lay.name : '') + ') · ' + (ES.find(x => x[0] === r[2].st) || [])[1] + (r[2].ct ? ' · ' + r[2].ct : ''))].join('\n'), 'Evakuierungsliste kopiert') })));
+    }
     if (!any) box.append(el('div', { class: 'hint', text: visiblePois().length ? 'Keine geladenen Objekte in den Zonen.' : 'Keine Objekte geladen. Objekte werden über das Abfragegebiet geholt (Reiter Gebiete).' }));
   }
 }
@@ -4602,8 +4660,83 @@ function openGuidedMeeting() {
   };
   render(); document.body.append(dlg);
 }
+/* ---- Einweisung (Rundgang) und Tastenkürzel ---- */
+const SHORTCUTS = [
+  ['?', 'Diese Übersicht'], ['U', 'Einheiten'], ['F', 'Führungsstruktur'], ['V', 'Lagevortrag starten oder beenden'], ['D', 'Dunkelmodus umschalten'],
+  ['K', 'Reiter Kräfte'], ['T', 'Reiter Tagebuch'], ['M', 'Reiter Meldungen'], ['P', 'Reiter Probleme'], ['Z', 'Reiter Zahlen'], ['W', 'Reiter Wetter'], ['G', 'Reiter Gefahrstoff'],
+  ['N', 'Neue Einheit'], ['J', 'Journaleintrag'], ['/', 'Ortssuche'], ['Strg+Z, Strg+Y', 'Rückgängig, Wiederholen'], ['Umschalt+P', 'Seitenleiste ein- oder ausklappen'], ['Esc', 'Schließen, Abbrechen']
+];
+function infoDialog(title, ...body) {
+  const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true', 'aria-label': title, onmousedown: e => { if (e.target === dlg) dlg.remove(); } },
+    el('div', { class: 'rolecard' }, el('h2', { text: title }), ...body, el('div', { class: 'row', style: 'margin-top:14px' }, el('button', { class: 'btn primary', text: 'Schließen', onclick: () => dlg.remove() }))));
+  dlg.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); dlg.remove(); } });
+  document.body.append(dlg); dlg.querySelector('button').focus(); return dlg;
+}
+function showShortcuts() {
+  infoDialog('Tastenkürzel', el('p', { class: 'hint', text: 'Die Kürzel gelten, solange kein Eingabefeld aktiv ist. Reiter, die zu Ihrer Funktion nicht gehören, bleiben geschlossen.' }),
+    el('div', { class: 'tblwrap' }, el('table', { class: 'cm-zt' }, el('tbody', {}, ...SHORTCUTS.map(([k, t]) => el('tr', {}, el('td', {}, el('kbd', { text: k })), el('td', { text: t })))))),
+    el('div', { class: 'row' }, el('button', { class: 'btn', text: 'Einweisung starten', onclick: () => { document.querySelectorAll('.dlg').forEach(d => d.remove()); setTimeout(runTour, 450); } })));
+}
+function goTab(name) {
+  const b = document.querySelector('#tabs [data-tab="' + name + '"]'); if (!b || b.offsetParent === null) { say('Der Reiter gehört nicht zu Ihrer Funktion.', 2500); return; }
+  setPanel(true); openTab(name);
+}
+document.addEventListener('keydown', e => {
+  if (typing(e.target) || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.dlg:not(.dlgout)') || menuStack.length) return;
+  if (e.target && /^(SELECT|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
+  const k = e.key.toLowerCase(), tabs = { k: 'kraefte', t: 'tagebuch', m: 'meldungen', p: 'probleme', z: 'zahlen', w: 'keule', g: 'chem' };
+  if (e.shiftKey && k !== '?') return;
+  if (k === '?') { e.preventDefault(); showShortcuts(); }
+  else if (k === 'u') { e.preventDefault(); $('#btnUnits').click(); }
+  else if (k === 'f') { e.preventDefault(); $('#btnFue').click(); }
+  else if (k === 'v') { e.preventDefault(); runtime.vortrag ? endVortrag() : startVortrag(); }
+  else if (k === 'd') { e.preventDefault(); $('#btnTheme').click(); }
+  else if (tabs[k] && !runtime.vortrag) { e.preventDefault(); goTab(tabs[k]); }
+  else if (k === 'n' && !runtime.viewer && can('units') && !runtime.vortrag) { e.preventDefault(); openUnitWizard(); }
+  else if (k === 'j' && !runtime.viewer && !runtime.vortrag) { e.preventDefault(); askText('Journaleintrag', '').then(v => { if (v && v.trim()) addJournal(v.trim(), false); }); }
+  else if (k === '/' && !runtime.vortrag) { e.preventDefault(); setPlaceMin(false); const q = $('#placeQ'); if (q) q.focus(); }
+});
+function tourSteps() {
+  const S = (sel, title, text, opt) => ({ sel, title, text, ...(opt || {}) });
+  const rn = roleName();
+  return [
+    S('#roleChip', 'Ihre Funktion: ' + rn, 'Sie sehen und ändern nur Ihre Aufgaben. Mit einem Klick auf die Funktion wechseln Sie. Ihre Eingaben bleiben auf diesem Gerät, bis Sie sie über das Menü exportieren.'),
+    S('#clock', 'Uhr und taktische Zeit', 'Ein Klick auf die Uhr legt die nächste Lagebesprechung fest. Daneben steht die taktische Zeit (Tag, Stunde, Minute).'),
+    S('#tabs', 'Reiter links', 'Hier liegen Ihre Aufgaben, zum Beispiel Kräfte, Meldungen, Tagebuch oder Gefahrstoff. Mit Umschalt+P klappen Sie die Leiste ein.'),
+    S('#map', 'Karte', 'Rechtsklick auf die Karte öffnet das Menü für Ihre Funktion, etwa Einheit einsetzen, Gefahrstoff melden oder Problem eintragen. Mit der linken Maustaste verschieben Sie die Karte.'),
+    S('#qat', 'Rückgängig und Wiederholen', 'Jede Änderung lässt sich zurücknehmen. Strg+Z und Strg+Y gehen auch.'),
+    S('#btnVortrag', 'Lagevortrag', 'Zeigt die Karte groß mit Zahlen, Kräften und Gefahrstoff. Die Leisten lassen sich über das Menü unten links einklappen.'),
+    S('#btnMore', 'Menü', 'Hier liegen Einheiten, Führungsstruktur, Objekt setzen, Drucken, Export und diese Einweisung.'),
+    S('#btnMore', 'Tastenkürzel', 'Drücken Sie ? für alle Kürzel, zum Beispiel U für Einheiten, G für Gefahrstoff und V für den Lagevortrag.')
+  ].filter(s => { const n = document.querySelector(s.sel); return n && n.offsetParent !== null; });
+}
+function runTour() {
+  document.querySelectorAll('.tour').forEach(n => n.remove()); const steps = tourSteps(); if (!steps.length) return; let i = 0;
+  const spot = el('div', { class: 'tour tour-spot' }), card = el('div', { class: 'tour tour-card', role: 'dialog', 'aria-live': 'polite' }), shield = el('div', { class: 'tour tour-shield' });
+  const end = () => { [spot, card, shield].forEach(n => n.remove()); document.removeEventListener('keydown', key, true); try { localStorage.setItem('kritis-tour', '1'); } catch (e) { /* egal */ } };
+  const key = e => { if (e.key === 'Escape') { e.stopPropagation(); end(); } else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); go(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); go(-1); } };
+  function go(d) {
+    i += d; if (i < 0) i = 0; if (i >= steps.length) { end(); return; }
+    const st = steps[i], n = document.querySelector(st.sel); if (!n) { go(d || 1); return; }
+    const r = n.getBoundingClientRect(), pad = 6;
+    Object.assign(spot.style, { left: (r.left - pad) + 'px', top: (r.top - pad) + 'px', width: (r.width + 2 * pad) + 'px', height: (r.height + 2 * pad) + 'px' });
+    card.replaceChildren(el('div', { class: 'tc-n', text: 'Schritt ' + (i + 1) + ' von ' + steps.length }), el('h3', { text: st.title }), el('p', { text: st.text }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Überspringen', onclick: end }), el('span', { style: 'flex:1' }),
+        i ? el('button', { class: 'btn small', text: 'Zurück', onclick: () => go(-1) }) : null, el('button', { class: 'btn small primary', text: i === steps.length - 1 ? 'Fertig' : 'Weiter', onclick: () => go(1) })));
+    const cw = 320, left = Math.min(Math.max(8, r.left), innerWidth - cw - 8), below = r.bottom + 14 + 190 < innerHeight;
+    card.style.left = left + 'px'; card.style.top = (below ? r.bottom + 14 : Math.max(8, r.top - 14 - 190)) + 'px';
+  }
+  document.body.append(shield, spot, card); document.addEventListener('keydown', key, true); go(0);
+}
+function maybeTour() {
+  if ((navigator.webdriver && qs.get('tour') !== '1') || runtime.viewer || qs.get('tour') === '0') return;
+  let done = false; try { done = !!localStorage.getItem('kritis-tour'); } catch (e) { /* egal */ }
+  if (done && qs.get('tour') !== '1') return;
+  if (document.querySelector('.dlg, .rolelay')) { setTimeout(maybeTour, 1500); return; }
+  runTour();
+}
 function initRoles() {
-  $('#roleChip').onclick = () => chooseRole(true); $('#btnExport').onclick = () => exportRole(false);
+  $('#roleChip').onclick = () => chooseRole(true); $('#btnExport').onclick = () => exportRole(false); $('#btnHelp').onclick = showShortcuts; setTimeout(maybeTour, 1800);
   $('#mtGuided').onclick = openGuidedMeeting; $('#lvShow').onclick = showLagevortrag; $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
   const q = qs.get('rolle'), saved = (() => { try { return localStorage.getItem('kritis-role'); } catch (e) { return null; } })();
   if (runtime.viewer) { runtime.role = 'S2'; applyRole(); return; }
@@ -4805,7 +4938,7 @@ function initStaende() {
 const GERMANY = [[47.2, 5.8], [55.1, 15.1]];
 function setPlaceMin(min, keep) {
   const f = $('#placeSearch'); f.classList.toggle('min', !!min); $('#placeToggle').setAttribute('aria-expanded', String(!min));
-  if (!min) setTimeout(() => $('#placeQ').focus(), 0); else $('#placeRes').replaceChildren();
+  if (!min) { if (!keep) setTimeout(() => $('#placeQ').focus(), 0); } else $('#placeRes').replaceChildren();
   if (!keep) { try { localStorage.setItem('kritis-search', min ? 'min' : 'open'); } catch (e) { /* ohne Speicher */ } }
 }
 function initPlaceSearch() {
@@ -4988,6 +5121,7 @@ function setPanel(open, remember) {
 }
 function togglePanel() { setPanel($('#app').classList.contains('collapsed')); }
 $('#panelToggle').onclick = togglePanel;
+$('#fristChip').onclick = () => { setPanel(true); openTab($('#fristChip').dataset.tab || 'probleme'); };
 $('#btnTheme').onclick = () => { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('kritis-theme', t); } catch (e) { /* ohne Speicher */ } };
 try { if (localStorage.getItem('kritis-panel') === '0') { $('#app').classList.add('collapsed'); $('#panelToggle').innerHTML = panelGlyph(false); $('#panelToggle').setAttribute('aria-expanded', 'false'); setTimeout(() => map.invalidateSize(), 0); } } catch (e) { /* egal */ }
 

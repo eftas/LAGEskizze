@@ -20,3 +20,15 @@ Im Ordner `src/public` liegt `kritis-lage.html`, eine eigenständige Lagekarte f
 Beim ersten Start fragt die LAGEkarte, wer Sie sind (EL, S1 bis S6). Danach sehen Sie nur Ihre Aufgaben, der S2 sieht und bearbeitet alles.
 Jede Funktion speichert über „Meine Daten (JSON)“ nur ihren Bereich. Der S2 liest alle Dateien ein (Reiter Daten oder Start), seine Karte wird aktualisiert.
 Mit `?rolle=S3` im Link wird eine Funktion fest vorgewählt, mit `?rolle=fragen` wird die Auswahl erzwungen.
+
+## Tests
+
+Die Ende-zu-Ende-Tests liegen in `tests/run.js` und laufen mit Playwright gegen die gebaute Einzeldatei `src/public/kritis-lage-einzeldatei.html`:
+
+    npm install
+    npx playwright install chromium
+    npm test
+
+Geprüft werden unter anderem Start, Burger-Menü, Lagevortrag, alle Gefahrstoffe (keine Fehlertexte), die ERG-Distanzen für Chlor und Ammoniak, die Rechtsklick-Menüs je Funktion, Tastenkürzel, Einweisung, Fristen, Evakuierungsplanung und Rückgängig. Bei jedem Push startet dieselbe Prüfung über GitHub Actions (`.github/workflows/tests.yml`).
+
+Nach Änderungen an `src/public/kritis-lage.html` muss die Einzeldatei neu gebaut werden (`python3 tools/build_offline.py`), sonst prüfen die Tests den alten Stand.
