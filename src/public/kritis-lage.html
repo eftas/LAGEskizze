@@ -573,6 +573,12 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
 @media (max-width: 1700px) { .mtl { display: none; } .mts { display: inline; } }
 @media (max-width: 1480px) { #hdrTop .mtu, #hdrTop .mti { display: none; } }
 @media (max-width: 1180px) { #hdrTop #mtLine { font-size: 12px; } }
+
+/* ===== Taktische Zeichen gut erkennbar, auch im Dunkelmodus ===== */
+.symicon { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 1px #fff); }
+[data-theme="dark"] .symicon, [data-theme="dark"] .umk img { box-sizing: border-box; background: #f8fafc; border: 2px solid #0f172a; border-radius: 6px; padding: 3px; filter: none; box-shadow: 0 0 0 2px #f8fafc, 0 3px 10px rgba(0,0,0,.7); object-fit: contain; }
+[data-theme="dark"] #symGrid button img, [data-theme="dark"] .sgrid button img, [data-theme="dark"] .ovunit img, [data-theme="dark"] .fu img, [data-theme="dark"] .ucard img.uimg, [data-theme="dark"] .ucardlg img, [data-theme="dark"] .vbtn img, [data-theme="dark"] .uimg { background: #f8fafc; border-radius: 5px; padding: 2px; box-sizing: border-box; }
+[data-theme="dark"] #symGrid button, [data-theme="dark"] .sgrid button { color: #cbd5e1; }
 </style>
 </head>
 <body>
@@ -1845,7 +1851,7 @@ function renderDeps() {
 /* ------------------------------------------------------------------ */
 const symUrl = n => (window.SYMBOL_URIS && window.SYMBOL_URIS[n]) || (n.startsWith('tz/') ? 'images/symbols-tz/' + encodeURI(n.slice(3)) + '.svg' : 'images/symbols/' + encodeURI(n) + '.svg');
 function symIcon(name) {
-  return L.icon({ iconUrl: symUrl(name), iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -22] });
+  return L.icon({ iconUrl: symUrl(name), iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -22], className: 'symicon' });
 }
 function renderSymbols() {
   symLayer.clearLayers();
@@ -4120,7 +4126,8 @@ map.on('click', e => {
   else if (runtime.placing) {
     const s = runtime.placing;
     state.symbols.push({ id: uid(), name: s.name, title: s.title, lat: e.latlng.lat, lng: e.latlng.lng, label: '', time: nowIso() });
-    renderSymbols(); save('Zeichen gesetzt: ' + s.title);                    // Zeichen bleibt aktiv für mehrfaches Setzen
+    stopDraw();                                           // nach einem Zeichen ist nichts mehr gewählt: die Karte lässt sich wieder verschieben
+    renderSymbols(); save('Zeichen gesetzt: ' + s.title);
   }
 });
 document.addEventListener('keydown', e => {
