@@ -677,7 +677,8 @@ function geomRings(g) {            // GeoJSON-Geometrie -> Außenringe als [lat,
 /* ------------------------------------------------------------------ */
 /* Karte                                                               */
 /* ------------------------------------------------------------------ */
-const map = L.map('map', { zoomControl: true, preferCanvas: false }).setView([50.9375, 6.9603], 12);
+// Feinere Zoomstufen: Viertelstufen, Knöpfe in halben Schritten, Mausrad deutlich sanfter
+const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 180, wheelDebounceTime: 30, zoomAnimationThreshold: 6 }).setView([50.9375, 6.9603], 12);
 const baseLayers = {
   'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
   'Satellit (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
