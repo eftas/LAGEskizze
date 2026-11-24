@@ -1044,7 +1044,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
       <details class="lic"><summary>Lizenzen der enthaltenen Bestandteile</summary>
         <p class="hint">Diese Datei enthält fremde Bestandteile. Die Lizenzen im Überblick:</p>
         <ul class="hint">
-          <li>GHS-Piktogramme (Flamme, Gesundheitsgefahr, Ausrufezeichen): UNECE, Dateien von Wikimedia Commons, gemeinfrei (PD-ineligible)</li>
+          <li>GHS-Piktogramme (Flamme, Flamme über Kreis, Gasflasche, Ätzwirkung, Totenkopf, Gesundheitsgefahr, Ausrufezeichen, Umwelt): UNECE, Dateien von Wikimedia Commons, gemeinfrei (PD-ineligible)</li>
           <li>Stoffdaten: GESTIS-Stoffdatenbank (DGUV, Benzol), Emergency Response Guidebook (PHMSA/Transport Canada), CAMEO Chemicals (NOAA), Datenbank GEFAHRGUT (BAM), ECHA, AEGL (US EPA) und ERPG (AIHA). Quellen mit Adresse im Reiter Gefahrstoff</li>
           <li>Zeichen für Personen (Betroffene, Sichtungskategorien, Tote, Vermisste, Gerettete): eigene Zeichnung für diese Anwendung, MIT-Lizenz wie das Repository</li>
           <li>Zensus 2022, Gitterzellen (Bevölkerung, Alter): © Statistische Ämter des Bundes und der Länder, 2025, Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2-0). Für diese Anwendung als Auszug aufbereitet, Altersklassen zusammengefasst</li>
@@ -3176,7 +3176,7 @@ function initPop() {
 /* Gefahrstoffe: Datenblatt, Absperrzonen nach ERG, Betroffene, Keule  */
 /* ------------------------------------------------------------------ */
 /* Nur geprüfte Stoffe (verified). Jeder Wert mit Quelle. Eine Übersetzung der ERG-Texte ist unsere eigene, die amtliche Fassung gilt. */
-const GHS_INFO = { GHS02: 'entzündbar', GHS07: 'Achtung (Reizwirkung, Aspiration u. a.)', GHS08: 'Gesundheitsgefahr' };
+const GHS_INFO = { GHS02: 'entzündbar', GHS03: 'brandfördernd (oxidierend)', GHS04: 'Gas unter Druck', GHS05: 'ätzend', GHS06: 'giftig', GHS07: 'Achtung (Reizwirkung, Aspiration u. a.)', GHS08: 'Gesundheitsgefahr', GHS09: 'umweltgefährlich' };
 const ghsUrl = c => imgUrl('ghs/' + c);
 const ghsImg = (c, h) => el('img', { class: 'ghs', src: ghsUrl(c), alt: GHS_INFO[c] || c, title: c + ': ' + (GHS_INFO[c] || ''), style: 'height:' + (h || 44) + 'px' });
 const SUBSTANCES = {
@@ -3263,31 +3263,282 @@ const SUBSTANCES = {
       { t: 'ECHA CHEM, Ethanol, harmonisierte Einstufung', u: 'https://chem.echa.europa.eu/100.000.526/activities/clhProcess/d2abd82e9fa1142d133e50cfbf460420', f: 'Flam. Liq. 2 (H225)' },
       { t: 'Sicherheitsdatenblatt Ethanol (Carl Roth), CLP-Einstufung', u: 'https://www.carlroth.com/medias/SDB-1Y4E-IE-EN.pdf', f: 'H225, H319' }
     ]
+  },
+  benzin: {
+    id: 'benzin', name: 'Ottokraftstoff (Benzin)', formula: 'Gemisch', cas: '86290-81-5', un: '1203', kemler: '33', klasse: '3', vg: 'II', molMass: 110,
+    erg: { guide: '128', title: 'Entzündbare Flüssigkeiten (nicht mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
+    ghs: ['GHS02', 'GHS08', 'GHS07', 'GHS09'], signal: 'Gefahr',
+    h: [['H224', 'Flüssigkeit und Dampf extrem entzündbar.'], ['H304', 'Kann bei Verschlucken und Eindringen in die Atemwege tödlich sein.'], ['H315', 'Verursacht Hautreizungen.'], ['H350', 'Kann Krebs erzeugen.'], ['H361fd', 'Kann vermutlich die Fruchtbarkeit beeinträchtigen und das Kind im Mutterleib schädigen.'], ['H411', 'Giftig für Wasserorganismen, mit langfristiger Wirkung.']],
+    hNote: 'Gemisch: Die Einstufung hängt vom Produkt ab. Angegeben ist die Einstufung aus dem Sicherheitsdatenblatt Ottokraftstoff (Praeg), bestätigt durch zwei weitere Datenblätter.',
+    props: { flash: -38, boil: '60 bis 199', lel: 1.4, uel: 7.4, vapDens: null },
+    heavy: true,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Extrem entzündbar, Zündung durch Wärme, Funken oder Flammen. Dämpfe bilden mit Luft explosionsfähige Gemische und können zur Zündquelle zurückschlagen. Explosionsgefahr in Räumen, im Freien und in der Kanalisation. Behälter können bei Erwärmung bersten.' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Die meisten Dämpfe sind schwerer als Luft (ERG). Sie breiten sich am Boden aus und sammeln sich in Senken, Kellern, Schächten und Kanälen. Die Flüssigkeit schwimmt auf Wasser und ist nicht damit mischbar.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Kann Krebs erzeugen (H350) und vermutlich die Fruchtbarkeit und das ungeborene Kind schädigen (H361fd). Reizt die Haut (H315). Dämpfe können Schwindel und Erstickung in geschlossenen Räumen verursachen.' },
+      { c: '#b45309', t: 'Verschlucken', x: 'Aspirationsgefahr (H304): nicht zum Erbrechen bringen.' },
+      { c: '#475569', t: 'Umwelt', x: 'Giftig für Wasserorganismen (H411). Abfluss in Gewässer, Kanalisation und Keller verhindern.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Feuerwehr-Schutzkleidung schützt thermisch, aber nur begrenzt chemisch.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Dampfunterdrückender Schaum kann die Dämpfe verringern.', 'Mit trockener Erde, Sand oder anderem nicht brennbarem Material aufnehmen, mit funkenfreiem Werkzeug sammeln.', 'Großes Leck: weit vor der Flüssigkeit eindämmen. Sprühwasser kann Dampf mindern, verhindert aber in geschlossenen Räumen keine Zündung.'],
+      brand: ['Vorsicht: Der Flammpunkt ist sehr niedrig, Wassersprühstrahl kann wirkungslos sein.', 'Kleinbrand: Pulver, CO2, Sprühwasser oder normaler Schaum. Ist normaler Schaum wirkungslos, alkoholbeständigen Schaum nehmen.', 'Großbrand: Sprühstrahl, Nebel oder normaler Schaum, keinen Vollstrahl direkt aufs Produkt richten.', 'Tank, Kesselwagen oder Tankwagen im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, Behälter bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.', 'Bei großem Brand und fehlender Möglichkeit zur sicheren Brandbekämpfung zurückziehen und brennen lassen.']
+    },
+    aegl: { kind: 'ERPG', status: 'laut CAMEO Chemicals (AIHA, 2022), für Benzin gibt es keine AEGL', t: '1 h (Richtwert)', a1: 200, a2: 1000, a3: 4000, edition: 'AIHA', note: 'Die Molmasse 110 ist ein ungefährer Wert für das Gemisch (CAMEO), die Umrechnung in mg/m³ ist entsprechend grob.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Gasoline', u: 'https://cameochemicals.noaa.gov/chemical/11498', f: 'Flammpunkt, Explosionsgrenzen, Siedebereich, ungefähre Molmasse, ERPG 200 / 1000 / 4000 ppm, keine AEGL' },
+      { t: 'ERG Leitfaden 128 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_128.pdf', f: 'Absperr- und Evakuierungsdistanzen 50 / 300 / 800 m, Maßnahmen bei Leck und Brand' },
+      { t: 'Datenbank GEFAHRGUT (BAM), UN 1203 Benzin', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/rid/0pwcr509', f: 'Klasse 3, Verpackungsgruppe II, Gefahrnummer 33' },
+      { t: 'Sicherheitsdatenblatt Ottokraftstoff (Praeg)', u: 'https://www.praeg.de/fileadmin/user_upload/Footer/Sicherheitsdatenblatt_Ottokraftstoff.pdf', f: 'H224, H304, H315, H350, H361fd, H411' },
+      { t: 'Safety Data Sheet Unleaded Gasoline (Greenergy)', u: 'https://www.greenergy.com/media/0ofbos2x/greenergy-e15-unleaded-gasoline-sds-canada.pdf', f: 'H224, H315, H350, H411' }
+    ]
+  },
+  diesel: {
+    id: 'diesel', name: 'Dieselkraftstoff / Heizöl EL', formula: 'Gemisch', cas: '68334-30-5', un: '1202', kemler: '30', klasse: '3', vg: 'III', molMass: null,
+    erg: { guide: '128', title: 'Entzündbare Flüssigkeiten (nicht mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
+    ghs: ['GHS02', 'GHS08', 'GHS07'], signal: 'Gefahr',
+    h: [['H226', 'Flüssigkeit und Dampf entzündbar.'], ['H304', 'Kann bei Verschlucken und Eindringen in die Atemwege tödlich sein.'], ['H315', 'Verursacht Hautreizungen.'], ['H332', 'Gesundheitsschädlich bei Einatmen.'], ['H351', 'Kann vermutlich Krebs erzeugen.'], ['H373', 'Kann die Organe bei längerer oder wiederholter Exposition schädigen.']],
+    hNote: 'Gemisch: Die Einstufung hängt vom Produkt ab. Angegeben ist die Einstufung aus den Sicherheitsdatenblättern für Dieselkraftstoff (Scharr, EBV, CAS 68334-30-5).',
+    props: { flash: 52, boil: '282 bis 338', lel: 1.3, uel: 6, vapDens: null },
+    plume: false,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand', x: 'Der Flammpunkt liegt über der Raumtemperatur (CAMEO: 52 °C, je nach Qualität abweichend). Entzündbar bei Erwärmung, durch Zündquellen oder als Nebel. Behälter können bei Erwärmung bersten, Brand von Lachen auf Wasser möglich.' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Schwimmt auf Wasser und ist darin nicht löslich. Breitet sich als Ölfilm über Flächen, in Gräben und Kanälen aus. Dämpfe sind bei Umgebungstemperatur kaum zu erwarten, daher keine Ausbreitungskeule.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Reizt die Haut (H315), schädlich beim Einatmen von Dämpfen oder Nebel (H332), Verdacht auf krebserzeugende Wirkung (H351).' },
+      { c: '#b45309', t: 'Verschlucken', x: 'Aspirationsgefahr (H304): nicht zum Erbrechen bringen.' },
+      { c: '#475569', t: 'Umwelt', x: 'Abfluss in Gewässer, Kanalisation und Keller verhindern. Löschwasser kann die Umwelt belasten (ERG). Ölsperren und Bindemittel vorhalten.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck) bei Brand. Feuerwehr-Schutzkleidung schützt thermisch, aber nur begrenzt chemisch.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Mit trockener Erde, Sand oder anderem nicht brennbarem Material aufnehmen, mit funkenfreiem Werkzeug sammeln.', 'Großes Leck: weit vor der Flüssigkeit eindämmen.'],
+      brand: ['Kleinbrand: Pulver, CO2, Sprühwasser oder normaler Schaum. Ist normaler Schaum wirkungslos, alkoholbeständigen Schaum nehmen.', 'Großbrand: Sprühstrahl, Nebel oder normaler Schaum, keinen Vollstrahl direkt aufs Produkt richten.', 'Tank, Kesselwagen oder Tankwagen im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, Behälter bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.', 'Bei großem Brand und fehlender Möglichkeit zur sicheren Brandbekämpfung zurückziehen und brennen lassen.']
+    },
+    aegl: { kind: 'PAC', unit: 'mg', status: 'laut CAMEO Chemicals (DOE, PAC-1/2/3 für Dieselkraftstoffe)', t: 'ohne Zeitangabe', a1: 300, a2: 1000, a3: 6000, edition: 'DOE 2024', note: 'Die Werte sind für Nebel und Dämpfe in mg/m³ angegeben. Für Dieselkraftstoff wird deshalb keine Keule gerechnet.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Fuel oil, [diesel]', u: 'https://cameochemicals.noaa.gov/chemical/11452', f: 'Flammpunkt, Explosionsgrenzen, Siedebereich, PAC 300 / 1000 / 6000 mg/m³, UN 1202' },
+      { t: 'ERG Leitfaden 128 (CAMEO-Auszug), UN 1202 Dieselkraftstoff, Gasöl, Heizöl leicht', u: 'https://cameochemicals.noaa.gov/unna/1202', f: 'Leitfaden 128, Absperr- und Evakuierungsdistanzen 50 / 300 / 800 m' },
+      { t: 'ADR 2025, UN 1202 (Gefahrgut Brumme)', u: 'https://www.gefahrgutbrumme.de/ADR2025/ADR/UN1202.html', f: 'Klasse 3, Verpackungsgruppe III, Benennung Dieselkraftstoff, Gasöl, Heizöl leicht' },
+      { t: 'Wikipedia, Nummer zur Kennzeichnung der Gefahr', u: 'https://de.wikipedia.org/wiki/Nummer_zur_Kennzeichnung_der_Gefahr', f: 'Gefahrnummer 30 für UN 1202 (Flammpunkt über 55 °C bis 60 °C)' },
+      { t: 'Sicherheitsdatenblatt Dieselkraftstoff (Scharr)', u: 'https://scharr.de/fileadmin/media/WAERME/Dateien/Sicherheitsdatenblatt-Dieselkraftstoff-DE.pdf', f: 'H226, H304, H315, H332' },
+      { t: 'Diesel Safety Data Sheet CAS 68334-30-5', u: 'https://www.scribd.com/document/733445114/Diesel-68334-30-5-Eng', f: 'H351, H373' }
+    ]
+  },
+  hcl: {
+    id: 'hcl', name: 'Salzsäure (konzentriert, 32 bis 37 %)', formula: 'HCl (wässrig)', cas: '7647-01-0', un: '1789', kemler: '80', klasse: '8', vg: 'II', molMass: 36.46,
+    erg: { guide: '157', title: 'Giftige und/oder ätzende Stoffe (nicht brennbar, wasserempfindlich)', isolate: 50, spillDownwind: null, fire: 800 },
+    ghs: ['GHS05', 'GHS07'], signal: 'Gefahr',
+    h: [['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.'], ['H335', 'Kann die Atemwege reizen.']],
+    hNote: 'Gilt für die konzentrierte Lösung (über 32 bis 37 %). Schwächere Lösungen sind anders eingestuft.',
+    props: { flash: null, fire: 'nicht brennbar', boil: 51, lel: null, uel: null, vapDens: null },
+    gefahren: [
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Verursacht schwere Verätzungen und schwere Augenschäden (H314). Dämpfe führen zu Husten, Erstickungsgefühl und Reizung von Nase und Lunge (CAMEO). Kann die Atemwege reizen (H335).' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Wässrige Lösung von Chlorwasserstoff, raucht an der Luft. Beim Verdünnen entsteht Wärme. Wasser nicht direkt auf die Lache oder ins Leck geben.' },
+      { c: '#ea580c', t: 'Brand und Metalle', x: 'Nicht brennbar, bei Erwärmung entstehen giftige und reizende Dämpfe. Kontakt mit Metallen kann brennbaren Wasserstoff freisetzen. Behälter können bei Erwärmung oder Wasserkontakt bersten (ERG).' },
+      { c: '#475569', t: 'Umwelt', x: 'Löschwasser und Abfluss können ätzend und giftig sein und die Umwelt belasten (ERG). Abfluss in Gewässer, Kanalisation und Keller verhindern.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Beschädigte Behälter und ausgelaufenes Material nur mit geeigneter Schutzkleidung berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Sprühwasser kann Dämpfe niederschlagen oder die Dampfwolke ablenken. Abfließendes Wasser nicht mit dem Stoff in Berührung bringen. Kein Wasser direkt aufs Leck oder in den Behälter.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Kleines Leck: mit TROCKENER Erde, trockenem Sand oder anderem nicht brennbarem Material abdecken, dann mit Folie gegen Ausbreitung und Regen schützen. Mit funkenfreiem Werkzeug in lose verschlossene Kunststoffbehälter füllen.', 'Brennbares Material fernhalten.'],
+      brand: ['Hinweis: Manche Schäume reagieren mit dem Stoff und setzen ätzende oder giftige Gase frei.', 'Kleinbrand: CO2, Pulver, trockener Sand oder alkoholbeständiger Schaum.', 'Großbrand: Sprühstrahl, Nebel oder alkoholbeständiger Schaum, keinen Vollstrahl aufs Produkt richten. Abfluss eindeichen.', 'Tank oder Tankwagen im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, Behälter bis lange nach dem Löschen kühlen, kein Wasser in den Behälter, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { kind: 'AEGL', status: 'laut CAMEO Chemicals (NAC/NRC), gilt für Chlorwasserstoff als Gas', t: '60 min', a1: 1.8, a2: 22, a3: 100, edition: 'NAC/NRC', note: 'Die Quellstärke (Verdampfung aus der Lache, Austritt von Chlorwasserstoffgas) muss die Einsatzleitung schätzen.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Hydrochloric acid, solution', u: 'https://cameochemicals.noaa.gov/chemical/3598', f: 'Siedepunkt, Molmasse, AEGL 60 min: 1,8 / 22 / 100 ppm, Gefahrentexte' },
+      { t: 'ERG Leitfaden 157 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_157.pdf', f: 'Absperrung 50 m, Brand 800 m, Maßnahmen, keine Entfernung in Windrichtung genannt' },
+      { t: 'ADR 2025, UN 1789 Chlorwasserstoffsäure (Gefahrgut-Manager)', u: 'https://www.gefahrgutmanager.de/adr/un-1789-salzsaeure', f: 'Klasse 8, Gefahrnummer 80, Verpackungsgruppe II' },
+      { t: 'Sicherheitsdatenblatt Salzsäure 37 % (Chem-Lab)', u: 'https://doc.chem-lab.be/MSDS?client=bartelt&lang=DE&prodnr=CL000310', f: 'H290, H314, H335' },
+      { t: 'Sicherheitsdatenblatt Salzsäure über 32 bis 37 % (Carl Roth)', u: 'https://www.carlroth.com/medias/SDB-9787-DE-DE.pdf', f: 'H314, H335' }
+    ]
+  },
+  h2so4: {
+    id: 'h2so4', name: 'Schwefelsäure (konzentriert, über 51 %)', formula: 'H2SO4', cas: '7664-93-9', un: '1830', kemler: '80', klasse: '8', vg: 'II', molMass: 98.08,
+    erg: { guide: '137', title: 'Ätzende und/oder giftige Stoffe (wasserreaktiv)', isolate: 50, spillDownwind: null, fire: 800 },
+    ghs: ['GHS05'], signal: 'Gefahr',
+    h: [['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.']],
+    hNote: 'Gilt für Schwefelsäure 95 bis 98 % und allgemein für Lösungen mit mehr als 51 % Säure (UN 1830).',
+    props: { flash: null, fire: 'nicht brennbar', boil: 290, lel: null, uel: null, vapDens: 3.4 },
+    plume: false,
+    gefahren: [
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Ätzt alle Körpergewebe. Verursacht schwere Verätzungen und Augenschäden (H314), schon wenige Tropfen können bei Verschlucken tödlich sein. Einatmen von Dampf oder Nebel kann die Lunge schwer schädigen (CAMEO).' },
+      { c: '#0e7490', t: 'Reaktion mit Wasser', x: 'Mit Wasser reagiert der Stoff stark exotherm, ab etwa 80 bis 90 % Säure extrem. Spritzer und heiße Dämpfe, Verbrennungsgefahr. Mit Wasser mischbar, schwerer als Wasser (Dichte 1,84).' },
+      { c: '#ea580c', t: 'Brand und Metalle', x: 'Nicht brennbar, kann aber fein verteilte brennbare Stoffe entzünden (ERG). Kontakt mit Metallen kann brennbaren Wasserstoff freisetzen. Behälter können bei Erwärmung oder Wasserkontakt bersten.' },
+      { c: '#475569', t: 'Umwelt', x: 'Löschwasser und Abfluss können ätzend sein und die Umwelt belasten. Abfluss in Gewässer, Kanalisation und Keller verhindern. Kein Dampf in der Umgebungsluft zu erwarten, deshalb keine Ausbreitungskeule.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Beschädigte Behälter und ausgelaufenes Material nur mit geeigneter Schutzkleidung berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Sprühwasser kann Dämpfe niederschlagen. Kein Wasser direkt aufs Leck, auf die Lache oder in den Behälter.', 'Brennbares Material (Holz, Papier, Öl) fernhalten.', 'Kleines Leck: mit TROCKENER Erde, trockenem Sand oder anderem nicht brennbarem Material abdecken, dann mit Folie gegen Ausbreitung und Regen schützen. Mit funkenfreiem Werkzeug in lose verschlossene Kunststoffbehälter füllen.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.'],
+      brand: ['Brennt der Stoff nicht, kein Wasser auf den Stoff selbst geben.', 'Kleinbrand: Pulver oder CO2. Unbeschädigte Behälter wenn möglich aus dem Brandbereich bringen.', 'Großbrand: Brandbereich mit großen Wassermengen fluten und dabei Dämpfe mit Sprühnebel niederschlagen. Reicht das Wasser nicht, zurückziehen.', 'Tank, Kesselwagen oder Tankwagen im Brand: Behälter bis lange nach dem Löschen kühlen, kein Wasser in den Behälter, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { kind: 'AEGL', unit: 'mg', status: 'laut CAMEO Chemicals (NAC/NRC)', t: '60 min', a1: 0.2, a2: 8.7, a3: 160, edition: 'NAC/NRC', note: 'Die Werte sind in mg/m³ angegeben und gelten für Dampf und Nebel. Für Schwefelsäure wird keine Keule gerechnet.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Sulfuric acid', u: 'https://cameochemicals.noaa.gov/chemical/5193', f: 'Siedepunkt, Dampfdichte 3,4, Molmasse, AEGL 60 min: 0,2 / 8,7 / 160 mg/m³, Gefahrentexte' },
+      { t: 'ERG Leitfaden 137 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_137.pdf', f: 'Absperrung 50 m, Brand 800 m, Maßnahmen, keine Entfernung in Windrichtung genannt' },
+      { t: 'ADR 2025, UN 1830 Schwefelsäure (Gefahrgut Brumme)', u: 'https://www.gefahrgutbrumme.de/ADR2025/ADR/UN1830.html', f: 'Klasse 8, Verpackungsgruppe II, Gefahrnummer 80, mit mehr als 51 % Säure' },
+      { t: 'Sicherheitsdatenblatt Schwefelsäure 95 bis 98 % (Winlab)', u: 'https://www.winlab.de/media/pdf/09/7b/af/Schwefelsaeure_95-98.pdf', f: 'H290, H314' },
+      { t: 'Sicherheitsdatenblatt Schwefelsäure (Merck)', u: 'https://www.merckmillipore.com/Web-JP-Site/ja_JP/-/JPY/ShowDocument-File?ProductSKU=MDA_CHEM-101516&DocumentType=MSD&DocumentId=101516_SDS_DE_DE.PDF&DocumentUID=307053&Language=DE&Country=DE&Origin=PDP', f: 'H290, H314' }
+    ]
+  },
+  propan: {
+    id: 'propan', name: 'Propan', formula: 'C3H8', cas: '74-98-6', un: '1978', kemler: '23', klasse: '2.1', vg: 'ohne', molMass: 44.09,
+    erg: { guide: '115', title: 'Entzündbare Gase (auch tiefkalt verflüssigt)', isolate: 100, spillDownwind: 800, fire: 1600 },
+    ghs: ['GHS02', 'GHS04'], signal: 'Gefahr',
+    h: [['H220', 'Extrem entzündbares Gas.'], ['H280', 'Enthält Gas unter Druck, kann bei Erwärmung explodieren.']],
+    props: { flash: -104, boil: -42, lel: 2.1, uel: 9.5, vapDens: 1.5 },
+    heavy: true,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Extrem entzündbar, bildet mit Luft explosionsfähige Gemische. Behälter können bei Erwärmung explodieren und Teile wegschleudern. Bei Feuer am Behälter besteht BLEVE-Gefahr, Tanks sind schon nach wenigen Minuten versagt (ERG, Tabelle BLEVE).' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Dämpfe aus verflüssigtem Gas sind zunächst schwerer als Luft (Dichte 1,5) und breiten sich am Boden aus. Sie sammeln sich in Senken, Kellern und Kanälen und können weit zur Zündquelle laufen und zurückschlagen.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Erstickend in hohen Konzentrationen ohne Vorwarnung, über 10 % Schwindel innerhalb weniger Minuten (CAMEO). Kontakt mit verflüssigtem Gas verursacht Erfrierungen.' },
+      { c: '#475569', t: 'Umwelt', x: 'Gasaustritt über Kanalisation, Lüftung und geschlossene Räume verhindern.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Feuerwehr-Schutzkleidung schützt thermisch, aber nur begrenzt chemisch. Bei verflüssigtem Gas thermische Schutzkleidung gegen Kälte.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Wenn möglich, undichte Behälter so drehen, dass Gas statt Flüssigkeit austritt.', 'Sprühwasser kann Dämpfe niederschlagen oder die Dampfwolke ablenken. Kein Wasser auf Leck oder Sicherheitseinrichtungen, es kann vereisen.', 'Ausbreitung von Dämpfen über Kanalisation, Lüftungen und geschlossene Räume verhindern.', 'Bereich absperren, bis das Gas verflogen ist.'],
+      brand: ['Brennendes Leck NICHT löschen, solange das Leck nicht gestoppt werden kann.', 'Kleinbrand: Pulver oder CO2. Großbrand: Sprühstrahl oder Nebel.', 'Unbeschädigte Behälter wenn möglich aus dem Brandbereich bringen.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, mit großen Wassermengen bis lange nach dem Löschen kühlen, kein Wasser auf Leck oder Sicherheitsventile.', 'Bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen. Immer Abstand zu Tanks halten, die in Flammen stehen.', 'Bei großem Brand und fehlender Möglichkeit zur sicheren Brandbekämpfung zurückziehen und brennen lassen.', 'BLEVE: Zeiten und Abstände stehen in der ERG-Tabelle „BLEVE – Safety Precautions“ (Link unter Quellen). Nur mit großer Vorsicht nutzen, niemals Leben auf Basis dieser Zeiten riskieren.']
+    },
+    aegl: { kind: 'AEGL', status: 'laut CAMEO Chemicals (NAC/NRC)', t: '60 min', a1: 5500, a2: 17000, a3: 33000, edition: 'NAC/NRC', note: 'Bei Propan liegen die Stufen weit über 10 % der unteren Explosionsgrenze. Explosionsgefahr beachten, vor allem in geschlossenen Räumen.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Propane', u: 'https://cameochemicals.noaa.gov/chemical/9018', f: 'Flammpunkt, Explosionsgrenzen, Siedepunkt, Dampfdichte 1,5, Molmasse, AEGL 60 min: 5500 / 17000 / 33000 ppm' },
+      { t: 'ERG Leitfaden 115 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_115.pdf', f: 'Absperr- und Evakuierungsdistanzen 100 / 800 / 1600 m, Maßnahmen' },
+      { t: 'ERG, BLEVE – Safety Precautions', u: 'https://cameochemicals.noaa.gov/erg_guides/bleve_safety.pdf', f: 'Zeiten bis zum Versagen und Evakuierungsabstände je Tankgröße (nicht ins Programm übernommen)' },
+      { t: 'ADR, UN 1978 Propan', u: 'https://adrdangerousgoods.com/eng/substances/0001319/un1978-propane/', f: 'Klasse 2, Gefahrnummer 23, Gefahrzettel 2.1' },
+      { t: 'Sicherheitsdatenblatt Propan (Linde)', u: 'https://produkte.linde-gas.at/sdb_konform/000010021747_EU_AT_EN_2.4.pdf', f: 'H220, H280' }
+    ]
+  },
+  ammoniak: {
+    id: 'ammoniak', name: 'Ammoniak, wasserfrei', formula: 'NH3', cas: '7664-41-7', un: '1005', kemler: '268', klasse: '2.3 (8)', vg: 'ohne', molMass: 17.03,
+    erg: { guide: '125', title: 'Giftige und/oder ätzende Gase', isolate: 100, spillDownwind: null, fire: 1600 },
+    tih: {
+      defCont: 'strasse', note: 'ERG 2024, Tabelle 1 und 3 (Ammoniak, wasserfrei). Kleines Leck: bis 208 l aus kleiner Packung oder kleinem Leck. Großes Leck: größere Packung oder viele kleine Packungen.',
+      small: { isolate: 30, day: 100, night: 200 },
+      containers: [
+        { id: 'kesselwagen', name: 'Kesselwagen', isolate: 300, day: [1600, 1200, 1000], night: [4100, 2100, 1300] },
+        { id: 'strasse', name: 'Straßentankwagen oder Auflieger', isolate: 150, day: [800, 500, 400], night: [1800, 700, 600] },
+        { id: 'landwirt', name: 'Landwirtschaftlicher Tank', isolate: 60, day: [500, 300, 300], night: [1400, 300, 300] },
+        { id: 'flaschen', name: 'Mehrere kleine Flaschen', isolate: 30, day: [300, 200, 100], night: [700, 300, 200] }
+      ]
+    },
+    ghs: ['GHS02', 'GHS04', 'GHS05', 'GHS06', 'GHS09'], signal: 'Gefahr',
+    h: [['H221', 'Entzündbares Gas.'], ['H280', 'Enthält Gas unter Druck, kann bei Erwärmung explodieren.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.'], ['H331', 'Giftig bei Einatmen.'], ['H410', 'Sehr giftig für Wasserorganismen mit langfristiger Wirkung.']],
+    hNote: 'Einstufung laut Sicherheitsdatenblatt Linde (Ammoniak, wasserfrei). Andere Hersteller geben teilweise H400 statt H410 an.',
+    props: { flash: null, fire: 'brennbar nur in engen Grenzen', boil: -33, lel: 16, uel: 25, vapDens: 0.6 },
+    plumeNote: 'Ammoniakgas ist leichter als Luft, bleibt aber bei einem Leck zunächst am Boden (CAMEO). Das Gauß-Modell rechnet mit einem Gas, das sich wie Luft verhält.',
+    gefahren: [
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Giftig beim Einatmen (H331), kann tödlich sein. Dämpfe sind stark reizend und ätzend, Kontakt mit dem verflüssigten Gas verursacht Verätzungen und Erfrierungen (ERG, CAMEO).' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Gas ist leichter als Luft (Dichte 0,6), aus einem Leck steigen die Dämpfe aber zunächst am Boden auf (CAMEO). Löst sich in Wasser unter starker Wärmeentwicklung. Gefahr in Senken, Kellern und geschlossenen Räumen.' },
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Brennt nur zwischen 16 und 25 Vol.-%, entzündet sich kaum. In geschlossenen Räumen mit hoher Konzentration besteht bei Zündquelle Brandgefahr (ERG). Behälter können bei Erwärmung bersten und Teile wegschleudern.' },
+      { c: '#475569', t: 'Umwelt', x: 'Sehr giftig für Wasserorganismen (H410). Löschwasser und Abfluss können Gewässer belasten.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Beschädigte Behälter und ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Wenn möglich, undichte Behälter so drehen, dass Gas statt Flüssigkeit austritt.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Wasser nicht auf Leck oder Austrittsstelle richten. Sprühwasser kann Dämpfe niederschlagen oder die Dampfwolke ablenken, Abfluss nicht mit dem ausgelaufenen Material in Berührung bringen.', 'Bereich absperren, bis das Gas verflogen ist.'],
+      brand: ['Kleinbrand: Pulver oder CO2. Großbrand: Sprühstrahl, Nebel oder normaler Schaum.', 'Unbeschädigte Behälter wenn möglich aus dem Brandbereich bringen. Kein Wasser in Behälter. Beschädigte Flaschen nur durch Fachleute handhaben.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, bis lange nach dem Löschen kühlen, kein Wasser auf Leck oder Sicherheitsventile (Vereisung).', 'Bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen. Immer Abstand zu Tanks halten, die in Flammen stehen.']
+    },
+    aegl: { kind: 'AEGL', status: 'laut CAMEO Chemicals (NAC/NRC, final)', t: '60 min', a1: 30, a2: 160, a3: 1100, edition: 'NAC/NRC, 2024', note: 'Die Quellstärke muss die Einsatzleitung schätzen. ERPG-1/2/3 liegen bei 25 / 150 / 1500 ppm (AIHA).' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Ammonia, anhydrous', u: 'https://cameochemicals.noaa.gov/chemical/4860', f: 'Siedepunkt, Explosionsgrenzen, Dampfdichte, Molmasse, AEGL 60 min: 30 / 160 / 1100 ppm' },
+      { t: 'ERG 2024 (PHMSA), Tabelle 1 und Tabelle 3, UN 1005', u: 'https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/2024-04/ERG2024-Eng-Web-a.pdf', f: 'Absperr- und Schutzdistanzen in Metern und Kilometern je Behälter, Tag und Nacht, Windklasse' },
+      { t: 'ERG Leitfaden 125 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_125.pdf', f: 'Brand: 1600 m, Maßnahmen' },
+      { t: 'Datenbank GEFAHRGUT (BAM), UN 1005 Ammoniak', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/adr/tf18trae?lang=en', f: 'Klasse 2, Gefahrnummer 268' },
+      { t: 'Sicherheitsdatenblatt Ammonia, anhydrous (Linde)', u: 'https://produkte.linde-gas.at/sdb_konform/NH3_10021772EN.pdf', f: 'H221, H280, H314, H331, H410' }
+    ]
+  },
+  chlor: {
+    id: 'chlor', name: 'Chlor', formula: 'Cl2', cas: '7782-50-5', un: '1017', kemler: '265', klasse: '2.3 (5.1, 8)', vg: 'ohne', molMass: 70.91,
+    erg: { guide: '124', title: 'Giftige und/oder ätzende Gase (oxidierend)', isolate: 100, spillDownwind: null, fire: 800 },
+    tih: {
+      defCont: 'strasse', note: 'ERG 2024, Tabelle 1 und 3 (Chlor). Kleines Leck: bis 208 l aus kleiner Packung oder kleinem Leck. Großes Leck: größere Packung oder viele kleine Packungen.',
+      small: { isolate: 60, day: 300, night: 1500 },
+      containers: [
+        { id: 'kesselwagen', name: 'Kesselwagen', isolate: 1000, day: [9600, 6300, 5100], night: [11000, 8900, 6500], plusNight: [true, false, false] },
+        { id: 'strasse', name: 'Straßentankwagen oder Auflieger', isolate: 600, day: [5600, 3300, 2500], night: [6400, 4700, 3800] },
+        { id: 'tonnen', name: 'Mehrere Tonnenflaschen', isolate: 300, day: [1900, 1300, 1000], night: [3500, 2300, 1300] },
+        { id: 'flaschen', name: 'Mehrere kleine Flaschen oder eine Tonnenflasche', isolate: 150, day: [1300, 700, 500], night: [2400, 1200, 600] }
+      ]
+    },
+    ghs: ['GHS03', 'GHS04', 'GHS05', 'GHS06', 'GHS09'], signal: 'Gefahr',
+    h: [['H270', 'Kann Brand verursachen oder verstärken, Oxidationsmittel.'], ['H280', 'Enthält Gas unter Druck, kann bei Erwärmung explodieren.'], ['H330', 'Lebensgefahr bei Einatmen.'], ['H335', 'Kann die Atemwege reizen.'], ['H400', 'Sehr giftig für Wasserorganismen.']],
+    hNote: 'Die Einstufung unterscheidet sich zwischen den Herstellern (zum Beispiel H331 statt H330, Haut- und Augenwirkung H314, H315 oder H319). Angegeben ist die Einstufung aus dem Sicherheitsdatenblatt Tata Chemicals, H330 auch bei Linde und BASF.',
+    props: { flash: null, fire: 'nicht brennbar, unterstützt aber die Verbrennung', boil: -35, lel: null, uel: null, vapDens: 2.49 },
+    heavy: true,
+    gefahren: [
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Giftig, kann beim Einatmen tödlich sein (H330). Ätzend für Haut und Augen, reizt die Atemwege (H335). Kontakt mit verflüssigtem Gas kann Erfrierungen verursachen (ERG).' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Gas ist schwerer als Luft (Dichte 2,49) und breitet sich am Boden aus. Es sammelt sich in Senken, Kellern, Schächten und Kanälen. Mit Wasser entstehen giftige und ätzende Dämpfe, darunter Salzsäure (CAMEO).' },
+      { c: '#ea580c', t: 'Brand und Oxidation', x: 'Nicht brennbar, unterstützt aber die Verbrennung und zündet Holz, Papier, Öl und Kleidung. Gemische mit Brennstoffen können explodieren. Mit Wasserstoff (5 bis 95 %) entstehen explosionsfähige Gemische (CAMEO). Behälter können bei Erwärmung bersten.' },
+      { c: '#475569', t: 'Umwelt', x: 'Sehr giftig für Wasserorganismen (H400). Löschwasser und Abfluss können die Umwelt belasten.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Beschädigte Behälter und ausgelaufenes Material nicht berühren oder durchschreiten.', 'Brennbares Material (Holz, Papier, Öl) fernhalten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Wenn möglich, undichte Behälter so drehen, dass Gas statt Flüssigkeit austritt.', 'Sprühwasser kann Dämpfe niederschlagen oder die Dampfwolke ablenken. Kein Wasser auf Leck oder Austrittsstelle, Abfluss nicht mit dem Stoff in Berührung bringen.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Bereich absperren, bis das Gas verflogen ist, Bereich lüften.'],
+      brand: ['Der Stoff brennt nicht, unterstützt aber die Verbrennung. Einige Stoffe reagieren heftig mit Wasser.', 'Kleinbrand: Brand eingrenzen und brennen lassen. Wenn bekämpft werden muss, nur Wasser als Sprühstrahl oder Nebel, kein Pulver, CO2 oder Halon.', 'Kein Wasser in Behälter. Unbeschädigte Behälter wenn möglich aus dem Brandbereich bringen. Beschädigte Flaschen nur durch Fachleute handhaben.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, bis lange nach dem Löschen kühlen, kein Wasser auf Leck oder Sicherheitsventile (Vereisung).', 'Bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen. Immer Abstand zu Tanks halten, die in Flammen stehen.']
+    },
+    aegl: { kind: 'AEGL', status: 'laut CAMEO Chemicals (NAC/NRC)', t: '60 min', a1: 0.5, a2: 2, a3: 20, edition: 'NAC/NRC', note: 'Die Quellstärke muss die Einsatzleitung schätzen. ERPG-1/2/3 liegen bei 1 / 3 / 20 ppm (AIHA).' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Chlorine', u: 'https://cameochemicals.noaa.gov/chemical/2862', f: 'Siedepunkt, Dampfdichte 2,49, Molmasse, AEGL 60 min: 0,5 / 2 / 20 ppm, ERPG, Gefahrentexte' },
+      { t: 'ERG 2024 (PHMSA), Tabelle 1 und Tabelle 3, UN 1017', u: 'https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/2024-04/ERG2024-Eng-Web-a.pdf', f: 'Absperr- und Schutzdistanzen in Metern und Kilometern je Behälter, Tag und Nacht, Windklasse' },
+      { t: 'ERG Leitfaden 124 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_124.pdf', f: 'Brand: 800 m, Maßnahmen' },
+      { t: 'ADR, UN 1017 Chlor (Datenbank GEFAHRGUT, BAM)', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/adr/jl622kyd', f: 'Klasse 2, Gefahrnummer 265' },
+      { t: 'Sicherheitsdatenblatt Chlorine (Tata Chemicals)', u: 'https://www.tatachemicals.com/upload/images/chlorine-tcl-sds-ghs-2021.pdf', f: 'H270, H280, H330, H314, H318, H335, H400, Piktogramme' },
+      { t: 'Safety Data Sheet Chlorine (Linde)', u: 'https://produkte.linde-gas.at/sdb_konform/000010021781_EU_AT_EN_1.5.pdf', f: 'H270, H315, H319, H330, H400' }
+    ]
   }
 };
 const chemSub = id => SUBSTANCES[id];
+const pv = (v, suf, d) => v == null ? 'nicht angegeben' : typeof v === 'string' ? v + (suf || '') : nfmt(v, d) + (suf || '');
+const limMg = (s, v) => v == null ? null : (s.aegl.unit === 'mg' ? v : ppmToMg(v, s.molMass));
+const fmtLim = v => v == null ? '-' : nfmt(v, v < 10 && v !== Math.floor(v) ? 1 : 0);
+const chemHasPlume = s => s.plume !== false;
+const WIND_CLS = ['schwach (unter 10 km/h)', 'mäßig (10 bis 20 km/h)', 'stark (über 20 km/h)'];
+function chemWindClass() { const w = state.wind; if (!w || w.speed == null || w.speed === '') return null; const v = +w.speed * 3.6; return v < 10 ? 0 : v <= 20 ? 1 : 2; }
+const chemNightDefault = () => { const h = new Date(nowMs()).getHours(); return !(h >= 6 && h < 18); };
+const thrRound = v => v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
+const chemM = m => m == null ? '–' : m >= 1000 ? nfmt(m / 1000, 1) + ' km' : nfmt(m) + ' m';
+/* Wirksame Absperrdistanzen: bei ERG-Tabelle 1/3 (giftige Gase) nach Menge, Tageszeit und Windklasse, sonst feste Werte aus dem Leitfaden */
+function chemErg(s, inc) {
+  const e = s.erg, base = { isolate: e.isolate, spill: e.spillDownwind == null ? null : e.spillDownwind, fire: e.fire, tih: false };
+  if (!s.tih) return base;
+  const t = s.tih, night = inc && inc.night != null ? !!inc.night : chemNightDefault(), large = !inc || inc.large !== false;
+  if (!large) return { isolate: t.small.isolate, spill: night ? t.small.night : t.small.day, fire: e.fire, tih: true, night, large: false, wc: null, cont: null, plus: false };
+  const c = t.containers.find(x => x.id === (inc && inc.cont)) || t.containers.find(x => x.id === t.defCont) || t.containers[0], arr = night ? c.night : c.day, wc = chemWindClass();
+  const idx = wc == null ? arr.indexOf(Math.max.apply(null, arr)) : wc, pl = night && c.plusNight ? !!c.plusNight[idx] : false;
+  return { isolate: c.isolate, spill: arr[idx], fire: e.fire, tih: true, night, large: true, wc, wcFallback: wc == null, cont: c, plus: pl };
+}
+function tihTable(s) {
+  const t = s.tih, th = x => el('th', { text: x }), td = (x, c) => el('td', { text: x, class: c || '' });
+  const rows = t.containers.map(c => el('tr', {}, td(c.name), td(chemM(c.isolate)), ...c.day.map(v => td(chemM(v))), ...c.night.map((v, i) => td(chemM(v) + (c.plusNight && c.plusNight[i] ? ' und mehr' : '')))));
+  return el('div', { class: 'tblwrap' }, el('table', { class: 'cm-zt' },
+    el('thead', {}, el('tr', {}, th('Großes Leck, Behälter'), th('Absperren'), th('Tag schwach'), th('Tag mäßig'), th('Tag stark'), th('Nacht schwach'), th('Nacht mäßig'), th('Nacht stark'))),
+    el('tbody', {}, ...rows, el('tr', {}, td('Kleines Leck'), td(chemM(t.small.isolate)), td(chemM(t.small.day)), td('', ''), td('', ''), td(chemM(t.small.night)), td('', ''), td('', '')))));
+}
 const ppmToMg = (ppm, M) => ppm * M / 24.055;        // 20 °C, 1013 hPa
 const nfmt = (n, d) => Number(n).toLocaleString('de-DE', { maximumFractionDigits: d == null ? 0 : d });
 const chemLayer = L.layerGroup().addTo(map);
 map.createPane('chemz').style.zIndex = 391;
 function chemWindDir() { const w = state.wind; return w && w.dir != null ? w.dir : null; }
 function chemRings(inc) {
-  const s = chemSub(inc.sid), e = s.erg, src = { lat: inc.lat, lng: inc.lng }, dir = chemWindDir(), out = { dirKnown: dir != null };
+  const s = chemSub(inc.sid), e = chemErg(s, inc), src = { lat: inc.lat, lng: inc.lng }, dir = chemWindDir(), out = { dirKnown: dir != null };
   out.z1 = circleRing(inc.lat, inc.lng, e.isolate / 1000, 72);
-  if (inc.large) {
-    if (dir != null) { const pts = [[inc.lat, inc.lng]]; for (let a = -30; a <= 30; a += 3) { const t = rad(a); pts.push(toLL(src, dir, e.spillDownwind * Math.cos(t), e.spillDownwind * Math.sin(t))); } out.z2 = pts; }
-    else out.z2 = circleRing(inc.lat, inc.lng, e.spillDownwind / 1000, 72);
+  if ((e.tih || inc.large) && e.spill != null) {
+    if (dir != null) { const pts = [[inc.lat, inc.lng]]; for (let a = -30; a <= 30; a += 3) { const t = rad(a); pts.push(toLL(src, dir, e.spill * Math.cos(t), e.spill * Math.sin(t))); } out.z2 = pts; }
+    else out.z2 = circleRing(inc.lat, inc.lng, e.spill / 1000, 72);
   }
   if (inc.fire) out.z3 = circleRing(inc.lat, inc.lng, e.fire / 1000, 90);
   return out;
 }
-const CHEM_ZONES = [{ k: 'z1', c: '#ef4444', n: 'Absperrung', fill: .42 }, { k: 'z2', c: '#ea580c', n: 'Großes Leck, Windrichtung', fill: .28 }, { k: 'z3', c: '#7c2d12', n: 'Behälterbrand', fill: .06, dash: '8 6' }];
+const CHEM_ZONES = [{ k: 'z1', c: '#ef4444', n: 'Absperrung', fill: .42 }, { k: 'z2', c: '#ea580c', n: 'Windrichtung', fill: .28 }, { k: 'z3', c: '#7c2d12', n: 'Behälterbrand', fill: .06, dash: '8 6' }];
 function chemPlate(s, big) { return el('div', { class: 'cm-plate' + (big ? ' big' : '') }, el('span', { text: s.kemler }), el('span', { text: s.un })); }
 function chemItems(inc) {
   return [
     { label: 'Zoom', onclick: () => map.setView([inc.lat, inc.lng], Math.max(map.getZoom(), 15)) },
-    { label: 'Großes Leck (300 m in Windrichtung)', check: !!inc.large, onclick: () => { inc.large = !inc.large; renderChem(); save('Zone Großes Leck ' + (inc.large ? 'an' : 'aus')); } },
-    { label: 'Behälterbrand (800 m rundum)', check: !!inc.fire, onclick: () => { inc.fire = !inc.fire; renderChem(); save('Zone Behälterbrand ' + (inc.fire ? 'an' : 'aus')); } },
+    (() => { const s = chemSub(inc.sid), E = chemErg(s, inc); return s.tih ? { label: 'Großes Leck (ERG Tabelle 3, sonst Tabelle 1)', check: inc.large !== false, onclick: () => { inc.large = inc.large === false; renderChem(); save('Großes Leck ' + (inc.large ? 'an' : 'aus')); } } : E.spill == null ? { label: 'Keine Distanz in Windrichtung im ERG', disabled: true } : { label: 'Großes Leck (' + E.spill + ' m in Windrichtung)', check: !!inc.large, onclick: () => { inc.large = !inc.large; renderChem(); save('Zone Großes Leck ' + (inc.large ? 'an' : 'aus')); } }; })(),
+    { label: 'Behälterbrand (' + chemSub(inc.sid).erg.fire + ' m rundum)', check: !!inc.fire, onclick: () => { inc.fire = !inc.fire; renderChem(); save('Zone Behälterbrand ' + (inc.fire ? 'an' : 'aus')); } },
     { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('chem'); } },
     { sep: true }, { label: 'Entfernen', onclick: () => removeChem(inc) }
   ];
@@ -3296,10 +3547,10 @@ let chemSeq = 0;
 function renderChemMap() {
   chemLayer.clearLayers();
   state.chem.forEach(inc => {
-    const s = chemSub(inc.sid); if (!s) return; const R = chemRings(inc);
+    const s = chemSub(inc.sid); if (!s) return; const R = chemRings(inc), E = chemErg(s, inc);
     CHEM_ZONES.forEach(z => { const ring = R[z.k]; if (!ring) return;
       L.polygon(ring, { pane: 'chemz', color: z.c, weight: 2, dashArray: z.dash || null, fillColor: z.c, fillOpacity: z.fill, interactive: true })
-        .on('contextmenu', e => ctxOpen(e, chemItems(inc), e.latlng, 'Gefahrstoff: ' + s.name)).bindTooltip(z.n + (z.k === 'z1' ? ', ' + s.erg.isolate + ' m' : z.k === 'z2' ? ', ' + s.erg.spillDownwind + ' m' : ', ' + s.erg.fire + ' m'), { sticky: true }).addTo(chemLayer); });
+        .on('contextmenu', e => ctxOpen(e, chemItems(inc), e.latlng, 'Gefahrstoff: ' + s.name)).bindTooltip((z.k === 'z2' && !E.tih ? 'Großes Leck, ' : '') + z.n + (z.k === 'z1' ? ', ' + chemM(E.isolate) : z.k === 'z2' ? ', ' + chemM(E.spill) : ', ' + chemM(E.fire)), { sticky: true }).addTo(chemLayer); });
     const plate = chemPlate(s); const m = L.marker([inc.lat, inc.lng], { draggable: !runtime.viewer, zIndexOffset: 900, icon: L.divIcon({ className: '', iconSize: [56, 44], iconAnchor: [28, 22], html: plate }) });
     m.bindTooltip(el('span', { text: s.name + ' (UN ' + s.un + ')' }));
     m.on('dragend', () => { const ll = m.getLatLng(); inc.lat = ll.lat; inc.lng = ll.lng; const pl = state.plumes.find(x => x.id === inc.plumeId); if (pl) { pl.lat = ll.lat; pl.lng = ll.lng; } refreshKeule(); renderChem(); save('Gefahrstoff verschoben: ' + s.name); });
@@ -3310,10 +3561,10 @@ function renderChemMap() {
 }
 function addChem(sid, ll) {
   const s = chemSub(sid); if (!s) return;
-  const inc = { id: uid(), sid, name: s.name + ' (UN ' + s.un + ')', lat: ll.lat, lng: ll.lng, large: true, fire: false, Q: null, H: 0, plumeId: null };
-  const pl = { id: uid(), name: 'Keule ' + s.name, lat: ll.lat, lng: ll.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: null, H: 0, thr1: Math.round(ppmToMg(s.aegl.a2, s.molMass)), thr2: Math.round(ppmToMg(s.aegl.a1, s.molMass)), len: null, angle: null, r0: null };
-  state.plumes.push(pl); inc.plumeId = pl.id; state.chem.push(inc); runtime.chemActive = inc.id;
-  addJournal('Gefahrstoff ' + inc.name + ' gemeldet, Absperrung 50 m', true, { lat: ll.lat, lng: ll.lng });
+  const inc = { id: uid(), sid, name: s.name + ' (UN ' + s.un + ')', lat: ll.lat, lng: ll.lng, large: true, fire: false, Q: null, H: 0, plumeId: null, night: s.tih ? chemNightDefault() : null, cont: s.tih ? s.tih.defCont : null };
+  const pl = !chemHasPlume(s) ? null : { id: uid(), name: 'Keule ' + s.name, lat: ll.lat, lng: ll.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: null, H: 0, thr1: thrRound(limMg(s, s.aegl.a2)), thr2: thrRound(limMg(s, s.aegl.a1)), len: null, angle: null, r0: null };
+  if (pl) { state.plumes.push(pl); inc.plumeId = pl.id; } state.chem.push(inc); runtime.chemActive = inc.id;
+  addJournal('Gefahrstoff ' + inc.name + ' gemeldet, Absperrung ' + chemM(chemErg(s, inc).isolate), true, { lat: ll.lat, lng: ll.lng });
   renderKeulen(); renderChem(); save('Gefahrstoff gesetzt: ' + s.name); setPanel(true); openTab('chem');
 }
 function removeChem(inc) {
@@ -3322,25 +3573,28 @@ function removeChem(inc) {
 }
 const chemActive = () => state.chem.find(x => x.id === runtime.chemActive) || state.chem[state.chem.length - 1] || null;
 function chemSheet(s) {
-  const p = s.props, a = s.aegl, ueg = p.lel * 10000, lk = a.kind || 'AEGL';
+  const p = s.props, a = s.aegl, ueg = p.lel == null ? null : p.lel * 10000, lk = a.kind || 'AEGL', mgOnly = a.unit === 'mg';
   const kv = (k, v) => [el('b', { text: k }), el('span', { text: v })];
   return el('div', { class: 'cm-card' },
     el('div', { class: 'cm-head' }, el('div', {}, el('h3', { text: s.name }), el('div', { class: 'cm-sub', text: s.formula + ' · CAS ' + s.cas + ' · UN ' + s.un + ' · Klasse ' + s.klasse + ' · VG ' + s.vg + ' · ERG ' + s.erg.guide })), chemPlate(s)),
     el('div', { class: 'cm-pics' }, ...s.ghs.map(c => ghsImg(c, 46)), el('span', { class: 'cm-sub', text: 'Signalwort: ' + s.signal })),
     el('ul', { class: 'cm-list' }, ...s.gefahren.map(g => el('li', { style: '--c:' + g.c }, el('b', { text: g.t + ': ' }), g.x))),
-    el('div', { class: 'cm-kv' }, ...kv('Flammpunkt', nfmt(p.flash) + ' °C'), ...kv('Siedepunkt', nfmt(p.boil) + ' °C'), ...kv('Zündbereich', nfmt(p.lel, 1) + ' bis ' + nfmt(p.uel, 1) + ' Vol.-%'), ...kv('Dampfdichte', nfmt(p.vapDens, 1) + (p.vapDens > 1 ? ' (schwerer als Luft)' : ''))),
+    el('div', { class: 'hint', text: 'H-Sätze: ' + s.h.map(x => x[0]).join(', ') + (s.hNote ? '. ' + s.hNote : '') }),
+    el('div', { class: 'cm-kv' }, ...(p.flash != null ? kv('Flammpunkt', nfmt(p.flash) + ' °C') : kv('Brandverhalten', p.fire || 'nicht angegeben')), ...kv('Siedepunkt', pv(p.boil, ' °C')), ...(p.lel != null ? kv('Zündbereich', nfmt(p.lel, 1) + ' bis ' + nfmt(p.uel, 1) + ' Vol.-%') : []), ...kv('Dampfdichte', p.vapDens == null ? 'nicht angegeben' : nfmt(p.vapDens, 1) + (p.vapDens > 1 ? ' (schwerer als Luft)' : ' (leichter als Luft)'))),
     el('h3', { class: 'cm-h', text: 'Absperrung nach ERG 2024, Leitfaden ' + s.erg.guide }),
+    ...(s.tih ? [el('div', { class: 'hint', text: s.tih.note + ' Die Distanzen hängen von Behälter, Tageszeit und Windstärke ab und werden je Freisetzung im Reiter berechnet. Die Tabellen gelten für Transportunfälle in der ersten Phase, nicht für feste Anlagen. Mit „und mehr“ markierte Werte können unter ungünstigen Bedingungen größer sein.' }), tihTable(s),
+      el('div', { class: 'cm-zone', style: '--c:#7c2d12' }, el('span', {}, el('b', { text: s.erg.fire + ' m rundum' }), 'Behälter, Kesselwagen oder Tankwagen im Brand: ' + s.erg.fire + ' m in alle Richtungen absperren und erste Evakuierung auf ' + s.erg.fire + ' m erwägen. Zusätzlich in Windrichtung nach Tabelle 1 oder 3 für den restlichen Austritt schützen (ERG).'))] : [
     el('div', { class: 'cm-zone', style: '--c:#ef4444' }, el('span', {}, el('b', { text: s.erg.isolate + ' m rundum' }), 'Sofort: Leck- oder Austrittsbereich in alle Richtungen mindestens ' + s.erg.isolate + ' m absperren. Unbefugte fernhalten.')),
-    el('div', { class: 'cm-zone', style: '--c:#ea580c' }, el('span', {}, el('b', { text: s.erg.spillDownwind + ' m in Windrichtung' }), 'Großes Leck: erste Evakuierung in Windrichtung auf mindestens ' + s.erg.spillDownwind + ' m erwägen.')),
-    el('div', { class: 'cm-zone', style: '--c:#7c2d12' }, el('span', {}, el('b', { text: s.erg.fire + ' m rundum' }), 'Behälter, Kesselwagen oder Tankwagen im Brand: ' + s.erg.fire + ' m in alle Richtungen absperren und erste Evakuierung auf ' + s.erg.fire + ' m erwägen.')),
+    s.erg.spillDownwind != null ? el('div', { class: 'cm-zone', style: '--c:#ea580c' }, el('span', {}, el('b', { text: s.erg.spillDownwind + ' m in Windrichtung' }), 'Großes Leck: erste Evakuierung in Windrichtung auf mindestens ' + s.erg.spillDownwind + ' m erwägen.')) : el('div', { class: 'hint', text: 'Der ERG-Leitfaden nennt für diesen Stoff keine feste Entfernung in Windrichtung. Bei größerem Austritt die Absperrung in Windrichtung nach Lage vergrößern.' }),
+    el('div', { class: 'cm-zone', style: '--c:#7c2d12' }, el('span', {}, el('b', { text: s.erg.fire + ' m rundum' }), 'Behälter, Kesselwagen oder Tankwagen im Brand: ' + s.erg.fire + ' m in alle Richtungen absperren und erste Evakuierung auf ' + s.erg.fire + ' m erwägen.'))]),
     el('h3', { class: 'cm-h', text: 'Maßnahmen' }),
     el('div', { class: 'hint' }, el('b', { text: 'Schutz: ' }), s.massnahmen.schutz),
     el('details', {}, el('summary', { text: 'Leck und Austritt' }), el('ul', { class: 'cm-ul' }, ...s.massnahmen.leck.map(t => el('li', { text: t })))),
     el('details', {}, el('summary', { text: 'Brand' }), el('ul', { class: 'cm-ul' }, ...s.massnahmen.brand.map(t => el('li', { text: t })))),
-    el('h3', { class: 'cm-h', text: 'Grenzwerte für die Keule (' + lk + ', ' + a.t + ')' }),
+    el('h3', { class: 'cm-h', text: 'Grenzwerte (' + lk + ', ' + a.t + ')' + (chemHasPlume(s) ? ' für die Keule' : '') }),
     el('table', { class: 'cm-zt' }, el('thead', {}, el('tr', {}, ...['Stufe', 'ppm', 'mg/m³'].map(x => el('th', { text: x })))),
-      el('tbody', {}, ...[[lk + '-1', a.a1], [lk + '-2', a.a2], [lk + '-3', a.a3]].map(r => el('tr', {}, el('td', { text: r[0] }), el('td', { text: r[1] == null ? 'nicht festgelegt' : nfmt(r[1]) }), el('td', { text: r[1] == null ? '-' : nfmt(ppmToMg(r[1], s.molMass)) }))))),
-    el('div', { class: 'hint', text: lk + ' ' + a.status + ', ' + a.edition + '. mg/m³ bei 20 °C und 1013 hPa umgerechnet (Molmasse ' + nfmt(s.molMass, 2) + ').' + (a.a3 != null ? ' ' + lk + '-3 liegt bei ' + nfmt(100 * a.a3 / ueg) + ' % der unteren Explosionsgrenze' + (a.a3 / ueg > 0.5 ? ', die Explosionsgefahr kommt dort vor der Giftwirkung.' : '.') : '') + (a.note ? ' ' + a.note : '') }),
+      el('tbody', {}, ...[[lk + '-1', a.a1], [lk + '-2', a.a2], [lk + '-3', a.a3]].map(r => el('tr', {}, el('td', { text: r[0] }), el('td', { text: r[1] == null ? 'nicht festgelegt' : mgOnly ? '-' : fmtLim(r[1]) }), el('td', { text: r[1] == null ? '-' : fmtLim(limMg(s, r[1])) }))))),
+    el('div', { class: 'hint', text: lk + ' ' + a.status + ', ' + a.edition + '.' + (mgOnly ? ' Angaben in mg/m³.' : ' mg/m³ bei 20 °C und 1013 hPa umgerechnet (Molmasse ' + nfmt(s.molMass, 2) + ').') + (a.a3 != null && ueg != null && !mgOnly ? ' ' + lk + '-3 liegt bei ' + nfmt(100 * a.a3 / ueg) + ' % der unteren Explosionsgrenze' + (a.a3 / ueg > 0.5 ? ', die Explosionsgefahr kommt dort vor der Giftwirkung.' : '.') : '') + (a.note ? ' ' + a.note : '') }),
     el('div', { class: 'hint', text: s.verified ? 'Werte geprüft am ' + s.verifiedAt + ' gegen die unten genannten Quellen. Die deutschen Maßnahmentexte sind sinngemäß nach ERG 2024 übersetzt, die amtliche Fassung gilt.' : 'NICHT GEPRÜFT' }),
     el('details', {}, el('summary', { text: 'Quellen' }), el('ul', { class: 'cm-ul' }, ...s.src.map(r => el('li', {}, el('a', { href: r.u, target: '_blank', rel: 'noopener', text: r.t }), ' (' + r.f + ')'))),
       el('div', { class: 'hint', text: 'GHS-Piktogramme: UNECE, Dateien von Wikimedia Commons (gemeinfrei, PD-ineligible).' })));
@@ -3354,25 +3608,29 @@ function renderChemTab() {
   $('#chemBandOn').checked = state.chemBand !== false;
   if (!state.chem.length) box.append(el('div', { class: 'hint', text: 'Noch keine Freisetzung. Stoff wählen und „Freisetzungsort auf Karte setzen“ klicken, oder mit Rechtsklick auf die Karte.' }));
   state.chem.forEach(inc => {
-    const s = chemSub(inc.sid); if (!s) return; const pl = state.plumes.find(x => x.id === inc.plumeId);
-    const chk = (key, label) => el('label', { class: 'cm-chk' }, el('input', { type: 'checkbox', checked: inc[key] ? 'checked' : null, onchange: ev => { inc[key] = ev.target.checked; renderChem(); save(label + (inc[key] ? ' an' : ' aus') + ': ' + s.name); } }), ' ' + label);
+    const s = chemSub(inc.sid); if (!s) return; const pl = state.plumes.find(x => x.id === inc.plumeId), E = chemErg(s, inc), R2 = chemRings(inc);
+    const sel = (val, opts, set) => el('select', { onchange: ev => { set(ev.target.value); ev.target.blur(); renderChem(); save('Freisetzung ' + s.name + ' angepasst'); } }, ...opts.map(o => el('option', { value: o[0], text: o[1], selected: o[0] === val ? 'selected' : null })));
+    const chk = (key, label) => el('label', { class: 'cm-chk' }, el('input', { type: 'checkbox', checked: inc[key] ? 'checked' : null, onchange: ev => { inc[key] = ev.target.checked; ev.target.blur(); renderChem(); save(label + (inc[key] ? ' an' : ' aus') + ': ' + s.name); } }), ' ' + label);
     const q = el('input', { type: 'number', min: '0', step: 'any', class: 'num', value: inc.Q == null ? '' : inc.Q, placeholder: 'g/s', onchange: ev => { inc.Q = numOrNull(ev.target.value); if (pl) pl.Q = inc.Q; refreshKeule(); save('Quellstärke ' + s.name + ': ' + (inc.Q == null ? 'leer' : inc.Q + ' g/s')); } });
     const h = el('input', { type: 'number', min: '0', step: '1', class: 'num', value: inc.H || 0, onchange: ev => { inc.H = numOrNull(ev.target.value) || 0; if (pl) pl.H = inc.H; refreshKeule(); save('Quellhöhe ' + s.name); } });
     const zrow = (k, c, n) => el('tr', { 'data-z': k }, el('td', {}, el('span', { class: 'cm-sw', style: 'background:' + c }), n), el('td', { 'data-c': 'pop', text: '…' }), el('td', { 'data-c': 'u18', text: '' }), el('td', { 'data-c': 'o65', text: '' }), el('td', { 'data-c': 'age', text: '' }));
     const card = el('div', { class: 'card cm-inc', 'data-cid': inc.id, style: '--c:#f97316' },
       el('div', { class: 'cm-head' }, el('div', {}, el('b', { text: s.name }), el('div', { class: 'cm-sub', text: 'UN ' + s.un + ' · Kemler ' + s.kemler + ' · ' + nfmt(inc.lat, 5) + ', ' + nfmt(inc.lng, 5) })), chemPlate(s)),
-      el('div', { class: 'row' }, chk('large', 'Großes Leck, ' + s.erg.spillDownwind + ' m in Windrichtung'), chk('fire', 'Behälterbrand, ' + s.erg.fire + ' m rundum')),
-      el('div', { class: 'hint', text: chemWindDir() == null ? 'Wind ist nicht gesetzt: die Zone für das große Leck wird als Kreis gezeigt. Wind im Reiter Wetter eintragen.' : 'Zone für das große Leck als Sektor von 60 Grad um die Windrichtung (eigene Darstellung, die ERG nennt nur die Entfernung).' }),
+      el('div', { class: 'row' }, s.tih ? chk('large', 'Großes Leck (ERG Tabelle 3, sonst Tabelle 1)') : E.spill != null ? chk('large', 'Großes Leck, ' + E.spill + ' m in Windrichtung') : null, chk('fire', 'Behälterbrand, ' + E.fire + ' m rundum')),
+      ...(s.tih ? [el('div', { class: 'row' }, el('label', {}, 'Tageszeit ', sel(E.night ? 'nacht' : 'tag', [['tag', 'Tag'], ['nacht', 'Nacht']], v => { inc.night = v === 'nacht'; })), E.large ? el('label', {}, 'Behälter ', sel(E.cont.id, s.tih.containers.map(c => [c.id, c.name]), v => { inc.cont = v; })) : null),
+        el('div', { class: 'hint', text: (E.large ? (E.wcFallback ? 'Wind ist nicht gesetzt: die Distanz gilt für die ungünstigste der drei Windklassen. ' : 'Windklasse ' + WIND_CLS[E.wc] + ' aus der Windgeschwindigkeit. ') : 'Kleines Leck nach ERG Tabelle 1 (bis 208 l). ') + 'Absperren ' + chemM(E.isolate) + ', Schutzdistanz in Windrichtung ' + chemM(E.spill) + (E.plus ? ' und mehr' : '') + ' (' + (E.night ? 'Nacht' : 'Tag') + '). Die Tageszeit ist nach der Uhrzeit voreingestellt, bitte prüfen (Tag ist zwischen Sonnenauf- und -untergang). Die Tabellen gelten für Transportunfälle in der ersten Phase, nicht für feste Anlagen. Bei Brand zusätzlich ' + chemM(E.fire) + ' rundum absperren.' })] : []),
+      el('div', { class: 'hint', text: chemWindDir() == null ? 'Wind ist nicht gesetzt: die Windrichtungszone wird als Kreis gezeigt. Wind im Reiter Wetter eintragen.' : (E.spill != null ? 'Zone in Windrichtung als Sektor von 60 Grad um die Windrichtung (eigene Darstellung, die ERG nennt nur die Entfernung).' : 'Der ERG-Leitfaden nennt für diesen Stoff keine Entfernung in Windrichtung, es wird nur die Absperrung gezeigt.') }),
       el('h3', { class: 'cm-h', text: 'Betroffene nach Zonen' }),
       el('table', { class: 'cm-zt' }, el('thead', {}, el('tr', {}, ...['Zone', 'Einwohner', 'unter 18', 'ab 65', 'Ø Alter'].map(x => el('th', { text: x })))),
-        el('tbody', {}, zrow('z1', '#ef4444', s.erg.isolate + ' m'), inc.large ? zrow('z2', '#ea580c', s.erg.spillDownwind + ' m Wind') : null, inc.fire ? zrow('z3', '#7c2d12', s.erg.fire + ' m Brand') : null)),
+        el('tbody', {}, zrow('z1', '#ef4444', chemM(E.isolate)), R2.z2 ? zrow('z2', '#ea580c', chemM(E.spill) + ' Wind') : null, inc.fire ? zrow('z3', '#7c2d12', chemM(E.fire) + ' Brand') : null)),
       el('div', { class: 'hint', text: 'Zensus 2022, Wohnbevölkerung, nicht die tatsächlich Anwesenden. Die Zonen überlappen, die Zahlen nicht addieren. Unter etwa 100 m Zonenbreite ist das 100-m-Raster zu grob, die Zahl der 50-m-Zone ist nur ein Anhalt.' }),
       el('h3', { class: 'cm-h', text: 'Objekte in den Zonen' }), el('div', { 'data-c': 'objs', class: 'cm-objs', text: '…' }),
       el('h3', { class: 'cm-h', text: 'Ausbreitungskeule' }),
+      ...(!chemHasPlume(s) ? [el('div', { class: 'hint', text: 'Für ' + s.name + ' wird keine Ausbreitungskeule gerechnet: ' + (s.aegl.note || 'Der Stoff ist bei Umgebungstemperatur kaum flüchtig.') })] : [
       el('div', { class: 'row' }, el('label', {}, 'Quelle g/s ', q), el('label', {}, 'Höhe m ', h)),
-      el('div', { class: 'hint', text: 'Äußere Linie ' + (s.aegl.kind || 'AEGL') + '-1 (' + nfmt(ppmToMg(s.aegl.a1, s.molMass)) + ' mg/m³), innere Linie ' + (s.aegl.kind || 'AEGL') + '-2 (' + nfmt(ppmToMg(s.aegl.a2, s.molMass)) + ' mg/m³), jeweils ' + s.aegl.t + (s.aegl.status.startsWith('vorl') ? ', vorläufig' : '') + '. Die Quellstärke muss die Einsatzleitung schätzen, sie wird nicht vorgegeben.' }),
-      el('div', { class: 'notice', text: 'Das Gauß-Modell rechnet mit einem Gas, das sich wie Luft verhält. ' + s.name + '-Dampf ist schwerer als Luft und sammelt sich in Senken. Die Keule ist eine grobe Schätzung, Messungen gehen vor.' }),
-      pl ? el('div', { class: 'kres hint', 'data-c': 'plume', text: plumeLine(pl).text }) : el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Die zugehörige Keule wurde gelöscht.' }), el('button', { class: 'btn small', text: 'Keule neu anlegen', onclick: () => { const np = { id: uid(), name: 'Keule ' + s.name, lat: inc.lat, lng: inc.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: inc.Q, H: inc.H || 0, thr1: Math.round(ppmToMg(s.aegl.a2, s.molMass)), thr2: Math.round(ppmToMg(s.aegl.a1, s.molMass)), len: null, angle: null, r0: null }; state.plumes.push(np); inc.plumeId = np.id; renderKeulen(); renderChem(); save('Keule neu: ' + s.name); } })),
+      el('div', { class: 'hint', text: 'Äußere Linie ' + (s.aegl.kind || 'AEGL') + '-1 (' + fmtLim(limMg(s, s.aegl.a1)) + ' mg/m³), innere Linie ' + (s.aegl.kind || 'AEGL') + '-2 (' + fmtLim(limMg(s, s.aegl.a2)) + ' mg/m³), jeweils ' + s.aegl.t + (s.aegl.status.startsWith('vorl') ? ', vorläufig' : '') + '. Die Quellstärke muss die Einsatzleitung schätzen, sie wird nicht vorgegeben.' }),
+      el('div', { class: 'notice', text: s.plumeNote || ('Das Gauß-Modell rechnet mit einem Gas, das sich wie Luft verhält.' + (s.heavy ? ' ' + s.name + '-Dampf ist schwerer als Luft und sammelt sich in Senken.' : '') + ' Die Keule ist eine grobe Schätzung, Messungen gehen vor.') })]),
+      !chemHasPlume(s) ? null : pl ? el('div', { class: 'kres hint', 'data-c': 'plume', text: plumeLine(pl).text }) : el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Die zugehörige Keule wurde gelöscht.' }), el('button', { class: 'btn small', text: 'Keule neu anlegen', onclick: () => { const np = { id: uid(), name: 'Keule ' + s.name, lat: inc.lat, lng: inc.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: inc.Q, H: inc.H || 0, thr1: thrRound(limMg(s, s.aegl.a2)), thr2: thrRound(limMg(s, s.aegl.a1)), len: null, angle: null, r0: null }; state.plumes.push(np); inc.plumeId = np.id; renderKeulen(); renderChem(); save('Keule neu: ' + s.name); } })),
       el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => { map.setView([inc.lat, inc.lng], Math.max(map.getZoom(), 15)); runtime.chemActive = inc.id; renderChemBand(); } }),
         el('button', { class: 'btn small', text: 'Problem eintragen', onclick: () => { const pr = addProblemFromChem(inc, s); if (pr) say('Problem eingetragen.', 2500); } }),
         el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => removeChem(inc) })));
@@ -3383,7 +3641,7 @@ function renderChemTab() {
   fillChemNumbers();
 }
 function addProblemFromChem(inc, s) {
-  const pr = { id: uid(), title: 'Gefahrstoff ' + s.name + ': Absperrung und Betroffene prüfen', text: 'UN ' + s.un + ', Absperrung ' + s.erg.isolate + ' m' + (inc.large ? ', großes Leck: Evakuierung in Windrichtung bis ' + s.erg.spillDownwind + ' m erwägen' : '') + (inc.fire ? ', Brand: ' + s.erg.fire + ' m' : ''), prio: 1, status: 'offen', owner: '', time: nowIso(), lat: inc.lat, lng: inc.lng };
+  const pr = { id: uid(), title: 'Gefahrstoff ' + s.name + ': Absperrung und Betroffene prüfen', text: 'UN ' + s.un + ', Absperrung ' + chemM(chemErg(s, inc).isolate) + (chemErg(s, inc).spill != null && (inc.large || s.tih) ? ', Schutz in Windrichtung bis ' + chemM(chemErg(s, inc).spill) + ' erwägen' : '') + (inc.fire ? ', Brand: ' + chemM(chemErg(s, inc).fire) : ''), prio: 1, status: 'offen', owner: '', time: nowIso(), lat: inc.lat, lng: inc.lng };
   state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
 }
 async function fillChemNumbers() {
@@ -3398,9 +3656,9 @@ async function fillChemNumbers() {
     // Objekte: innerste Zone gewinnt
     const named = { z1: [], z2: [], z3: [] }, circ = (p, rad2) => Math.hypot((p.lat - inc.lat) * 111320, (p.lng - inc.lng) * 111320 * Math.cos(rad(inc.lat))) <= rad2;
     visiblePois().forEach(p => { if (!state.layerOn[p.layer] && !p.manual) return; const lay = LAYER_BY_ID[p.layer];
-      const z = circ(p, s.erg.isolate) ? 'z1' : (R.z2 && pip(p.lat, p.lng, R.z2)) ? 'z2' : (R.z3 && circ(p, s.erg.fire)) ? 'z3' : null; if (z) named[z].push({ p, lay }); });
+      const E = chemErg(s, inc), z = circ(p, E.isolate) ? 'z1' : (R.z2 && pip(p.lat, p.lng, R.z2)) ? 'z2' : (R.z3 && circ(p, E.fire)) ? 'z3' : null; if (z) named[z].push({ p, lay }); });
     const box = card.querySelector('[data-c="objs"]'); if (!box) continue; box.replaceChildren();
-    const names = { z1: s.erg.isolate + ' m', z2: s.erg.spillDownwind + ' m Wind', z3: s.erg.fire + ' m Brand' }; let any = false;
+    const E2 = chemErg(s, inc), names = { z1: chemM(E2.isolate), z2: chemM(E2.spill) + ' Wind', z3: chemM(E2.fire) + ' Brand' }; let any = false;
     ['z1', 'z2', 'z3'].forEach(z => { if (!R[z] || !named[z].length) return; any = true;
       box.append(el('div', { class: 'cm-ohd', text: names[z] + ': ' + named[z].length + ' Objekte' }), ...named[z].slice(0, 8).map(o => el('button', { class: 'cm-ob', title: 'Auf Karte zeigen', onclick: () => map.setView([o.p.lat, o.p.lng], Math.max(map.getZoom(), 17)) }, poiTitle(o.p) + ' (' + (o.lay ? o.lay.name : '') + ')')),
         named[z].length > 8 ? el('div', { class: 'hint', text: '… und ' + (named[z].length - 8) + ' weitere' }) : null); });
@@ -3411,11 +3669,11 @@ function renderChemBand() {
   const b = $('#chemBand'); if (!b) return; const inc = chemActive(), s = inc && chemSub(inc.sid);
   if (!inc || !s || state.chemBand === false) { b.hidden = true; return; }
   const p = s.props, tile = (v, l, c) => el('div', { class: 'cm-tile', style: '--c:' + c }, el('b', { text: v }), el('span', { text: l }));
-  const keyH = s.h.find(x => x[0] === 'H350') || s.h[0];
+  const keyH = ['H350', 'H330', 'H331', 'H314', 'H224', 'H225', 'H220', 'H221'].map(c => s.h.find(x => x[0] === c)).find(Boolean) || s.h[0], E = chemErg(s, inc);
   b.replaceChildren(chemPlate(s, true), el('div', {}, el('div', { class: 'nm', text: s.name }), el('div', { class: 'cm-sub', text: s.formula + ' · CAS ' + s.cas + ' · Klasse ' + s.klasse + ' · ERG ' + s.erg.guide })),
     el('div', { class: 'cm-pics' }, ...s.ghs.map(c => ghsImg(c, 48))),
-    tile(nfmt(p.flash) + ' °C', 'Flammpunkt', '#ea580c'), tile(nfmt(p.lel, 1) + ' bis ' + nfmt(p.uel, 1) + ' %', 'Zündbereich (Vol.-%)', '#ea580c'), tile(nfmt(p.vapDens, 1), 'Dampfdichte, schwerer als Luft', '#0e7490'), tile(keyH[0], keyH[1].replace(/\.$/, ''), '#7f1d1d'),
-    el('div', { class: 'cm-leg' }, el('span', { class: 'cm-sw', style: 'background:#ef4444' }), s.erg.isolate + ' m Absperrung', el('br'), inc.large ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#ea580c' }), s.erg.spillDownwind + ' m Windrichtung', el('br')) : null, inc.fire ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#7c2d12' }), s.erg.fire + ' m Brand') : null),
+    ...(p.flash != null ? [tile(nfmt(p.flash) + ' °C', 'Flammpunkt', '#ea580c')] : [tile('nicht brennbar', p.fire || 'Brandverhalten', '#ea580c')]), ...(p.lel != null ? [tile(nfmt(p.lel, 1) + ' bis ' + nfmt(p.uel, 1) + ' %', 'Zündbereich (Vol.-%)', '#ea580c')] : []), ...(p.vapDens != null ? [tile(nfmt(p.vapDens, 1), p.vapDens > 1 ? 'Dampfdichte, schwerer als Luft' : 'Dampfdichte, leichter als Luft', '#0e7490')] : []), tile(keyH[0], keyH[1].replace(/\.$/, ''), '#7f1d1d'),
+    el('div', { class: 'cm-leg' }, el('span', { class: 'cm-sw', style: 'background:#ef4444' }), chemM(E.isolate) + ' Absperrung', el('br'), (E.tih || inc.large) && E.spill != null ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#ea580c' }), chemM(E.spill) + (E.plus ? ' und mehr' : '') + ' Windrichtung', el('br')) : null, inc.fire ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#7c2d12' }), chemM(E.fire) + ' Brand') : null),
     runtime.viewer ? null : el('button', { class: 'cm-x', 'aria-label': 'Band ausblenden', title: 'Band ausblenden', text: '×', onclick: () => { state.chemBand = false; renderChemBand(); const c = $('#chemBandOn'); if (c) c.checked = false; persist(); } }));
   b.hidden = false;
 }
@@ -3433,7 +3691,7 @@ function buildPrintSheet() {
   if (free.length) { rows.push(el('tr', { class: 'ps' }, el('td', { colspan: '3', text: 'nicht zugeteilt' }))); free.forEach(x => rows.push(el('tr', {}, el('td', { text: x.name || 'Einheit' }), el('td', { text: ustat(x.status).label }), el('td', { text: fmtStr(x) })))); }
   const probs = state.problems.filter(p => p.status !== 'erledigt').sort((a, b) => a.prio - b.prio).slice(0, 6), meas = (state.measure || []).slice(-5).reverse();
   const kids = [el('div', { class: 'psh' }, el('b', { text: 'LAGEKARTE' }), el('span', { text: (ex && ex.name ? ex.name + ' · ' : '') + fmtClock(nowMs()) + ' · taktische Zeit ' + fmtTac(nowMs()) })),
-    cs ? el('div', { class: 'psb' }, el('b', { text: 'Gefahrstoff ' + cs.name + ' (UN ' + cs.un + ', Kemler ' + cs.kemler + ')' }), el('div', { text: 'Absperrung ' + cs.erg.isolate + ' m' + (ca.large ? ', Windrichtung ' + cs.erg.spillDownwind + ' m' : '') + (ca.fire ? ', Brand ' + cs.erg.fire + ' m' : '') + '. Wind ' + (state.wind.dir != null ? 'aus ' + state.wind.dir + ' Grad' + (state.wind.speed != null ? ', ' + state.wind.speed + ' m/s' : '') : 'nicht gesetzt') + '.' })) : null,
+    cs ? el('div', { class: 'psb' }, el('b', { text: 'Gefahrstoff ' + cs.name + ' (UN ' + cs.un + ', Kemler ' + cs.kemler + ')' }), el('div', { text: 'Absperrung ' + chemM(chemErg(cs, ca).isolate) + ((chemErg(cs, ca).tih || ca.large) && chemErg(cs, ca).spill != null ? ', Windrichtung ' + chemM(chemErg(cs, ca).spill) : '') + (ca.fire ? ', Brand ' + chemM(chemErg(cs, ca).fire) : '') + '. Wind ' + (state.wind.dir != null ? 'aus ' + state.wind.dir + ' Grad' + (state.wind.speed != null ? ', ' + state.wind.speed + ' m/s' : '') : 'nicht gesetzt') + '.' })) : null,
     el('div', { class: 'psb' }, el('b', { text: 'Personen' }), el('div', { text: ['sk1', 'sk2', 'sk3', 'tot', 'vermisst', 'betroffen'].map(k => (CAS[k].tag || CAS[k].short) + ' ' + (t[k] || 0)).join(' · ') })),
     el('div', { class: 'psb' }, el('b', { text: 'Einheiten (' + u.length + ', Stärke ' + u.reduce((a, x) => a + uTotal(x), 0) + ')' }), el('table', {}, el('tbody', {}, ...rows.slice(0, 34))), rows.length > 34 ? el('div', { text: '… weitere Zeilen siehe Karte' }) : null),
     probs.length ? el('div', { class: 'psb' }, el('b', { text: 'Offene Probleme' }), ...probs.map(p => el('div', { text: p.prio + ' · ' + p.title }))) : null,
@@ -3451,7 +3709,7 @@ async function printLagekarte() {
 /* ------------------------------------------------------------------ */
 /* Messpunkte (Gefahrstoff): Messwert, Ort, Zeit, Vergleich mit Keule  */
 /* ------------------------------------------------------------------ */
-function measLevel(m) { const s = chemSub(m.sid); if (!s) return 0; return m.ppm >= s.aegl.a2 ? 2 : m.ppm >= s.aegl.a1 ? 1 : 0; }
+function measLevel(m) { const s = chemSub(m.sid); if (!s || s.aegl.unit === 'mg') return 0; return m.ppm >= s.aegl.a2 ? 2 : m.ppm >= s.aegl.a1 ? 1 : 0; }
 const MEAS_COL = ['#16a34a', '#d97706', '#b91c1c'], measTxt = (m, i) => { const k = (chemSub(m.sid) || { aegl: {} }).aegl.kind || 'AEGL'; return ['unter ' + k + '-1', k + '-1 bis ' + k + '-2', k + '-2 oder mehr'][i]; };
 function measExpect(m) {
   const inc = state.chem.find(c => c.sid === m.sid) || chemActive(); const pl = inc && state.plumes.find(x => x.id === inc.plumeId); if (!pl) return null;
@@ -3470,18 +3728,18 @@ function measureBlock() {
   return el('div', { class: 'card', style: '--c:#0e7490' }, el('h3', { text: 'Messwerte', style: 'font-size:15px' }),
     el('div', { class: 'hint', text: 'Gemessene Konzentration in ppm mit Ort und Uhrzeit. Die Farbe folgt den Grenzwertstufen des Stoffs (AEGL oder ERPG), der Vergleich nutzt die berechnete Keule.' }),
     ed ? el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Messpunkt setzen', onclick: addMeasure })) : null,
-    ...(list.length ? list.map(m => el('div', { class: 'cm-zone', style: '--c:' + MEAS_COL[measLevel(m)] }, el('span', {}, el('b', { text: m.ppm + ' ppm · ' + fmtHM2(Date.parse(m.time)) + ' Uhr' }), MEAS_TXT[measLevel(m)] + (m.note ? ' · ' + m.note : ''), el('br'), el('span', { class: 'hint', text: measCompare(m) })),
+    ...(list.length ? list.map(m => el('div', { class: 'cm-zone', style: '--c:' + MEAS_COL[measLevel(m)] }, el('span', {}, el('b', { text: m.ppm + ' ppm · ' + fmtHM2(Date.parse(m.time)) + ' Uhr' }), measTxt(m, measLevel(m)) + (m.note ? ' · ' + m.note : ''), el('br'), el('span', { class: 'hint', text: measCompare(m) })),
       el('span', { style: 'margin-left:auto;display:flex;gap:4px' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([m.lat, m.lng], Math.max(map.getZoom(), 17)) }), ed ? el('button', { class: 'btn small danger', text: '×', 'aria-label': 'Messpunkt entfernen', onclick: () => { state.measure = state.measure.filter(x => x !== m); renderChem(); save('Messpunkt entfernt'); } }) : null))) : [el('div', { class: 'hint', text: 'Noch keine Messwerte.' })]));
 }
 async function addMeasure() {
   const d = await fieldsDialog('Messwert', [{ k: 'ppm', l: 'Messwert in ppm', v: '', ph: 'z. B. 120' }, { k: 'time', l: 'Uhrzeit (hh:mm)', v: fmtHM2(nowMs()) }, { k: 'note', l: 'Gerät oder Bemerkung', v: '' }], 'Weiter'); if (!d) return;
   const ppm = parseFloat(String(d.ppm).replace(',', '.')); if (!(ppm >= 0)) { say('Bitte einen Messwert in ppm eintragen.', 3500); return; }
-  const tm = /^(\d\d):(\d\d)$/.test(d.time.trim()) ? new Date(toIsoToday(d.time.trim())).toISOString() : nowIso(); const ca = chemActive();
+  const tm = /^(\d\d):(\d\d)$/.test(d.time.trim()) ? new Date(toIsoToday(d.time.trim())).toISOString() : nowIso(); const ca = chemActive(); if (ca && !chemHasPlume(chemSub(ca.sid))) { say('Für ' + chemSub(ca.sid).name + ' gibt es keine ppm-Bewertung, der Messpunkt ist nicht vorgesehen.', 4500); return; }
   stopDraw(); runtime.mode = { type: 'measloc', data: { ppm, time: tm, note: d.note.trim(), sid: ca ? ca.sid : 'benzol' } }; map.getContainer().style.cursor = 'crosshair'; say('Ort des Messpunkts auf der Karte anklicken. Esc bricht ab.');
 }
 function placeMeasure(ll) {
   const m = Object.assign({ id: uid(), lat: ll.lat, lng: ll.lng }, runtime.mode.data); stopDraw(); state.measure.push(m);
-  addJournal('Messwert ' + m.ppm + ' ppm (' + MEAS_TXT[measLevel(m)] + ')', true, { lat: m.lat, lng: m.lng }); renderChem(); save('Messpunkt gesetzt: ' + m.ppm + ' ppm');
+  addJournal('Messwert ' + m.ppm + ' ppm (' + measTxt(m, measLevel(m)) + ')', true, { lat: m.lat, lng: m.lng }); renderChem(); save('Messpunkt gesetzt: ' + m.ppm + ' ppm');
 }
 
 /* ------------------------------------------------------------------ */
@@ -3531,7 +3789,7 @@ function vtMeetingText() {
 }
 function vtZone() {
   const ca = chemActive(), cs = ca && chemSub(ca.sid); if (!cs) return null; const R = chemRings(ca);
-  const z = ca.fire ? ['z3', cs.erg.fire + '-m-Kreis'] : ca.large ? ['z2', cs.erg.spillDownwind + ' m in Windrichtung'] : ['z1', cs.erg.isolate + '-m-Zone']; return { ring: R[z[0]], label: z[1] };
+  const E = chemErg(cs, ca), z = ca.fire ? ['z3', chemM(E.fire) + '-Kreis'] : R.z2 ? ['z2', chemM(E.spill) + ' in Windrichtung'] : ['z1', chemM(E.isolate) + '-Zone']; return { ring: R[z[0]], label: z[1] };
 }
 function renderVortrag() {
   if (!runtime.vortrag) return; const ex = state.exercise, t = casTotals().t, probs = state.problems.filter(p => p.status !== 'erledigt').length;
@@ -3555,6 +3813,7 @@ setInterval(() => { if (runtime.vortrag) renderVortrag(); }, 5000);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && runtime.vortrag && !document.querySelector('.dlg:not(.dlgout)')) { if (vtMenuOpen) vtMenu(false); else endVortrag(); } });
 function renderChem() { renderChemMap(); renderChemTab(); renderChemBand(); }
 function chemWindChanged() {
+  if (state.chem.some(i => { const q = chemSub(i.sid); return q && q.tih; })) { renderChem(); return; }
   renderChemMap(); fillChemNumbers();
   state.chem.forEach(inc => { const pl = state.plumes.find(x => x.id === inc.plumeId), n = document.querySelector('[data-cid="' + inc.id + '"] [data-c="plume"]'); if (pl && n) { const ln = plumeLine(pl); n.textContent = ln.text; n.className = 'kres hint' + (ln.err ? ' err' : ''); } });
 }
@@ -4214,8 +4473,8 @@ function openGuidedMeeting() {
       el('div', { class: 'tblwrap' }, el('table', { class: 'fst' }, el('thead', {}, el('tr', {}, ...['Einheit', 'Abschnitt', 'Auftrag', 'Seit', 'Atemschutz', 'Ablösung'].map(h => el('th', { text: h })))),
         el('tbody', {}, ...us.map(u => { const l = lgOf(u), rel = l.relief ? Date.parse(l.relief) - nowMs() : null; return el('tr', {}, el('td', {}, el('b', { text: u.name || 'Einheit' })), el('td', { text: u.sectionId ? sectionName(u.sectionId) : '–' }), el('td', { text: u.task || '–' }), el('td', { text: l.since ? fmtDur(nowMs() - Date.parse(l.since)) : '–' }),
           el('td', {}, l.agtN ? chip(l.agtMin >= 40 ? 'bad' : 'ok', l.agtN + ' Träger, ' + l.agtMin + ' min') : '–'), el('td', {}, l.ausfall ? chip('bad', 'ausgefallen: ' + l.ausfall) : rel != null ? chip(rel <= 0 ? 'bad' : rel < 30 * 60000 ? 'wa' : 'ok', rel <= 0 ? 'jetzt fällig' : 'in ' + fmtDur(rel)) : l.req ? chip('in', l.req + (l.eta ? ', ETA ' + timeVal(l.eta) : '')) : '–')); })))));
-    if (step === 3) body = el('div', {}, el('h2', { text: 'Gefahren' }), cs ? el('div', {}, el('div', { class: 'kpi' }, kpi(cs.erg.isolate + ' m', 'Absperrung', '#ef4444'), kpi(cs.erg.spillDownwind + ' m', 'Windrichtung' + (ca.large ? '' : ' (aus)'), '#ea580c'), kpi(cs.erg.fire + ' m', 'Brandfall' + (ca.fire ? '' : ' (aus)'), '#7c2d12')),
-      el('p', { text: cs.name + ': Flammpunkt ' + cs.props.flash + ' °C, Zündbereich ' + cs.props.lel + ' bis ' + cs.props.uel + ' Vol.-%, Dampfdichte ' + cs.props.vapDens + '. Quellen im Reiter Gefahrstoff.' })) : el('p', { text: 'Kein Gefahrstoff gemeldet.' }));
+    if (step === 3) body = el('div', {}, el('h2', { text: 'Gefahren' }), cs ? el('div', {}, el('div', { class: 'kpi' }, kpi(chemM(chemErg(cs, ca).isolate), 'Absperrung', '#ef4444'), kpi(chemM(chemErg(cs, ca).spill), 'Windrichtung' + (ca.large || cs.tih ? '' : ' (aus)'), '#ea580c'), kpi(chemM(chemErg(cs, ca).fire), 'Brandfall' + (ca.fire ? '' : ' (aus)'), '#7c2d12')),
+      el('p', { text: cs.name + ': ' + (cs.props.flash != null ? 'Flammpunkt ' + cs.props.flash + ' °C' : cs.props.fire) + (cs.props.lel != null ? ', Zündbereich ' + cs.props.lel + ' bis ' + cs.props.uel + ' Vol.-%' : '') + (cs.props.vapDens != null ? ', Dampfdichte ' + cs.props.vapDens : '') + '. Quellen im Reiter Gefahrstoff.' })) : el('p', { text: 'Kein Gefahrstoff gemeldet.' }));
     if (step === 4) body = el('div', {}, el('h2', { text: 'Aufgaben' }), el('p', { class: 'hint', text: 'Aufträge je Abschnitt und offene Nachforderungen.' }),
       ...state.sections.filter(x => x.kind !== 'line').flatMap(sc => [el('div', { class: 'lbl', text: sc.name }), ...(us.filter(u => u.sectionId === sc.id).map(u => chip('gr', (u.name || 'Einheit') + ': ' + (u.task || 'kein Auftrag'))) || [])]),
       el('div', { class: 'lbl', text: 'Nachforderungen' }), ...(us.filter(u => lgOf(u).req).map(u => chip('in', lgOf(u).req + (lgOf(u).eta ? ', ETA ' + timeVal(lgOf(u).eta) : ''))).concat(us.some(u => lgOf(u).req) ? [] : [el('span', { class: 'hint', text: 'keine' })])));
@@ -4579,7 +4838,7 @@ $('#btnPrint').onclick = () => printLagekarte();
 
 /* Dialoge blenden aus, bevor sie entfernt werden */
 (function () { const orig = Element.prototype.remove; Element.prototype.remove = function () {
-  if (this.classList && (this.classList.contains('dlg') && !this.classList.contains('rolelay') || this.id === 'mtPop' || (this.classList.contains('ctx') && this.dataset.level === '0')) && !this._leaving && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { this._leaving = true; this.classList.add('dlgout'); setTimeout(() => orig.call(this), 400); } else orig.call(this); }; })();
+  if (this.classList && (this.classList.contains('dlg') && !this.classList.contains('rolelay') || (this.classList.contains('ctx') && this.dataset.level === '0')) && !this._leaving && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { this._leaving = true; this.classList.add('dlgout'); setTimeout(() => orig.call(this), 400); } else orig.call(this); }; })();
 /* ---- Menü im Kopf ---- */
 (function () {
   const wrap = $('#hdrMore'), btn = $('#btnMore'), menu = $('#hdrMenu');
@@ -4679,7 +4938,7 @@ initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
 liveInit();
-window.__lage = { runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
+window.__lage = { chemErg, chemSub, renderChem, runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
 })();
 </script>
 </body>
