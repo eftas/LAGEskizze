@@ -14,3 +14,9 @@ Base work was done by Saphir El-Kaiy (functional requirements and specification)
 ## LAGEkarte für Stäbe
 
 Im Ordner `src/public` liegt `kritis-lage.html`, eine eigenständige Lagekarte für einen operativ-taktischen Stab (Gebiete, KRITIS-Objekte, Kräfte, Abschnitte, Meldungen, Tagebuch, Lagestände, Wind und Keule). `python3 tools/build_offline.py` baut daraus die Einzeldatei `kritis-lage-einzeldatei.html`, die ohne weitere Dateien läuft. Kartenkacheln, Ortssuche und die Abfrage der KRITIS-Objekte brauchen Internet. Hinweise zur Live-Freigabe und zu den Lizenzen der Zeichen: `tools/README.md`, `src/public/images/LICENSES-symbole.md`.
+
+### Funktionen (Rollen)
+
+Beim ersten Start fragt die LAGEkarte, wer Sie sind (EL, S1 bis S6). Danach sehen Sie nur Ihre Aufgaben, der S2 sieht und bearbeitet alles.
+Jede Funktion speichert über „Meine Daten (JSON)“ nur ihren Bereich. Der S2 liest alle Dateien ein (Reiter Daten oder Start), seine Karte wird aktualisiert.
+Mit `?rolle=S3` im Link wird eine Funktion fest vorgewählt, mit `?rolle=fragen` wird die Auswahl erzwungen.
