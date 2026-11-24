@@ -1948,7 +1948,7 @@ function buildPalette() {
   sel.addEventListener('change', draw); $('#symQ').addEventListener('input', draw); draw();
 }
 function addJournal(text, auto, loc) {
-  const e = { id: uid(), nr: ++state.diarySeq, time: nowIso(), text, auto: !!auto, by: auto ? '' : (state.author || ''), lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined };
+  const e = { id: uid(), nr: ++state.diarySeq, time: nowIso(), role: typeof roleId === 'function' ? roleId() : undefined, text, auto: !!auto, by: auto ? '' : (state.author || ''), lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined };
   state.journal.unshift(e); renderJournal(); persist(); return e;
 }
 function renderJournal() {
@@ -1957,13 +1957,15 @@ function renderJournal() {
   if ($('#jBy')) { const cur = state.author || ''; $('#jBy').replaceChildren(el('option', { value: '', text: '– Verfasser –' }), ...state.roles.map(r => el('option', { value: r.id, text: r.label }))); $('#jBy').value = cur; }
   const rows = state.journal.filter(j => (showAuto || !j.auto) && (!q || j.text.toLowerCase().includes(q) || String(j.nr) === q));
   if (!state.journal.length) box.append(el('div', { class: 'hint', text: 'Noch keine Einträge. Statuswechsel und Nachrichten werden automatisch vermerkt.' }));
-  rows.slice(0, 500).forEach(j => box.append(el('div', { class: 'entry' + (j.correctedBy ? ' corr' : '') },
-    el('span', { class: 'nr', text: 'Nr. ' + (j.nr || '–') }), el('time', { text: fmtTime(j.time) }), j.by ? el('b', { text: j.by + ' ' }) : null, j.text, ' ',
-    j.correctedBy ? el('span', { class: 'hint', text: '(berichtigt durch Nr. ' + j.correctedBy + ')' }) : null, ' ',
+  const byId = Object.fromEntries(state.journal.map(x => [x.id, x]));
+  const shownText = j => j.corrects && byId[j.corrects] ? j.text.replace(/^Berichtigung zu Nr\. \d+/, 'Berichtigung zu Nr. ' + byId[j.corrects].nr) : j.text, corrNr = j => j.correctedById && byId[j.correctedById] ? byId[j.correctedById].nr : j.correctedBy;
+  rows.slice(0, 500).forEach(j => box.append(el('div', { class: 'entry' + (corrNr(j) ? ' corr' : '') },
+    el('span', { class: 'nr', text: 'Nr. ' + (j.nr || '–') }), el('time', { text: fmtTime(j.time) }), j.by ? el('b', { text: j.by + ' ' }) : null, j.role ? el('span', { class: 'chip', text: j.role, style: 'font-size:10.5px;padding:0 6px;margin-right:4px' }) : null, shownText(j), ' ',
+    corrNr(j) ? el('span', { class: 'hint', text: '(berichtigt durch Nr. ' + corrNr(j) + ')' }) : null, ' ',
     j.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([j.lat, j.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
-    !runtime.viewer && !j.correctedBy ? el('button', { class: 'btn small', text: 'Berichtigen', title: 'Neuen Eintrag mit Bezug auf diese Nummer anlegen', onclick: async () => {
+    !runtime.viewer && !corrNr(j) ? el('button', { class: 'btn small', text: 'Berichtigen', title: 'Neuen Eintrag mit Bezug auf diese Nummer anlegen', onclick: async () => {
       const v = await askText('Berichtigung zu Nr. ' + j.nr, j.text); if (v == null || !v.trim() || v.trim() === j.text) return;
-      const n = addJournal('Berichtigung zu Nr. ' + j.nr + ': ' + v.trim(), false); j.correctedBy = n.nr; renderJournal(); persist(); } }) : null)));
+      const n = addJournal('Berichtigung zu Nr. ' + j.nr + ': ' + v.trim(), false); n.corrects = j.id; j.correctedBy = n.nr; j.correctedById = n.id; renderJournal(); persist(); } }) : null)));
   if (rows.length > 500) box.append(el('div', { class: 'hint', text: (rows.length - 500) + ' ältere Einträge, bitte Suche verwenden.' }));
 }
 
@@ -3771,10 +3773,24 @@ function chooseRole(forceAsk) {
 }
 function showLagevortrag() { closeUnitOverview(); closeFue(); setPanel(false); state.chemBand = true; renderChemBand(); say('Lagevortrag: Karte groß. Mit dem Pfeil am Rand kommt die Leiste zurück.', 4000); }
 /* ---- Export und Einlesen ---- */
+/* Tagebuch zusammenführen: nach Uhrzeit einsortieren, neu fortlaufend nummerieren, Berichtigungen über feste Kennungen verknüpft */
+function journalRefs(list) {
+  const byNr = new Map(list.map(e => [e.nr, e]));
+  list.forEach(e => { if (e.correctedBy && !e.correctedById) { const t = byNr.get(e.correctedBy); if (t) e.correctedById = t.id; } const m = /^Berichtigung zu Nr\. (\d+)/.exec(e.text || ''); if (m && !e.corrects) { const t = byNr.get(+m[1]); if (t) e.corrects = t.id; } });
+}
+function mergeJournal(incoming) {
+  const local = state.journal; journalRefs(local); const inc = JSON.parse(JSON.stringify(incoming || [])); journalRefs(inc);
+  const have = new Set(local.map(e => e.id)); let added = 0; const all = local.slice();
+  inc.forEach(e => { if (e && e.id && !have.has(e.id)) { all.push(e); have.add(e.id); added++; } });
+  all.sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')) || String(a.id).localeCompare(String(b.id)));
+  all.forEach((e, i) => { e.nr = i + 1; }); const byId = new Map(all.map(e => [e.id, e]));
+  all.forEach(e => { if (e.correctedById && byId.has(e.correctedById)) e.correctedBy = byId.get(e.correctedById).nr; });
+  state.journal = all.reverse(); state.diarySeq = all.length; return added;
+}
 function exportRole(all) {
   const r = roleId(), keys = all ? [...new Set(Object.values(ROLE_DOM).flat())] : ROLE_DOM[r];
   const data = {}; keys.forEach(k => { data[k] = JSON.parse(JSON.stringify(dget(k))); });
-  const file = { format: 'lagekarte-teil', version: 1, role: all ? 'Gesamt' : r, exported: new Date().toISOString(), data, shared: { messages: state.messages } };
+  const file = { format: 'lagekarte-teil', version: 1, role: all ? 'Gesamt' : r, exported: new Date().toISOString(), data, shared: { messages: state.messages, journal: state.journal } };
   download('lagekarte-' + (all ? 'gesamt' : r) + '-' + stamp() + '.json', JSON.stringify(file, null, 1), 'application/json'); say((all ? 'Gesamtstand' : 'Ihre Daten (' + r + ')') + ' gespeichert.', 3500);
 }
 function importDlg() {
@@ -3788,19 +3804,20 @@ function importDlg() {
   show(); document.body.append(dlg);
   dlg.addEventListener('mousedown', e => { if (e.target === dlg) dlg.remove(); });
   input.onchange = async () => {
-    const out = []; let n = 0;
+    const out = []; let n = 0, jAdded = 0;
     for (const f of input.files) {
       try {
         const j = JSON.parse(await f.text()); if (j.format !== 'lagekarte-teil' || !ROLE_DOM[j.role]) throw new Error('keine LAGEkarte-Datei');
         const t = Date.parse(j.exported), cur = state.sources[j.role]; if (cur && cur.time >= t) { out.push(['', f.name, 'älter oder gleich, übersprungen']); continue; }
         ROLE_DOM[j.role].forEach(k => { if (j.data && j.data[k] !== undefined) dset(k, j.data[k]); });
         if (j.shared && Array.isArray(j.shared.messages)) { const ids = new Set(state.messages.map(m => m.id)); j.shared.messages.forEach(m => { if (!ids.has(m.id)) state.messages.push(m); }); state.messages.sort((a, b) => String(a.time || '').localeCompare(String(b.time || ''))); }
+        if (j.shared && Array.isArray(j.shared.journal)) jAdded += mergeJournal(j.shared.journal);
         state.sources[j.role] = { time: t, file: f.name }; n++; out.push(['ok', f.name, 'übernommen als ' + j.role]);
       } catch (err) { out.push(['bad', f.name, 'nicht lesbar: ' + err.message]); }
     }
     res.replaceChildren(...out.map(o => el('div', { class: 'row' }, el('span', { class: 'chip ' + o[0], text: o[2] }), el('span', { text: o[1] }))));
-    if (n) { applyState(state, false); addJournal(n + ' Datei(en) der anderen Funktionen eingelesen', true); save('Daten eingelesen: ' + n + ' Datei(en)'); }
-    show(); say(n + ' Datei(en) übernommen. Karte aktualisiert.', 4000); input.value = '';
+    if (n) { applyState(state, false); addJournal(n + ' Datei(en) der anderen Funktionen eingelesen, ' + jAdded + ' Tagebucheinträge einsortiert', true); save('Daten eingelesen: ' + n + ' Datei(en)'); }
+    show(); say(n + ' Datei(en) übernommen, ' + jAdded + ' Tagebucheinträge einsortiert. Karte aktualisiert.', 4500); input.value = '';
   };
 }
 /* ---- Einheitenkarte (Entwurf 5) ---- */
