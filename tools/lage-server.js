@@ -2,7 +2,7 @@
 /*
  * Kleiner Server für die Live-Freigabe der Lagekarte (keine Abhängigkeiten, nur Node.js).
  *
- *   node tools/lage-server.js                       Offline-Datei, Port 8080, zufällige PIN
+ *   node lage-server.js                             sucht kritis-lage-offline.html neben dem Skript, Port 8080, zufällige PIN
  *   node tools/lage-server.js --port 9000 --pin 4711
  *   node tools/lage-server.js --file src/public/kritis-lage.html
  *   node tools/lage-server.js --no-pin              ohne PIN (nur in einem abgeschotteten Netz)
@@ -16,10 +16,21 @@ const http = require('http'), fs = require('fs'), path = require('path'), os = r
 
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > -1 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const PORT = parseInt(arg('port', '8080'), 10);
-const FILE = path.resolve(arg('file', path.join(__dirname, '..', 'src', 'public', 'kritis-lage-offline.html')));
+// Datei der Karte suchen: --file, dann neben dem Skript, dann im aktuellen Ordner, dann im Repository (src/public)
+const NAMES = ['kritis-lage-offline.html', 'kritis-lage.html'];
+const FILE = (() => {
+  const given = arg('file', null);
+  if (given) { const f = path.resolve(given); if (fs.existsSync(f)) return f; console.error('Datei nicht gefunden: ' + f); process.exit(1); }
+  const dirs = [__dirname, process.cwd(), path.join(__dirname, '..', 'src', 'public'), path.join(process.cwd(), 'src', 'public')];
+  for (const d of dirs) for (const n of NAMES) { const f = path.join(d, n); if (fs.existsSync(f)) return f; }
+  console.error('Die Datei der Lagekarte (kritis-lage-offline.html) wurde nicht gefunden.');
+  console.error('Legen Sie sie neben dieses Skript oder geben Sie den Pfad an, zum Beispiel:');
+  console.error('  node lage-server.js --file C:\\Lage\\kritis-lage-offline.html');
+  process.exit(1);
+})();
 const ROOT = path.dirname(FILE);
 const PIN = process.argv.includes('--no-pin') ? '' : String(arg('pin', String(crypto.randomInt(1000, 10000))));
-const STORE = path.join(__dirname, 'lage-live.json');
+const STORE = path.join(__dirname, 'lage-live.json');   // zuletzt übergebener Stand, liegt neben dem Skript
 const MAX_BODY = 40 * 1024 * 1024;
 
 let live = { rev: 0, time: null, state: null };

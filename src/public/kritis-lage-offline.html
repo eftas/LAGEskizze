@@ -837,7 +837,8 @@ textarea { width: 100%; resize: vertical; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
 body.viewer #qat, body.viewer #btnAddPoi, body.viewer #btnShare, body.viewer .editonly,
 body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
-body.beamer #app { grid-template-columns: 0 1fr; }
+body.beamer #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr; }
+body.beamer #mapWrap { grid-column: 1; }
 body.beamer #panel, body.beamer #panelToggle, body.beamer #btnPanel, body.beamer #btnPrint, body.beamer #btnShare { display: none !important; }
 body.beamer #clock { font-size: 20px; }
 body.beamer header h1 { font-size: 20px; }
@@ -917,16 +918,17 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .card .row > label.prio { flex: none; display: inline-flex; align-items: center; gap: 4px; }
 .btn.wide { width: 100%; }
 @media (max-width: 860px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; transition: grid-template-rows .2s ease; }
-  #app.collapsed { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 0; }
+  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 46px 1fr 46vh; transition: grid-template-rows .2s ease; }
+  #app.collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: 46px 1fr 0; }
   #panelToggle { left: 50%; top: auto; bottom: 0; margin: 0 0 0 -28px; width: 56px; height: 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
-  #hdrCounts, #hdrArea, #clock, #btnPrint { display: none; }
+  #hdrCounts, #hdrArea, #clock, #btnPrint, #btnPanel { display: none; }
+  #liveBadge { font-size: 0; padding: 4px 7px; gap: 0; }
   header { gap: 8px; padding: 0 8px; overflow-x: auto; }
   header h1 { font-size: 14px; }
   header button { padding: 3px 7px; white-space: nowrap; flex: none; }
 }
-@media (max-width: 520px) { header h1 { display: none; } }
+@media (max-width: 520px) { header h1 { display: none; } #btnAddPoi { font-size: 0; } #btnAddPoi::before { content: '+ Objekt'; font-size: 13px; } }
 @media print {
   header button, #panel, #panelToggle, .leaflet-control-container, #msg { display: none !important; }
   #app { display: block; height: auto; }
@@ -3049,10 +3051,10 @@ async function pushLive() {
 }
 function updateBadge() {
   const b = $('#liveBadge'); if (!b) return;
-  if (runtime.viewer) { b.hidden = false; b.classList.toggle('off', !runtime.connected); b.textContent = (runtime.connected ? 'Ansicht live' : 'getrennt') + (runtime.stand ? ' · Stand ' + new Date(runtime.stand).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''); return; }
+  if (runtime.viewer) { b.hidden = false; b.classList.toggle('off', !runtime.connected); b.textContent = (runtime.connected ? 'Ansicht live' : 'getrennt') + (runtime.stand ? ' · Stand ' + new Date(runtime.stand).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''); b.title = b.textContent; return; }
   if (!runtime.live) { b.hidden = true; return; }
   b.hidden = false; b.classList.toggle('off', runtime.live.ok === false);
-  b.textContent = runtime.live.ok === false ? 'Freigabe getrennt' : 'Freigabe aktiv · ' + (runtime.live.viewers || 0) + ' Zuschauer';
+  b.textContent = runtime.live.ok === false ? 'Freigabe getrennt' : 'Freigabe aktiv · ' + (runtime.live.viewers || 0) + ' Zuschauer'; b.title = b.textContent;
 }
 async function liveInit() {
   if (!/^https?:$/.test(location.protocol)) { if (runtime.viewer) { runtime.connected = false; updateBadge(); say('Ansicht braucht den Lagekarten-Server (Link aus dem QR-Code).', 8000); } return; }
@@ -3316,7 +3318,6 @@ if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.
 const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 tick(); setInterval(tick, 20000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
-if (runtime.beamer) $('#app').classList.add('collapsed');
 liveInit();
 window.__lage = { runtime, pushLive, gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
 })();
