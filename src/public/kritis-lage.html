@@ -64,8 +64,8 @@ header .sp { flex: 1; }
 header button { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); color: #fff; border-radius: 4px; padding: 3px 10px; }
 
 #panel { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
-#tabs { display: flex; border-bottom: 1px solid var(--line); }
-#tabs button { flex: 1; padding: 9px 2px; font-size: 12.5px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
+#tabs { display: flex; border-bottom: 1px solid var(--line); overflow-x: auto; }
+#tabs button { flex: 1 0 auto; padding: 9px 7px; font-size: 12.5px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
 #tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 .tabpane { display: none; padding: 12px; overflow: auto; flex: 1; min-height: 0; }
 .tabpane.active { display: block; }
@@ -93,6 +93,12 @@ textarea { width: 100%; resize: vertical; }
 .sector > .head { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f3f5f8; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
 .sector .state { font-size: 12px; color: var(--muted); }
+.windctl { background: #fff; padding: 4px 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; line-height: 1.2; min-width: 96px; }
+.windctl svg { flex: none; }
+.keule-src { width: 24px; height: 24px; border-radius: 50%; background: #7f1d1d; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6); font: 700 11px/18px system-ui, sans-serif; text-align: center; }
+.kcard .row > * { min-width: 0; }
+.kcard label { font-size: 12px; color: var(--muted); }
+.kcard .num { max-width: 90px; }
 .arow { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 6px 0; background: #fff; }
 .arow .top { display: flex; gap: 6px; align-items: center; }
 .arow .nm { flex: 1; min-width: 0; font-weight: 600; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -203,6 +209,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
+      <button role="tab" data-tab="keule" aria-selected="false">Keule</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
     </div>
@@ -319,6 +326,25 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <div class="hint">Einträge mit Ort zählen nur, solange sie im gewählten Gebiet liegen. Die Zahlen sind Meldungen, die der Stab einträgt, keine berechneten Werte.</div>
       <h2>Einträge</h2>
       <div id="casList"></div>
+    </section>
+
+    <section class="tabpane" id="tab-keule">
+      <h2>Wind</h2>
+      <div class="row"><label for="wDir" style="width:92px">Wind aus</label><input type="number" id="wDir" min="0" max="360" step="5" style="max-width:76px"><span>°</span><select id="wCompass" aria-label="Himmelsrichtung"></select></div>
+      <div class="row"><label for="wSpeed" style="width:92px">Geschwindigkeit</label><input type="number" id="wSpeed" min="0" step="0.5" style="max-width:76px"><span>m/s</span><span id="wBft" class="hint"></span></div>
+      <div class="row"><label for="wCond" style="width:92px">Wetterlage</label><select id="wCond"></select></div>
+      <div class="row"><label for="wStab" style="width:92px">Ausbreitungsklasse</label><select id="wStab" style="max-width:150px"></select><span id="wStabInfo" class="hint"></span></div>
+      <div class="row"><label for="wTer" style="width:92px">Gelände</label><select id="wTer"><option value="land">offen, ländlich</option><option value="stadt">bebaut, städtisch</option></select></div>
+      <div class="hint" id="wInfo"></div>
+      <div class="hint">Bei Zwischenstufen der Pasquill-Tabelle (A-B, B-C, C-D) rechnet die Karte mit der stabileren Klasse, das ergibt die längere Keule.</div>
+
+      <h2>Keulen</h2>
+      <div class="row">
+        <select id="kMode" aria-label="Art der Keule"><option value="gauss">Gauß-Fahne (Berechnung)</option><option value="takt">Taktische Keule (Sektor)</option></select>
+        <button class="btn primary" id="btnKeulePlace">Auf Karte setzen</button>
+      </div>
+      <div class="notice" id="kNotice">Orientierungswert, keine amtliche Ausbreitungsrechnung. Gauß-Fahne: ebenes Gelände, Dauerfreisetzung, Gas mit etwa Luftdichte. Schwergase (zum Beispiel Chlor oder Propan) und Aerosole bildet das Modell nicht richtig ab. Unter etwa 100 m und über 10 km Entfernung nicht belastbar. Gebäude und Gelände fehlen im Modell. Quellstärke und Grenzwert tragen Sie selbst ein, es gibt keine voreingestellten Stoffwerte. Das ersetzt weder Fachberater noch Messung. Taktische Keule: reiner Sektor aus Ihren Angaben, ohne Berechnung.</div>
+      <div id="kList"></div>
     </section>
 
     <section class="tabpane" id="tab-lage">
@@ -473,6 +499,8 @@ function freshState() {
     symbols: [],         // { id, name, lat, lng, label, time }
     sections: [],        // { id, kind:'poly'|'line', name, color, pts:[[lat,lng]] }
     journal: [],         // { id, time, text, auto }
+    wind: { dir: null, speed: null, cond: 'bedeckt', stab: '', terrain: 'land', time: null },   // dir: Wind AUS dieser Richtung in Grad
+    plumes: [],          // { id, name, lat, lng, mode:'gauss'|'takt', follow, dir, speed, Q, H, thr1, thr2, len, angle, r0 }
     casualties: [],      // { id, cat, n, note, time, lat?, lng? }
     problems: []         // { id, title, text, prio, status, owner, time, poi?, poiName?, lat?, lng? }
   };
@@ -549,7 +577,8 @@ function snapshot() {
   return JSON.stringify({
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
-    manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems
+    manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
+    wind: state.wind, plumes: state.plumes
   });
 }
 function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
@@ -592,8 +621,9 @@ function restore(snap) {
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || [];
   d.manual.forEach(q => { state.pois[q.id] = q; });
-  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems();
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen();
   hist.cur = snapshot(); persist();
 }
 
@@ -1691,6 +1721,7 @@ function mapItems(ll) {
     { label: 'Taktisches Zeichen hier setzen', sub: () => symbolItems(ll) },
     { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
     { sep: true },
+    { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
     { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
     { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: () => askNumberCas(k, ll) })) },
     { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
@@ -1748,6 +1779,7 @@ function poiItems(p) {
       renderCas(); renderList(); save('Personen am Objekt: ' + poiTitle(p)); } })) },
     { label: 'Umkreis als Gebiet', sub: [1, 2, 5].map(km => ({ label: km + ' km', onclick: () => circleArea({ lat: p.lat, lng: p.lng }, km, 'Umkreis ' + km + ' km: ' + poiTitle(p)) })) },
     { sep: true },
+    { label: 'Keule ab diesem Objekt', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume({ lat: p.lat, lng: p.lng }, 'gauss', poiTitle(p)) }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume({ lat: p.lat, lng: p.lng }, 'takt', poiTitle(p)) }] },
     { label: 'Zoom auf Objekt', onclick: () => { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 17)); } },
     { label: 'Koordinaten kopieren', onclick: () => copyText(fmtLL(p), 'Koordinaten kopiert: ' + fmtLL(p)) }
   ];
@@ -1788,11 +1820,235 @@ function problemItems(x) {
   ];
 }
 
+/* ------------------------------------------------------------------ */
+/* Wind und Ausbreitungskeule                                          */
+/* ------------------------------------------------------------------ */
+map.createPane('plumes').style.zIndex = 392;       // über den Gebieten, unter Abschnitten und Markern
+const plumeGroup = L.layerGroup().addTo(map);
+const COMPASS = ['N', 'NNO', 'NO', 'ONO', 'O', 'OSO', 'SO', 'SSO', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+const compassName = d => COMPASS[Math.round((((d % 360) + 360) % 360) / 22.5) % 16];
+const BFT = [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7];
+const beaufort = u => { const i = BFT.findIndex(t => u < t); return i < 0 ? 12 : i; };
+const COND = { bedeckt: 'Bedeckt (Tag oder Nacht) oder unbekannt', 'tag-stark': 'Tag, starke Einstrahlung', 'tag-mittel': 'Tag, mäßige Einstrahlung', 'tag-schwach': 'Tag, schwache Einstrahlung', 'nacht-bewoelkt': 'Nacht, mehr als 4/8 bewölkt', 'nacht-klar': 'Nacht, höchstens 3/8 bewölkt' };
+// Pasquill-Tabelle (Turner): Spalten sind die Windbänder <2, 2-3, 3-5, 5-6, >6 m/s
+const PQ = { 'tag-stark': ['A', 'A-B', 'B', 'C', 'C'], 'tag-mittel': ['A-B', 'B', 'B-C', 'C-D', 'D'], 'tag-schwach': ['B', 'C', 'C', 'D', 'D'], 'nacht-bewoelkt': ['E', 'E', 'D', 'D', 'D'], 'nacht-klar': ['F', 'F', 'E', 'D', 'D'] };
+const STABLER = { 'A-B': 'B', 'B-C': 'C', 'C-D': 'D' };
+function pasquill(cond, u) {
+  if (cond === 'bedeckt' || !PQ[cond]) return { raw: 'D', cls: 'D' };
+  const band = u < 2 ? 0 : u < 3 ? 1 : u < 5 ? 2 : u < 6 ? 3 : 4, raw = PQ[cond][band];
+  return { raw, cls: STABLER[raw] || raw };
+}
+// Briggs (1973): sigma_y = ay*x*(1+by*x)^-1/2, sigma_z = az*x*(1+bz*x)^cz, x in m. Werte nach der veröffentlichten Tabelle (CCST, Appendix 1.B, Table B-1)
+const BRIGGS = {
+  land:  { A: [0.22, 0.0001, 0.20, 0, 1], B: [0.16, 0.0001, 0.12, 0, 1], C: [0.11, 0.0001, 0.08, 0.0002, -0.5], D: [0.08, 0.0001, 0.06, 0.0015, -0.5], E: [0.06, 0.0001, 0.03, 0.0003, -1], F: [0.04, 0.0001, 0.016, 0.0003, -1] },
+  stadt: { AB: [0.32, 0.0004, 0.24, 0.001, 0.5], C: [0.22, 0.0004, 0.20, 0, 1], D: [0.16, 0.0004, 0.14, 0.0003, -0.5], EF: [0.11, 0.0004, 0.08, 0.00015, -0.5] }
+};
+function sigmas(cls, terrain, x) {
+  const t = terrain === 'stadt' ? ({ A: 'AB', B: 'AB', C: 'C', D: 'D', E: 'EF', F: 'EF' }[cls]) : cls;
+  const k = BRIGGS[terrain === 'stadt' ? 'stadt' : 'land'][t];
+  return [k[0] * x * Math.pow(1 + k[1] * x, -0.5), k[2] * x * Math.pow(1 + k[3] * x, k[4])];
+}
+const numOrNull = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+function effWind(pl) {
+  const w = state.wind, f = pl.follow !== false;
+  const dir = f ? w.dir : pl.dir, speed = f ? w.speed : pl.speed;
+  const pq = pasquill(w.cond, Math.max(speed || 0, 1));
+  const cls = w.stab || pq.cls;
+  return { dir, speed, cls, raw: w.stab ? w.stab : pq.raw, terrain: w.terrain || 'land' };
+}
+// Punkte aus dem Windkoordinatensystem (x in Windrichtung, y quer) in Lat/Lng; Wind AUS dir => Fahne zeigt nach dir+180
+function toLL(src, dir, x, y) {
+  const th = rad((dir + 180) % 360), e = x * Math.sin(th) + y * Math.cos(th), n = x * Math.cos(th) - y * Math.sin(th);
+  return [src.lat + n / 111320, src.lng + e / (111320 * Math.cos(rad(src.lat)))];
+}
+function gaussPlume(pl) {
+  const ew = effWind(pl), out = { mode: 'gauss', cls: ew.cls, raw: ew.raw, rings: [], notes: [] };
+  if (ew.dir == null || ew.speed == null) { out.error = 'Wind fehlt'; return out; }
+  if (pl.Q == null || !(pl.Q > 0)) { out.error = 'Quellstärke fehlt'; return out; }
+  if (pl.thr1 == null || !(pl.thr1 > 0)) { out.error = 'Grenzwert fehlt'; return out; }
+  const u = Math.max(ew.speed, 1); if (ew.speed < 1) out.notes.push('Wind unter 1 m/s, gerechnet mit 1 m/s');
+  const H = Math.max(0, pl.H || 0), QQ = pl.Q * 1000;           // g/s in mg/s, Ergebnis in mg/m³
+  const levels = [pl.thr2 > 0 && pl.thr2 < pl.thr1 ? pl.thr2 : null, pl.thr1];
+  let any = false;
+  levels.forEach(thr => {
+    if (thr == null) { out.rings.push(null); return; }
+    const pts = [], cen = x => { const [sy, sz] = sigmas(ew.cls, ew.terrain, x); return [QQ / (Math.PI * u * sy * sz) * Math.exp(-H * H / (2 * sz * sz)), sy]; };
+    const F = 1.01; let prevOk = false, prevX = 10;
+    for (let x = 10; x <= 20000; x *= F) {
+      const [c0, sy] = cen(x);
+      if (c0 >= thr) {
+        if (!prevOk && pts.length === 0 && x > 10.5) {             // Beginn bei angehobener Quelle: Grenze per Halbierung verfeinern
+          let a = prevX, b = x; for (let i = 0; i < 30; i++) { const m = (a + b) / 2; cen(m)[0] >= thr ? b = m : a = m; }
+          const [c1, sy1] = cen(b); pts.push([b, sy1 * Math.sqrt(2 * Math.log(Math.max(c1, thr) / thr))]);
+        }
+        pts.push([x, sy * Math.sqrt(2 * Math.log(c0 / thr))]); prevOk = true;
+      } else if (prevOk) {                                       // Ende: Grenze per Halbierung verfeinern
+        let a = prevX, b = x; for (let i = 0; i < 30; i++) { const m = (a + b) / 2; cen(m)[0] >= thr ? a = m : b = m; }
+        const [c1, sy1] = cen(a); pts.push([a, sy1 * Math.sqrt(2 * Math.log(Math.max(c1, thr) / thr))]); prevOk = false; break;
+      }
+      prevX = x;
+    }
+    if (!pts.length) { out.rings.push({ thr, none: true }); return; }
+    any = true;
+    const left = pts.map(q => [q[0], q[1]]), right = pts.slice().reverse().map(q => [q[0], -q[1]]);
+    const start = pts[0][0] <= 10.5 && H === 0 ? [[0, 0]] : [];
+    const poly = start.concat(left, right);
+    const lenX = pts[pts.length - 1][0], maxW = 2 * Math.max(...pts.map(q => q[1]));
+    out.rings.push({ thr, poly, len: lenX, width: maxW, first: pts[0][0] });
+  });
+  if (!any) out.error = 'Grenzwert wird nirgends erreicht';
+  else { const r = out.rings[1] && !out.rings[1].none ? out.rings[1] : out.rings[0]; out.len = r.len; out.width = r.width; }
+  if (out.rings[1] && out.rings[1].len > 10000) out.notes.push('Reichweite über 10 km, nicht belastbar');
+  if (out.rings[1] && out.rings[1].len < 100) out.notes.push('Reichweite unter 100 m, nicht belastbar');
+  return out;
+}
+function taktPlume(pl) {
+  const ew = effWind(pl), out = { mode: 'takt', rings: [], notes: [] };
+  if (ew.dir == null) { out.error = 'Wind fehlt'; return out; }
+  if (!(pl.len > 0) || !(pl.angle > 0)) { out.error = 'Länge und Öffnungswinkel fehlen'; return out; }
+  const th = (ew.dir + 180) % 360, half = Math.min(pl.angle, 360) / 2, pts = [[pl.lat, pl.lng]];
+  for (let a = -half; a <= half + 1e-9; a += Math.max(1, half / 12)) {
+    const b = rad(th + a); pts.push([pl.lat + pl.len * Math.cos(b) / 111320, pl.lng + pl.len * Math.sin(b) / (111320 * Math.cos(rad(pl.lat)))]);
+  }
+  out.sector = pts; out.len = pl.len; out.width = 2 * pl.len * Math.sin(rad(Math.min(half, 90)));
+  return out;
+}
+const plumeCalc = pl => pl.mode === 'takt' ? taktPlume(pl) : gaussPlume(pl);
+const fmtM = m => m >= 1000 ? (m / 1000).toFixed(2).replace('.', ',') + ' km' : Math.round(m) + ' m';
+function plumeSummary(pl, g) {
+  if (g.error) return g.error;
+  const parts = [];
+  if (pl.mode === 'takt') parts.push('Sektor ' + pl.angle + '°, Länge ' + fmtM(g.len));
+  else parts.push('Länge ' + fmtM(g.len) + ', Breite bis ' + fmtM(g.width) + ', Klasse ' + g.cls + (g.raw !== g.cls ? ' (aus ' + g.raw + ')' : ''));
+  return parts.concat(g.notes).join('; ');
+}
+function renderPlumes() {
+  plumeGroup.clearLayers();
+  state.plumes.forEach(pl => {
+    const g = plumeCalc(pl), ew = effWind(pl);
+    if (!g.error) {
+      if (g.mode === 'gauss') {
+        g.rings.forEach((r, i) => { if (!r || r.none) return;
+          L.polygon(r.poly.map(q => toLL(pl, ew.dir, q[0], q[1])), { pane: 'plumes', color: i === 1 ? '#b91c1c' : '#ea580c', weight: 2, fillOpacity: i === 1 ? 0.4 : 0.25, interactive: true, className: 'plumelyr' })
+            .on('contextmenu', e => ctxOpen(e, plumeItems(pl), e.latlng, 'Keule: ' + pl.name))
+            .bindTooltip('≥ ' + r.thr + ' mg/m³', { sticky: true }).addTo(plumeGroup); });
+      } else {
+        L.polygon(g.sector, { pane: 'plumes', color: '#b91c1c', weight: 2, dashArray: '6 4', fillOpacity: 0.3 }).on('contextmenu', e => ctxOpen(e, plumeItems(pl), e.latlng, 'Keule: ' + pl.name)).addTo(plumeGroup);
+        if (pl.r0 > 0) L.circle([pl.lat, pl.lng], { pane: 'plumes', radius: pl.r0, color: '#b91c1c', weight: 2, fillOpacity: 0.2 }).addTo(plumeGroup);
+      }
+    }
+    const m = L.marker([pl.lat, pl.lng], { draggable: true, icon: L.divIcon({ className: '', iconSize: [24, 24], iconAnchor: [12, 12], html: '<div class="keule-src">K</div>' }) });
+    m.bindTooltip(el('span', { text: pl.name + ': ' + plumeSummary(pl, g) }));
+    m.on('dragend', () => { const ll = m.getLatLng(); pl.lat = ll.lat; pl.lng = ll.lng; refreshKeule(); save('Keule verschoben: ' + pl.name); });
+    m.on('contextmenu', e => ctxOpen(e, plumeItems(pl), null, 'Keule: ' + pl.name));
+    m.addTo(plumeGroup);
+  });
+}
+function plumeItems(pl) {
+  return [
+    { label: 'Umbenennen…', onclick: async () => { const v = await askText('Keule umbenennen', pl.name); if (v == null || !v.trim()) return; pl.name = v.trim(); renderKeulen(); save('Keule umbenannt: ' + pl.name); } },
+    { label: pl.follow !== false ? 'Eigenen Wind verwenden' : 'Dem Wind der Karte folgen', onclick: () => { togglePlumeFollow(pl); } },
+    { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('keule'); const c = document.querySelector('[data-kid="' + pl.id + '"]'); if (c) c.scrollIntoView({ block: 'center' }); } },
+    { label: 'Zoom', onclick: () => map.setView([pl.lat, pl.lng], Math.max(map.getZoom(), 15)) },
+    { label: 'Duplizieren', onclick: () => { state.plumes.push(Object.assign({}, pl, { id: uid(), name: pl.name + ' (Kopie)', lat: pl.lat + 0.0006, lng: pl.lng + 0.0006 })); renderKeulen(); save('Keule dupliziert: ' + pl.name); } },
+    { sep: true },
+    { label: 'Löschen', onclick: () => removePlume(pl) }
+  ];
+}
+function togglePlumeFollow(pl) {
+  if (pl.follow !== false) { pl.follow = false; pl.dir = state.wind.dir; pl.speed = state.wind.speed; } else pl.follow = true;
+  renderKeulen(); save('Keule ' + pl.name + ': ' + (pl.follow ? 'folgt dem Wind' : 'eigener Wind'));
+}
+function removePlume(pl) { state.plumes = state.plumes.filter(x => x !== pl); renderKeulen(); save('Keule gelöscht: ' + pl.name); }
+function addPlume(ll, mode, name) {
+  const n = state.plumes.length + 1;
+  const pl = { id: uid(), name: name ? 'Keule ' + name : 'Keule ' + n, lat: ll.lat, lng: ll.lng, mode, follow: true, dir: null, speed: null, Q: null, H: 0, thr1: null, thr2: null, len: null, angle: null, r0: null };
+  state.plumes.push(pl); renderKeulen(); save('Keule angelegt: ' + pl.name);
+  setPanel(true); openTab('keule');
+  const f = document.querySelector('[data-kid="' + pl.id + '"] input[data-first]'); if (f) { f.focus(); f.scrollIntoView({ block: 'nearest' }); }
+}
+function plumeLine(pl) {
+  const g = plumeCalc(pl), ew = effWind(pl);
+  return { err: !!g.error, text: plumeSummary(pl, g) + (!g.error && ew.dir != null ? ' · Wind aus ' + Math.round(ew.dir) + '° (' + compassName(ew.dir) + '), ' + String(ew.speed).replace('.', ',') + ' m/s' : '') };
+}
+// Teilaktualisierung ohne Neuaufbau der Eingabefelder (sonst geht beim Tabben der Fokus verloren)
+function refreshKeule() {
+  renderPlumes(); renderWindUi(); if (windCtl) windCtl.refresh();
+  document.querySelectorAll('#kList .kcard').forEach(c => {
+    const pl = state.plumes.find(x => x.id === c.dataset.kid); if (!pl) return;
+    const ln = plumeLine(pl), r = c.querySelector('.kres'); if (r) { r.className = 'kres hint' + (ln.err ? ' err' : ''); r.textContent = ln.text; }
+  });
+}
+function renderKeulen() {
+  renderPlumes(); renderWindUi(); windCtl && windCtl.refresh();
+  const box = $('#kList'); if (!box) return; box.replaceChildren();
+  if (!state.plumes.length) box.append(el('div', { class: 'hint', text: 'Noch keine Keule. Mit „Auf Karte setzen“ oder per Rechtsklick auf die Karte anlegen.' }));
+  state.plumes.forEach(pl => {
+    const g = plumeCalc(pl), ew = effWind(pl);
+    const num = (key, label, step, first, ph) => { const at = { type: 'number', step: String(step || 'any'), min: '0', class: 'num', value: pl[key] == null ? '' : pl[key], placeholder: ph || '',
+      onchange: ev => { pl[key] = numOrNull(ev.target.value); refreshKeule(); save('Keule geändert: ' + pl.name); } }; if (first) at['data-first'] = '1'; return el('label', {}, label, el('input', at)); };
+    const modeSel = el('select', { onchange: ev => { pl.mode = ev.target.value; renderKeulen(); save('Keulenart geändert: ' + pl.name); } },
+      el('option', { value: 'gauss', text: 'Gauß-Fahne' }), el('option', { value: 'takt', text: 'Taktische Keule' })); modeSel.value = pl.mode;
+    const follow = el('input', { type: 'checkbox', onchange: () => togglePlumeFollow(pl) }); follow.checked = pl.follow !== false;
+    const card = el('div', { class: 'card kcard', 'data-kid': pl.id, style: '--c:#b91c1c' },
+      el('input', { type: 'text', class: 'title', value: pl.name, onchange: ev => { pl.name = ev.target.value.trim() || pl.name; refreshKeule(); save('Keule umbenannt: ' + pl.name); } }),
+      el('div', { class: 'row' }, modeSel, el('label', {}, follow, ' folgt dem Wind')),
+      pl.follow === false ? el('div', { class: 'row' }, num('dir', 'Wind aus ° ', 5), num('speed', 'm/s ', 0.5)) : null,
+      pl.mode === 'takt'
+        ? el('div', { class: 'row' }, num('len', 'Länge m ', 10, true), num('angle', 'Winkel ° ', 5), num('r0', 'Radius um Quelle m ', 10))
+        : el('div', { class: 'row' }, num('Q', 'Quelle g/s ', 'any', true), num('H', 'Höhe m ', 1), num('thr1', 'Grenzwert mg/m³ ', 'any'), num('thr2', 'äußerer Wert mg/m³ ', 'any')),
+      el('div', { class: 'kres hint' + (g.error ? ' err' : ''), text: plumeLine(pl).text }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([pl.lat, pl.lng], Math.max(map.getZoom(), 15)) }),
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removePlume(pl) })));
+    box.append(card);
+  });
+}
+function renderWindUi() {
+  const w = state.wind; if (!$('#wDir')) return;
+  const set = (id, v) => { const e = $(id); if (document.activeElement !== e) e.value = v == null ? '' : v; };
+  set('#wDir', w.dir); set('#wSpeed', w.speed); $('#wCond').value = w.cond; $('#wStab').value = w.stab || ''; $('#wTer').value = w.terrain || 'land';
+  $('#wCompass').value = w.dir == null ? '' : String(Math.round((((w.dir % 360) + 360) % 360) / 22.5) % 16);
+  const bf = w.speed != null ? 'Bft ' + beaufort(w.speed) + ', ' + Math.round(w.speed * 3.6) + ' km/h' : ''; $('#wBft').textContent = bf;
+  const pq = pasquill(w.cond, Math.max(w.speed || 0, 1)); $('#wStabInfo').textContent = w.stab ? 'manuell' : 'aus Tabelle: ' + pq.raw + (pq.raw !== pq.cls ? ' → ' + pq.cls : '');
+  $('#wInfo').textContent = w.dir == null ? 'Wind noch nicht gesetzt. Ohne Wind entsteht keine Keule.' : 'Wind aus ' + w.dir + '° (' + compassName(w.dir) + '): die Fahne zieht nach ' + ((w.dir + 180) % 360) + '° (' + compassName(w.dir + 180) + ')' + (w.time ? ', gesetzt ' + fmtTime(w.time) : '') + '.';
+}
+function initKeule() {
+  const cs = $('#wCompass'); cs.append(el('option', { value: '', text: '–' })); COMPASS.forEach((n, i) => cs.append(el('option', { value: String(i), text: n + ' (' + Math.round(i * 22.5) + '°)' })));
+  Object.entries(COND).forEach(([k, v]) => $('#wCond').append(el('option', { value: k, text: v })));
+  $('#wStab').append(el('option', { value: '', text: 'automatisch' })); ['A', 'B', 'C', 'D', 'E', 'F'].forEach(c => $('#wStab').append(el('option', { value: c, text: 'Klasse ' + c })));
+  const upd = label => { state.wind.time = new Date().toISOString(); refreshKeule(); save(label); };
+  $('#wDir').addEventListener('change', e => { let v = numOrNull(e.target.value); if (v != null) v = ((v % 360) + 360) % 360; state.wind.dir = v; upd('Wind geändert: Richtung ' + (v == null ? '–' : Math.round(v) + '°')); });
+  $('#wCompass').addEventListener('change', e => { if (e.target.value === '') return; state.wind.dir = +e.target.value * 22.5; upd('Wind geändert: Richtung ' + state.wind.dir + '°'); });
+  $('#wSpeed').addEventListener('change', e => { const v = numOrNull(e.target.value); state.wind.speed = v != null && v >= 0 ? v : null; upd('Wind geändert: ' + (state.wind.speed == null ? '–' : state.wind.speed + ' m/s')); });
+  $('#wCond').addEventListener('change', e => { state.wind.cond = e.target.value; upd('Wetterlage geändert'); });
+  $('#wStab').addEventListener('change', e => { state.wind.stab = e.target.value; upd('Ausbreitungsklasse geändert'); });
+  $('#wTer').addEventListener('change', e => { state.wind.terrain = e.target.value; upd('Gelände geändert'); });
+  $('#btnKeulePlace').onclick = () => { stopDraw(); runtime.mode = 'plume'; $('#btnKeulePlace').classList.add('active'); map.getContainer().style.cursor = 'crosshair'; say('Quelle der Keule anklicken. Esc bricht ab.'); };
+}
+// Windanzeige auf der Karte
+const WindCtl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd() {
+    const d = L.DomUtil.create('div', 'windctl leaflet-bar'); d.setAttribute('role', 'button'); d.tabIndex = 0; d.title = 'Wind einstellen';
+    const go = () => { setPanel(true); openTab('keule'); };
+    d.addEventListener('click', go); d.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    L.DomEvent.disableClickPropagation(d); this._d = d; this.refresh(); return d;
+  },
+  refresh() {
+    const d = this._d; if (!d) return; d.replaceChildren(); const w = state.wind;
+    if (w.dir == null) { d.append(el('span', { text: 'Wind: nicht gesetzt' })); return; }
+    const arrow = L.DomUtil.create('div'); arrow.innerHTML = '<svg width="26" height="26" viewBox="-13 -13 26 26" aria-hidden="true"><g transform="rotate(' + ((w.dir + 180) % 360) + ')"><path d="M0 -11 L7 3 L0 0 L-7 3 Z" fill="#14477d"/><path d="M0 0 L0 11" stroke="#14477d" stroke-width="2"/></g></svg>';
+    d.append(arrow.firstChild, el('span', {}, 'aus ' + Math.round(w.dir) + '° ' + compassName(w.dir), el('br'), (w.speed == null ? '?' : String(w.speed).replace('.', ',')) + ' m/s'));
+  }
+});
+const windCtl = new WindCtl().addTo(map);
+
 /* Karte anklicken */
 map.on('click', e => {
   if (runtime.edit) { const b = runtime.edit.layer.getBounds ? runtime.edit.layer.getBounds().pad(0.03) : null; if (b && !b.contains(e.latlng)) finishEdit(true); return; }
   if (runtime.mode === 'measure') { measureAdd(e.latlng); return; }
   if (runtime.mode === 'circle') { stopDraw(); applyCircle(e.latlng.lat, e.latlng.lng); }
+  else if (runtime.mode === 'plume') { const m = $('#kMode').value; stopDraw(); addPlume(e.latlng, m); }
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode && runtime.mode.type === 'probloc') {
@@ -1943,7 +2199,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); histInit(); persist();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -1959,11 +2215,12 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems();
+initKeule();
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen();
 if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 tick(); setInterval(tick, 20000);
-window.__lage = { get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
+window.__lage = { gaussPlume, effWind, get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
 })();
 </script>
 </body>
