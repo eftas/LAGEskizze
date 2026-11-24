@@ -94,6 +94,7 @@ textarea { width: 100%; resize: vertical; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
 #btnShare { display: none; }
 body.viewer #qat, body.viewer #btnAddPoi, body.viewer #btnShare, body.viewer .editonly,
+body.review #tabs [data-tab="staende"] { display: inline-block !important; }
 body.viewer #tabs [data-tab="einsatz"], body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
 body.beamer #app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
 body.beamer #mapWrap { grid-column: 1; }
@@ -103,6 +104,27 @@ body.beamer header h1 { font-size: 20px; }
 #liveBadge::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #16a34a; display: inline-block; }
 #liveBadge.off::before { background: #dc2626; }
 .sector .state { font-size: 12px; color: var(--muted); }
+#reviewBar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1100; background: #b45309; color: #fff; padding: 7px 12px; border-radius: 6px; display: none; gap: 10px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); font-weight: 600; }
+#reviewBar.on { display: flex; }
+#reviewBar button { border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.2); color: #fff; border-radius: 4px; padding: 3px 10px; }
+.entry.corr { color: var(--muted); }
+.entry .nr { font-weight: 700; margin-right: 6px; }
+.mcard .meta { font-size: 12px; color: var(--muted); }
+.unum { max-width: 58px; }
+.umk { position: relative; display: flex; flex-direction: column; align-items: center; }
+.umk img { display: block; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 1px #fff); }
+.umk .usb { position: absolute; top: -7px; right: -9px; min-width: 15px; height: 15px; border-radius: 8px; color: #fff; font: 700 10px/15px Inter, system-ui, sans-serif; text-align: center; padding: 0 3px; border: 1px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.5); }
+.umk .ulb { margin-top: 1px; background: rgba(255,255,255,.92); border: 1px solid #475569; border-radius: 2px; padding: 0 3px; font: 600 10.5px/13px Inter, system-ui, sans-serif; white-space: nowrap; color: #0f172a; }
+.ucard img.uimg { width: 44px; height: 36px; object-fit: contain; flex: none; }
+.sympv { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.sympv img { height: 40px; max-width: 120px; object-fit: contain; border: 1px solid var(--line); padding: 2px; background: #fff; }
+.sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; max-height: 280px; overflow: auto; margin: 6px 0; }
+.sgrid button { border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 3px; font-size: 10px; color: var(--muted); min-width: 0; overflow: hidden; }
+.sgrid button img { width: 42px; height: 42px; display: block; margin: 0 auto 2px; }
+.sgrid button.sel { outline: 2px solid var(--accent); }
+.seg { display: flex; gap: 0; margin: 4px 0 8px; }
+.seg button { flex: 1; padding: 5px; border: 1px solid var(--line); background: #fff; }
+.seg button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent); }
 .chip.ex { background: #b45309; color: #fff; border-color: #92400e; letter-spacing: .08em; }
 .chip.due { background: #b91c1c; color: #fff; border-color: #7f1d1d; }
 .chip.soon { background: #fef3c7; color: #78350f; border-color: #d97706; }
@@ -256,6 +278,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
     <span id="clock"></span>
     <button id="btnPanel" title="Seitenleiste ein- oder ausklappen (Umschalt+P)">Leiste</button>
     <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
+    <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
@@ -268,10 +291,15 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <button role="tab" data-tab="gebiet" aria-selected="false">Gebiete</button>
       <button role="tab" data-tab="ebenen" aria-selected="false">Ebenen</button>
       <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
+      <button role="tab" data-tab="kraefte" aria-selected="false">Kräfte</button>
+      <button role="tab" data-tab="abschnitte" aria-selected="false">Abschnitte</button>
+      <button role="tab" data-tab="meldungen" aria-selected="false">Meldungen</button>
+      <button role="tab" data-tab="tagebuch" aria-selected="false">Tagebuch</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
       <button role="tab" data-tab="keule" aria-selected="false">Wetter und Keule</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
+      <button role="tab" data-tab="staende" aria-selected="false">Stände</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
     </div>
 
@@ -288,6 +316,10 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <h2>Lagebesprechung</h2>
       <div class="row"><label for="mtInt">Takt</label><input type="number" id="mtInt" min="1" step="1" style="max-width:80px"><span>Minuten</span><span class="hint">frei einstellbar, jederzeit änderbar</span></div>
       <div class="hint" id="mtInfo"></div>
+      <div class="row editonly"><button class="btn primary" id="btnMeeting">Lagebesprechung beginnen</button><span class="hint">hält einen Lagestand fest und setzt den Takt zurück</span></div>
+      <h2 class="editonly">Sachgebiete und Rollen</h2>
+      <div id="roleEdit" class="editonly"></div>
+      <div class="row editonly"><button class="btn small" id="roleAdd">Rolle hinzufügen</button></div>
     </section>
 
     <section class="tabpane" id="tab-gebiet">
@@ -363,6 +395,80 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       </div>
       <div class="hint" id="listInfo"></div>
       <table class="list"><thead><tr><th>Objekt</th><th>Art</th><th>Status</th></tr></thead><tbody id="listBody"></tbody></table>
+    </section>
+
+    <section class="tabpane" id="tab-kraefte">
+      <div id="uSummary"></div>
+      <div class="editonly">
+        <h2>Einheit anlegen</h2>
+        <div class="row"><input type="text" id="uName" placeholder="Bezeichnung, z. B. LF 20 Köln-Nord"><input type="text" id="uCall" placeholder="Funkrufname"></div>
+        <div class="row"><button class="btn" id="uSymBtn">Zeichen wählen</button><span id="uSymPrev" class="hint">kein Zeichen gewählt</span></div>
+        <div class="row"><label>Stärke</label>
+          <input type="number" id="uF" min="0" step="1" placeholder="F" title="Führer" class="unum"><span>/</span><input type="number" id="uU" min="0" step="1" placeholder="U" title="Unterführer" class="unum"><span>/</span><input type="number" id="uH" min="0" step="1" placeholder="H" title="Helfer" class="unum"><span>=</span><b id="uSum">0</b></div>
+        <div class="row"><select id="uStatus" aria-label="Status"></select><select id="uSect" aria-label="Abschnitt"></select></div>
+        <div class="row"><button class="btn primary" id="uAdd">Einheit anlegen</button><button class="btn" id="uPlace">Anlegen und auf Karte setzen</button></div>
+      </div>
+      <h2>Übersicht</h2>
+      <div class="row"><select id="uFltStatus" aria-label="Status filtern"></select><select id="uFltSect" aria-label="Abschnitt filtern"></select></div>
+      <div class="row"><input type="search" id="uFltText" placeholder="Einheit suchen"></div>
+      <div id="uList"></div>
+      <details class="editonly"><summary>Status der Einheiten verwalten</summary><div id="uStatList"></div><div class="row"><button class="btn small" id="uStatAdd">Status hinzufügen</button></div></details>
+    </section>
+
+    <section class="tabpane" id="tab-abschnitte">
+      <div class="editonly">
+        <h2>Abschnitt anlegen</h2>
+        <div class="row"><input type="text" id="abName" placeholder="Bezeichnung, z. B. Abschnitt Nord"><button class="btn primary" id="abAdd">Anlegen</button></div>
+        <div class="hint">Die Fläche auf der Karte zeichnen Sie im Reiter Lage. Ein Abschnitt ohne Fläche ist möglich, zum Beispiel für Versorgung.</div>
+      </div>
+      <h2>Abschnitte und Führung</h2>
+      <div id="abList"></div>
+    </section>
+
+    <section class="tabpane" id="tab-meldungen">
+      <div class="editonly">
+        <h2>Nachricht erfassen</h2>
+        <div class="row"><select id="mDir" aria-label="Richtung"><option value="ein">Eingang</option><option value="aus">Ausgang</option><option value="intern">intern</option></select><select id="mKind" aria-label="Art"></select>
+          <label class="hint" for="mPrio">Prio</label><input type="number" id="mPrio" min="1" step="1" value="2" style="max-width:62px"></div>
+        <div class="row"><input type="text" id="mFrom" placeholder="Absender" list="roleList"><input type="text" id="mTo" placeholder="Empfänger" list="roleList"><datalist id="roleList"></datalist></div>
+        <div class="row"><textarea id="mText" rows="3" placeholder="Inhalt der Nachricht"></textarea></div>
+        <div class="row"><select id="mRef" aria-label="Bezug"></select></div>
+        <div class="row"><label><input type="checkbox" id="mExtraOn"> Erweiterte Felder (Nachrichtenvordruck)</label></div>
+        <div id="mExtra" hidden>
+          <div class="row"><select id="mWay" aria-label="Übermittlungsweg"></select><input type="text" id="mSign" placeholder="Handzeichen"></div>
+          <div class="row"><input type="text" id="mDist" placeholder="Verteiler"><input type="text" id="mQuit" placeholder="Quittung, Vermerk"></div>
+          <div class="hint">Frei wählbare Zusatzfelder, kein amtlicher Vordruck.</div>
+        </div>
+        <div class="row"><button class="btn primary" id="mAdd">Erfassen</button></div>
+      </div>
+      <h2>Nachrichten</h2>
+      <div class="row"><select id="mFDir"><option value="">alle Richtungen</option><option value="ein">Eingang</option><option value="aus">Ausgang</option><option value="intern">intern</option></select><select id="mFStat"><option value="">alle Stände</option><option value="offen">noch nicht erledigt</option><option value="neu">neu</option><option value="bearb">in Bearbeitung</option><option value="erl">erledigt</option></select></div>
+      <div class="row"><input type="search" id="mFText" placeholder="Suchen"></div>
+      <div class="hint" id="mInfo"></div>
+      <div id="mList"></div>
+    </section>
+
+    <section class="tabpane" id="tab-tagebuch">
+      <div class="editonly">
+        <h2>Eintrag</h2>
+        <div class="row"><select id="jBy" aria-label="Verfasser"></select></div>
+        <div class="row"><input type="text" id="jText" placeholder="Eintrag"><button class="btn primary" id="btnJ">Eintragen</button></div>
+        <div class="hint">Einträge werden nicht geändert oder gelöscht. Eine Berichtigung ist ein neuer Eintrag mit Bezug auf die Nummer.</div>
+      </div>
+      <h2>Einsatztagebuch</h2>
+      <div class="row"><input type="search" id="jFlt" placeholder="Suchen"><label class="hint"><input type="checkbox" id="jAuto" checked> automatische Einträge</label></div>
+      <div id="journal"></div>
+    </section>
+
+    <section class="tabpane" id="tab-staende">
+      <div class="editonly">
+        <h2>Lagestand festhalten</h2>
+        <div class="row"><input type="text" id="stTitle" placeholder="Titel, z. B. Lagebesprechung 3"><button class="btn primary" id="stTake">Festhalten</button></div>
+        <div class="row"><textarea id="stNote" rows="2" placeholder="Bemerkung zum Lagestand"></textarea></div>
+      </div>
+      <h2>Festgehaltene Lagestände</h2>
+      <div class="hint" id="stStore"></div>
+      <div id="stList"></div>
     </section>
 
     <section class="tabpane" id="tab-probleme">
@@ -455,12 +561,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <div class="hint">Anlegen im Objekt-Popup: „Versorgt…“ und danach das abhängige Objekt anklicken. Fällt ein Objekt aus, werden die abhängigen Objekte markiert. Die Verknüpfungen sind manuell erfasst, nicht berechnet.</div>
       <div id="depList"></div>
 
-      <h2>Lagejournal</h2>
-      <div class="row">
-        <input type="text" id="jText" placeholder="Eintrag">
-        <button class="btn" id="btnJ">Eintragen</button>
-      </div>
-      <div id="journal"></div>
+
     </section>
 
     <section class="tabpane" id="tab-daten">
@@ -487,6 +588,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
   <div id="mapWrap">
     <div id="map"></div>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
+    <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
     <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
     <div id="msg" role="status"></div>
   </div>
@@ -496,6 +598,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha384-JP5UPxIO2Tm2o79Fb0tGYMa44jkWar53aBoCbd8ah0+LcCDoohTIYr+zIXyfGIJN" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js" integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js" integrity="sha384-Pf8wWv2U7DX+774Kza+7w2RiYwz6YWNTckaDjwxZbjFj7Bsnh5XPFH465NiVHU8y" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" integrity="sha384-0d+Gr7vM4Drod8E3hXKgciWJSWbjD/opKLLygI9ktiWbuvlDwQLzU46wJ9s5gsp7" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1" crossorigin="anonymous"></script>
 <!-- Taktische Zeichen aus dem Repository. Datei muss in src/public liegen, sonst fehlt nur die Zeichenpalette. -->
 <script src="images/symbols/symbols.js" onerror="window.symbolsMissing=true"></script>
@@ -574,6 +677,10 @@ const LAYER_BY_ID = Object.fromEntries(LAYERS.map(l => [l.id, l]));
 /* ------------------------------------------------------------------ */
 /* Zustand                                                             */
 /* ------------------------------------------------------------------ */
+const UNIT_STATUS_DEFAULT = [
+  { id: 'bereit', label: 'einsatzbereit', short: 'B', color: '#15803d' }, { id: 'anfahrt', label: 'Anfahrt', short: 'A', color: '#2563eb' }, { id: 'einsatz', label: 'im Einsatz', short: 'E', color: '#b91c1c' },
+  { id: 'reserve', label: 'Reserve', short: 'R', color: '#0e7490' }, { id: 'pause', label: 'Pause, Ablösung', short: 'P', color: '#b45309' }, { id: 'nicht', label: 'nicht verfügbar', short: 'N', color: '#475569' }];
+const ROLES_DEFAULT = [{ id: 'S1', label: 'S1 Personal und Innerer Dienst' }, { id: 'S2', label: 'S2 Lage' }, { id: 'S3', label: 'S3 Einsatz' }, { id: 'S4', label: 'S4 Versorgung' }, { id: 'S5', label: 'S5 Presse und Medienarbeit' }, { id: 'S6', label: 'S6 Information und Kommunikation' }, { id: 'SL', label: 'Stabsleitung' }];
 function freshState() {
   return {
     version: 2,
@@ -592,6 +699,11 @@ function freshState() {
     meeting: { intervalMin: 60, lastIso: null },   // Takt der Lagebesprechung in Minuten
     wind: { dir: null, speed: null, cond: 'bedeckt', stab: '', terrain: 'land', time: null },   // dir: Wind AUS dieser Richtung in Grad
     plumes: [],          // { id, name, lat, lng, mode:'gauss'|'takt', follow, dir, speed, Q, H, thr1, thr2, len, angle, r0 }
+    messages: [], msgSeq: 0, diarySeq: 0, standSeq: 0, msgExtra: false, author: '',
+    roles: JSON.parse(JSON.stringify(ROLES_DEFAULT)),
+    stands: [],          // { id, nr, time, title, note, by, sum, z (komprimierter Stand) }
+    units: [],           // { id, name, call, sym, f, u, h, status, sectionId, task, note, lat?, lng?, time }
+    unitStatus: JSON.parse(JSON.stringify(UNIT_STATUS_DEFAULT)),
     casualties: [],      // { id, cat, n, note, time, lat?, lng? }
     problems: []         // { id, title, text, prio, status, owner, time, poi?, poiName?, lat?, lng? }
   };
@@ -633,6 +745,7 @@ function migrate(s) {
   s.areas.forEach(a => { a.color = safeColor(a.color); a.sections = undefined; delete a.sections; });
   s.sections.forEach(x => { x.color = safeColor(x.color, '#e11d48'); });
   fixProblems(s.problems);
+  if (s.journal.some(j => j.nr == null)) { const L = s.journal.length; for (let i = L - 1; i >= 0; i--) if (s.journal[i].nr == null) s.journal[i].nr = L - i; s.diarySeq = Math.max(s.diarySeq || 0, ...s.journal.map(j => j.nr || 0)); }
   return s;
 }
 
@@ -681,7 +794,7 @@ function snapshot() {
   return JSON.stringify({
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
-    manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
+    units: state.units, manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
     wind: state.wind, plumes: state.plumes
   });
 }
@@ -701,10 +814,12 @@ function updateUndoButtons() {
   r.title = fr ? 'Wiederholen: ' + fr.label + ' (Strg+Y)' : 'Nichts zu wiederholen';
 }
 function undo() {
+  if (runtime.viewer) return;
   commit('Änderung'); const e = hist.past.pop(); if (!e) return;
   hist.future.push(e); restore(e.before); addJournal('Rückgängig: ' + e.label, true); updateUndoButtons();
 }
 function redo() {
+  if (runtime.viewer) return;
   commit('Änderung'); const e = hist.future.pop(); if (!e) return;
   hist.past.push(e); restore(e.after); addJournal('Wiederholt: ' + e.label, true); updateUndoButtons();
 }
@@ -726,9 +841,9 @@ function restore(snap) {
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
-  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || [];
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || [];
   d.manual.forEach(q => { state.pois[q.id] = q; });
-  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz();
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
   hist.cur = snapshot(); persist();
 }
 
@@ -761,8 +876,9 @@ function save(label) {
 function saveNow() {
   saveTimer = 0;
   {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-    catch (e) { try { const s = Object.assign({}, state, { pois: Object.fromEntries(Object.entries(state.pois).filter(([, q]) => q.manual)), loaded: {} }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e2) { /* Speicher nicht verfügbar */ } }
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); runtime.storeWarn = ''; }
+    catch (e) { runtime.storeWarn = 'gekürzt'; try { const s = Object.assign({}, state, { pois: Object.fromEntries(Object.entries(state.pois).filter(([, q]) => q.manual)), loaded: {} }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e2) { runtime.storeWarn = 'voll'; } }
+    const sc = document.getElementById('storeChip'); if (sc) { sc.hidden = !runtime.storeWarn; sc.textContent = runtime.storeWarn === 'voll' ? 'Speicher voll: Lage als Datei sichern' : 'Speicher knapp: Lage als Datei sichern'; sc.title = 'Der Browserspeicher reicht nicht. Reiter Daten, Lage speichern.'; }
   }
 }
 
@@ -1393,6 +1509,7 @@ function secShape(sx) {
 function renderSections() {
   secLayer.clearLayers(); Object.keys(secLayers).forEach(k => delete secLayers[k]);
   state.sections.forEach(sx => {
+    if (!sx.pts || sx.pts.length < 2) return;
     const c = safeColor(sx.color, '#e11d48');
     const lyr = secShape(sx);
     lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' });
@@ -1412,7 +1529,7 @@ function renameSection(sx, name) {
   name = (name || '').trim(); if (!name || name === sx.name) { renderSecList(); return; }
   const old = sx.name; sx.name = name; renderSections(); save('Abschnitt umbenannt: ' + old + ' zu ' + name);
 }
-function removeSection(sx) { state.sections = state.sections.filter(x => x !== sx); renderSections(); save('Abschnitt entfernt: ' + sx.name); }
+function removeSection(sx) { state.sections = state.sections.filter(x => x !== sx); state.units.forEach(u => { if (u.sectionId === sx.id) u.sectionId = null; }); renderSections(); renderUnits(); renderAbschnitte(); save('Abschnitt entfernt: ' + sx.name); }
 function renderSecList() {
   const box = $('#secList'); if (!box) return; box.replaceChildren();
   if (!state.sections.length) box.append(el('div', { class: 'hint', text: 'Noch keine. Im Reiter Lage zeichnen.' }));
@@ -1422,7 +1539,7 @@ function renderSecList() {
       oninput: ev => { sx.color = ev.target.value; renderSectionsKeepList(); }, onchange: () => { renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
     box.append(el('div', { class: 'arow' }, el('div', { class: 'top' }, col, nm,
       el('button', { class: 'btn small', text: sx.kind === 'line' ? 'Linie' : 'Fläche', disabled: 'disabled' }),
-      el('button', { class: 'btn small', text: 'Zoom', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) }),
+      el('button', { class: 'btn small', text: 'Zoom', disabled: sx.pts && sx.pts.length > 1 ? null : 'disabled', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) }),
       el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeSection(sx) })),
       el('div', { class: 'sub' }, el('label', {}, 'Deckkraft', el('input', { type: 'range', min: sx.kind === 'line' ? '0.2' : '0', max: sx.kind === 'line' ? '1' : '0.6', step: '0.02', value: secOp(sx), title: 'Deckkraft',
         oninput: ev => { sx.opacity = +ev.target.value; renderSectionsKeepList(); }, onchange: () => { renderSections(); save('Deckkraft geändert: ' + sx.name); } })))));
@@ -1431,6 +1548,7 @@ function renderSecList() {
 function renderSectionsKeepList() {   // während der Farbwahl nur die Karte neu zeichnen, die Liste bleibt (sonst schließt sich der Farbwähler)
   secLayer.clearLayers();
   state.sections.forEach(sx => {
+    if (!sx.pts || sx.pts.length < 2) return;
     const lyr = secShape(sx);
     lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' }); lyr.addTo(secLayer);
   });
@@ -1454,13 +1572,23 @@ function buildPalette() {
   sel.addEventListener('change', draw); $('#symQ').addEventListener('input', draw); draw();
 }
 function addJournal(text, auto, loc) {
-  state.journal.unshift({ id: uid(), time: nowIso(), text, auto: !!auto, lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined }); renderJournal(); save();
+  const e = { id: uid(), nr: ++state.diarySeq, time: nowIso(), text, auto: !!auto, by: auto ? '' : (state.author || ''), lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined };
+  state.journal.unshift(e); renderJournal(); persist(); return e;
 }
 function renderJournal() {
-  const box = $('#journal'); box.replaceChildren();
-  if (!state.journal.length) box.append(el('div', { class: 'hint', text: 'Noch keine Einträge. Statuswechsel werden automatisch vermerkt.' }));
-  state.journal.slice(0, 300).forEach(j => box.append(el('div', { class: 'entry' }, el('time', { text: fmtTime(j.time) }), j.text, ' ', j.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([j.lat, j.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
-    el('button', { class: 'btn small', text: 'x', title: 'Eintrag löschen', onclick: () => { state.journal = state.journal.filter(x => x !== j); renderJournal(); save(); } }))));
+  const box = $('#journal'); if (!box) return; box.replaceChildren();
+  const q = ($('#jFlt').value || '').trim().toLowerCase(), showAuto = $('#jAuto').checked;
+  if ($('#jBy')) { const cur = state.author || ''; $('#jBy').replaceChildren(el('option', { value: '', text: '– Verfasser –' }), ...state.roles.map(r => el('option', { value: r.id, text: r.label }))); $('#jBy').value = cur; }
+  const rows = state.journal.filter(j => (showAuto || !j.auto) && (!q || j.text.toLowerCase().includes(q) || String(j.nr) === q));
+  if (!state.journal.length) box.append(el('div', { class: 'hint', text: 'Noch keine Einträge. Statuswechsel und Nachrichten werden automatisch vermerkt.' }));
+  rows.slice(0, 500).forEach(j => box.append(el('div', { class: 'entry' + (j.correctedBy ? ' corr' : '') },
+    el('span', { class: 'nr', text: 'Nr. ' + (j.nr || '–') }), el('time', { text: fmtTime(j.time) }), j.by ? el('b', { text: j.by + ' ' }) : null, j.text, ' ',
+    j.correctedBy ? el('span', { class: 'hint', text: '(berichtigt durch Nr. ' + j.correctedBy + ')' }) : null, ' ',
+    j.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([j.lat, j.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
+    !runtime.viewer && !j.correctedBy ? el('button', { class: 'btn small', text: 'Berichtigen', title: 'Neuen Eintrag mit Bezug auf diese Nummer anlegen', onclick: async () => {
+      const v = await askText('Berichtigung zu Nr. ' + j.nr, j.text); if (v == null || !v.trim() || v.trim() === j.text) return;
+      const n = addJournal('Berichtigung zu Nr. ' + j.nr + ': ' + v.trim(), false); j.correctedBy = n.nr; renderJournal(); persist(); } }) : null)));
+  if (rows.length > 500) box.append(el('div', { class: 'hint', text: (rows.length - 500) + ' ältere Einträge, bitte Suche verwenden.' }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -1835,6 +1963,7 @@ function mapItems(ll) {
     { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
     { sep: true },
     { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
+    { label: 'Einheit hier einsetzen…', onclick: async () => { const v = await askText('Bezeichnung der Einheit', ''); if (v == null || !v.trim()) return; addUnit({ name: v.trim(), lat: ll.lat, lng: ll.lng }); } },
     { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
     { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: () => askNumberCas(k, ll) })) },
     { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
@@ -2329,6 +2458,350 @@ function initEinsatz() {
   $('#wxNote').addEventListener('change', e => { state.weather.note = e.target.value.trim(); wx(); });
 }
 
+/* ------------------------------------------------------------------ */
+/* Kräfte (Einheiten) und Abschnitte mit Führung                       */
+/* ------------------------------------------------------------------ */
+const unitLayer = L.layerGroup().addTo(map);
+const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="44" height="36" viewBox="0 0 44 36"><rect x="2" y="3" width="40" height="30" fill="#fff" stroke="#475569" stroke-width="2" stroke-dasharray="4 3"/></svg>');
+const symCache = new Map();
+function symOf(sym) {                 // { k:'lib', name } oder { k:'dv', o:{...DV-102-Optionen} }
+  if (!sym) return { url: PLACEHOLDER, w: 44, h: 36 };
+  const key = JSON.stringify(sym); if (symCache.has(key)) return symCache.get(key);
+  let r;
+  if (sym.k === 'dv' && window.TZ) { try { const t = window.TZ.erzeuge(sym.o); r = { url: t.dataUrl, w: t.size[0], h: t.size[1] }; } catch (e) { r = { url: PLACEHOLDER, w: 44, h: 36 }; } }
+  else r = { url: sym.name ? symUrl(sym.name) : PLACEHOLDER, w: 1, h: 1 };
+  symCache.set(key, r); return r;
+}
+const ustat = id => state.unitStatus.find(x => x.id === id) || state.unitStatus[0] || { id: '', label: '–', color: '#64748b' };
+const uTotal = u => (u.f || 0) + (u.u || 0) + (u.h || 0);
+const fmtStr = u => (u.f || 0) + '/' + (u.u || 0) + '/' + (u.h || 0) + '/' + uTotal(u);
+const sectionName = id => { const x = state.sections.find(y => y.id === id); return x ? x.name : 'ohne Abschnitt'; };
+const unitSym = u => { const r = symOf(u.sym); return r; };
+
+/* Zeichenauswahl: Zeichenvorrat oder Zeichen nach DV 102 zusammenstellen */
+function pickSymbol(cur) {
+  return new Promise(resolve => {
+    let sel = cur ? JSON.parse(JSON.stringify(cur)) : null, mode = cur && cur.k === 'dv' ? 'dv' : 'lib';
+    const prev = el('div', { class: 'sympv' }), body = el('div', {}), seg = el('div', { class: 'seg' });
+    const showPrev = () => { prev.replaceChildren(); if (sel) { const r = symOf(sel); prev.append(el('img', { src: r.url, alt: '' }), el('span', { class: 'hint', text: sel.k === 'dv' ? 'nach DV 102 zusammengestellt' : (sel.name || '') })); } else prev.append(el('span', { class: 'hint', text: 'kein Zeichen gewählt' })); };
+    const buildLib = () => {
+      body.replaceChildren(); const cat = el('select', { 'aria-label': 'Kategorie' }), q = el('input', { type: 'search', placeholder: 'Suchen, z. B. Löschgruppe' }), grid = el('div', { class: 'sgrid' });
+      if (typeof symbolProperties === 'undefined') { body.append(el('div', { class: 'hint', text: 'Zeichenvorrat nicht gefunden.' })); return; }
+      cat.append(el('option', { value: '', text: 'alle Kategorien' })); symbolProperties.categories.forEach(c => cat.append(el('option', { value: c.id, text: c.name })));
+      const draw = () => {
+        grid.replaceChildren(); const t = q.value.trim().toLowerCase(), c = cat.value;
+        const list = symbolProperties.symbols.filter(x => (!c || String(x.category) === c) && (!t || (x.title + ' ' + x.name + ' ' + (x.keywords || '')).toLowerCase().includes(t)));
+        list.slice(0, 150).forEach(x => { const b = el('button', { title: x.title, class: sel && sel.name === x.name ? 'sel' : '', onclick: () => { sel = { k: 'lib', name: x.name }; showPrev(); draw(); } }, el('img', { src: symUrl(x.name), alt: '', loading: 'lazy' }), x.title); grid.append(b); });
+        if (list.length > 150) grid.append(el('div', { class: 'hint', text: (list.length - 150) + ' weitere Treffer, bitte Suche verfeinern.' }));
+      };
+      cat.addEventListener('change', draw); q.addEventListener('input', draw); body.append(el('div', { class: 'row' }, cat, q), grid); draw();
+    };
+    const buildDv = () => {
+      body.replaceChildren(); if (!window.TZ) { body.append(el('div', { class: 'hint', text: 'Der Zeichengenerator ist in dieser Datei nicht enthalten.' })); return; }
+      const o = (sel && sel.k === 'dv') ? Object.assign({}, sel.o) : { grundzeichen: 'taktische-formation', organisation: 'feuerwehr' };
+      const mk = (label, key, arr, none) => { const s2 = el('select', { 'aria-label': label }); if (none) s2.append(el('option', { value: '', text: '– ' + label + ' –' })); arr.forEach(x => s2.append(el('option', { value: x.id, text: x.label }))); s2.value = o[key] || ''; s2.addEventListener('change', upd); return [label, s2, key]; };
+      const fields = [mk('Grundzeichen', 'grundzeichen', window.TZ.grundzeichen), mk('Organisation', 'organisation', window.TZ.organisationen), mk('Einheit', 'einheit', window.TZ.einheiten, true), mk('Fachaufgabe', 'fachaufgabe', window.TZ.fachaufgaben, true)];
+      const txt = el('input', { type: 'text', placeholder: 'Text im Zeichen, z. B. 1. Zug', value: o.text || '' }); txt.addEventListener('input', upd);
+      function upd() {
+        const n = {}; fields.forEach(([, s2, key]) => { if (s2.value) n[key] = s2.value; }); if (txt.value.trim()) n.text = txt.value.trim();
+        try { window.TZ.erzeuge(n); sel = { k: 'dv', o: n }; err.textContent = ''; } catch (e) { err.textContent = 'Diese Kombination ist nach DV 102 nicht möglich: ' + e.message; }
+        showPrev();
+      }
+      const err = el('div', { class: 'hint err' });
+      body.append(...fields.map(([l, s2]) => el('div', { class: 'row' }, el('label', { text: l, style: 'width:90px' }), s2)), el('div', { class: 'row' }, el('label', { text: 'Text', style: 'width:90px' }), txt), err); upd();
+    };
+    const setMode = m => { mode = m; [...seg.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m))); m === 'lib' ? buildLib() : buildDv(); };
+    seg.append(el('button', { 'data-m': 'lib', onclick: () => setMode('lib'), text: 'Zeichenvorrat (1.199)' }), el('button', { 'data-m': 'dv', onclick: () => setMode('dv'), text: 'Nach DV 102 zusammenstellen' }));
+    const done = v => { dlg.remove(); resolve(v); };
+    const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', { style: 'width:min(640px,94vw)' }, el('h3', { text: 'Taktisches Zeichen wählen' }), seg, prev, body,
+      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Übernehmen', onclick: () => done(sel) }), el('button', { class: 'btn', text: 'Kein Zeichen', onclick: () => done(null) }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(undefined) }))));
+    dlg.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); done(undefined); } });
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(undefined); });
+    document.body.append(dlg); showPrev(); setMode(mode);
+  });
+}
+
+/* Kräfte-Reiter */
+let uDraft = { sym: null };
+function unitMarkerIcon(u) {
+  const r = unitSym(u), st = ustat(u.status), h = 34, w = r.w > 1 ? Math.min(78, Math.round(h * r.w / r.h)) : 40;
+  const img = el('img', { src: r.url, alt: '', width: String(w), height: String(h), style: 'object-fit:contain' });
+  const node = el('div', { class: 'umk' }, img, el('span', { class: 'usb', style: 'background:' + safeColor(st.color), text: st.short || (st.label || '?').charAt(0).toUpperCase() }), el('span', { class: 'ulb', text: u.name || 'Einheit' }));
+  return L.divIcon({ className: '', html: node, iconSize: [Math.max(w, 60), 52], iconAnchor: [Math.max(w, 60) / 2, 22] });
+}
+function renderUnitMarkers() {
+  unitLayer.clearLayers();
+  state.units.filter(u => u.lat != null).forEach(u => {
+    const m = L.marker([u.lat, u.lng], { icon: unitMarkerIcon(u), draggable: true });
+    m.bindTooltip(el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) + ' · ' + ustat(u.status).label + ' · ' + sectionName(u.sectionId) }));
+    m.on('dragend', () => { const ll = m.getLatLng(); u.lat = ll.lat; u.lng = ll.lng; save('Einheit verschoben: ' + u.name); });
+    m.on('contextmenu', e => ctxOpen(e, unitItems(u), null, 'Einheit: ' + (u.name || '')));
+    m.addTo(unitLayer);
+  });
+}
+function renderUnitSummary() {
+  const box = $('#uSummary'); box.replaceChildren();
+  const tot = { f: 0, u: 0, h: 0 }; state.units.forEach(u => { tot.f += u.f || 0; tot.u += u.u || 0; tot.h += u.h || 0; });
+  const byStat = state.unitStatus.map(st => [st, state.units.filter(u => u.status === st.id)]);
+  box.append(el('h2', { text: 'Kräfteübersicht' }),
+    el('div', { class: 'row' }, el('span', { class: 'chip', text: state.units.length + ' Einheiten' }), el('span', { class: 'chip', title: 'Führer / Unterführer / Helfer / gesamt', text: 'Stärke ' + tot.f + '/' + tot.u + '/' + tot.h + '/' + (tot.f + tot.u + tot.h) })),
+    el('div', { class: 'row' }, byStat.filter(([, l]) => l.length).map(([st, l]) => el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + safeColor(st.color) }), l.length + ' ' + st.label + ' (' + l.reduce((a, u) => a + uTotal(u), 0) + ')'))));
+}
+function fillUnitSelects() {
+  const fill = (sel, items, first) => { const cur = sel.value; sel.replaceChildren(); if (first) sel.append(el('option', { value: first[0], text: first[1] })); items.forEach(([v, t]) => sel.append(el('option', { value: v, text: t }))); if ([...sel.options].some(o => o.value === cur)) sel.value = cur; };
+  fill($('#uStatus'), state.unitStatus.map(x => [x.id, x.label])); fill($('#uSect'), state.sections.filter(x => x.kind !== 'line').map(x => [x.id, x.name]), ['', 'ohne Abschnitt']);
+  fill($('#uFltStatus'), state.unitStatus.map(x => [x.id, x.label]), ['', 'alle Status']); fill($('#uFltSect'), state.sections.filter(x => x.kind !== 'line').map(x => [x.id, x.name]), ['', 'alle Abschnitte']);
+}
+function renderUnits() {
+  if (!$('#uList')) return;
+  fillUnitSelects(); renderUnitSummary(); renderUnitMarkers(); renderUnitStatList();
+  const box = $('#uList'); box.replaceChildren();
+  const fs = $('#uFltStatus').value, fa = $('#uFltSect').value, q = $('#uFltText').value.trim().toLowerCase();
+  const rows = state.units.filter(u => (!fs || u.status === fs) && (!fa || u.sectionId === fa) && (!q || ((u.name || '') + ' ' + (u.call || '')).toLowerCase().includes(q)));
+  if (!rows.length) box.append(el('div', { class: 'hint', text: state.units.length ? 'Keine Einheit in dieser Auswahl.' : 'Noch keine Einheit angelegt.' }));
+  rows.forEach(u => {
+    const st = ustat(u.status), r = unitSym(u);
+    const num = (key, ph, title) => el('input', { type: 'number', min: '0', step: '1', class: 'unum', placeholder: ph, title, value: u[key] == null ? '' : u[key], onchange: ev => { u[key] = Math.max(0, Math.round(+ev.target.value || 0)); refreshUnitsLight(u, card); save('Stärke geändert: ' + u.name); } });
+    const sum = el('b', { text: String(uTotal(u)) });
+    const statSel = el('select', { 'aria-label': 'Status', onchange: ev => { setUnitStatus(u, ev.target.value); } }, state.unitStatus.map(x => el('option', { value: x.id, text: x.label }))); statSel.value = u.status;
+    const sectSel = el('select', { 'aria-label': 'Abschnitt', onchange: ev => { assignUnit(u, ev.target.value || null); } }, el('option', { value: '', text: 'ohne Abschnitt' }), ...state.sections.filter(x => x.kind !== 'line').map(x => el('option', { value: x.id, text: x.name }))); sectSel.value = u.sectionId || '';
+    const card = el('div', { class: 'card ucard', 'data-uid': u.id, style: '--c:' + safeColor(st.color) },
+      el('div', { class: 'row' }, el('img', { class: 'uimg', src: r.url, alt: '' }),
+        el('input', { type: 'text', class: 'title', value: u.name || '', placeholder: 'Bezeichnung', onchange: ev => { u.name = ev.target.value.trim(); refreshUnitsLight(u, card); save('Einheit umbenannt: ' + u.name); } }),
+        el('input', { type: 'text', value: u.call || '', placeholder: 'Funkrufname', onchange: ev => { u.call = ev.target.value.trim(); save('Funkrufname geändert: ' + u.name); } })),
+      el('div', { class: 'row' }, el('label', { class: 'hint', text: 'Stärke', style: 'white-space:nowrap' }), num('f', 'F', 'Führer'), el('span', { text: '/' }), num('u', 'U', 'Unterführer'), el('span', { text: '/' }), num('h', 'H', 'Helfer'), el('span', { text: '=' }), sum),
+      el('div', { class: 'row' }, statSel, sectSel),
+      el('details', {}, el('summary', { class: 'hint', text: 'Auftrag und Bemerkung' }),
+        el('textarea', { rows: '2', placeholder: 'Auftrag', onchange: ev => { u.task = ev.target.value; save('Auftrag geändert: ' + u.name); } }),
+        el('textarea', { rows: '2', placeholder: 'Bemerkung', onchange: ev => { u.note = ev.target.value; save('Bemerkung geändert: ' + u.name); } })),
+      el('div', { class: 'row' }, el('span', { class: 'hint', text: (u.time ? 'Status seit ' + fmtTime(u.time) : '') + (u.lat == null ? ' · ohne Ort' : '') }),
+        u.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([u.lat, u.lng], Math.max(map.getZoom(), 16)) }) : null,
+        el('button', { class: 'btn small', text: 'Ort setzen', onclick: () => { stopDraw(); runtime.mode = { type: 'unitloc', id: u.id }; map.getContainer().style.cursor = 'crosshair'; say('Ort der Einheit anklicken. Esc bricht ab.'); } }),
+        el('button', { class: 'btn small', text: 'Zeichen', onclick: async () => { const v = await pickSymbol(u.sym); if (v === undefined) return; u.sym = v; renderUnits(); save('Zeichen geändert: ' + u.name); } }),
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeUnit(u) })));
+    card.querySelectorAll('textarea')[0].value = u.task || ''; card.querySelectorAll('textarea')[1].value = u.note || '';
+    box.append(card);
+  });
+  if (runtime.viewer) lockViewer(box);
+}
+function refreshUnitsLight(u, card) {            // ohne Neuaufbau der Felder, damit der Fokus beim Tabben erhalten bleibt
+  renderUnitSummary(); renderUnitMarkers(); renderAbschnitte();
+  if (card) { const b = card.querySelector('b'); if (b) b.textContent = String(uTotal(u)); }
+}
+function setUnitStatus(u, id) {
+  if (u.status === id) return; const was = ustat(u.status).label; u.status = id; u.time = nowIso();
+  addJournal('Einheit ' + (u.name || '–') + ': Status ' + was + ' zu ' + ustat(id).label, true); renderUnits(); renderAbschnitte(); save('Status Einheit ' + u.name + ': ' + ustat(id).label);
+}
+function assignUnit(u, secId) {
+  if ((u.sectionId || null) === (secId || null)) return; u.sectionId = secId; addJournal('Einheit ' + (u.name || '–') + ' zugeteilt: ' + sectionName(secId), true);
+  renderUnits(); renderAbschnitte(); save('Einheit zugeteilt: ' + u.name);
+}
+function removeUnit(u) { state.units = state.units.filter(x => x !== u); renderUnits(); renderAbschnitte(); save('Einheit gelöscht: ' + u.name); }
+function addUnit(data) {
+  const u = Object.assign({ id: uid(), name: '', call: '', sym: null, f: 0, u: 0, h: 0, status: state.unitStatus[0].id, sectionId: null, task: '', note: '', lat: null, lng: null, time: nowIso() }, data);
+  state.units.push(u); addJournal('Einheit angelegt: ' + (u.name || '–') + ', Stärke ' + fmtStr(u), true); renderUnits(); renderAbschnitte(); save('Einheit angelegt: ' + (u.name || '–')); return u;
+}
+function unitItems(u) {
+  return [
+    { label: 'Status setzen', swatch: ustat(u.status).color, sub: state.unitStatus.map(x => ({ label: x.label, swatch: x.color, check: x.id === u.status, onclick: () => setUnitStatus(u, x.id) })) },
+    { label: 'Abschnitt zuteilen', sub: [{ label: 'ohne Abschnitt', check: !u.sectionId, onclick: () => assignUnit(u, null) }].concat(state.sections.filter(x => x.kind !== 'line').map(x => ({ label: x.name, check: x.id === u.sectionId, onclick: () => assignUnit(u, x.id) }))) },
+    { label: 'Stärke ändern…', onclick: async () => { const v = await askText('Stärke Führer/Unterführer/Helfer', (u.f || 0) + '/' + (u.u || 0) + '/' + (u.h || 0)); if (v == null) return; const m = v.split(/[\/ ,;]+/).map(x => Math.max(0, Math.round(+x || 0))); u.f = m[0] || 0; u.u = m[1] || 0; u.h = m[2] || 0; renderUnits(); renderAbschnitte(); save('Stärke geändert: ' + u.name); } },
+    { label: 'Auftrag ändern…', onclick: async () => { const v = await askText('Auftrag', u.task || ''); if (v == null) return; u.task = v; renderUnits(); save('Auftrag geändert: ' + u.name); } },
+    { label: 'Umbenennen…', onclick: async () => { const v = await askText('Bezeichnung', u.name || ''); if (v == null) return; u.name = v.trim(); renderUnits(); renderAbschnitte(); save('Einheit umbenannt: ' + u.name); } },
+    { label: 'Zoom', onclick: () => map.setView([u.lat, u.lng], Math.max(map.getZoom(), 17)) },
+    { label: 'Duplizieren', onclick: () => addUnit(Object.assign({}, JSON.parse(JSON.stringify(u)), { id: uid(), name: (u.name || '') + ' (Kopie)', lat: u.lat + 0.0004, lng: u.lng + 0.0004, time: nowIso() })) },
+    { sep: true }, { label: 'Löschen', onclick: () => removeUnit(u) }
+  ];
+}
+function renderUnitStatList() {
+  const box = $('#uStatList'); if (!box) return; box.replaceChildren();
+  state.unitStatus.forEach((st, i) => box.append(el('div', { class: 'row' },
+    el('input', { type: 'color', value: safeColor(st.color), style: 'width:34px;padding:0', onchange: ev => { st.color = ev.target.value; renderUnits(); save('Status geändert'); } }),
+    el('input', { type: 'text', value: st.label, onchange: ev => { st.label = ev.target.value.trim() || st.label; renderUnits(); save('Status umbenannt'); } }),
+    el('button', { class: 'btn small danger', text: 'Entfernen', disabled: state.unitStatus.length < 2 ? 'disabled' : null, onclick: () => { state.unitStatus.splice(i, 1); const f = state.unitStatus[0].id; state.units.forEach(u => { if (u.status === st.id) u.status = f; }); renderUnits(); save('Status entfernt'); } }))));
+}
+function initKraefte() {
+  const upd = () => { $('#uSum').textContent = String((+$('#uF').value || 0) + (+$('#uU').value || 0) + (+$('#uH').value || 0)); };
+  ['#uF', '#uU', '#uH'].forEach(i => $(i).addEventListener('input', upd));
+  $('#uSymBtn').onclick = async () => { const v = await pickSymbol(uDraft.sym); if (v === undefined) return; uDraft.sym = v; const r = symOf(v); $('#uSymPrev').replaceChildren(v ? el('img', { src: r.url, alt: '', style: 'height:34px;vertical-align:middle' }) : 'kein Zeichen'); };
+  const make = place => {
+    const name = $('#uName').value.trim(); if (!name) { $('#uName').focus(); say('Bitte eine Bezeichnung eintragen.', 3000); return; }
+    const u = addUnit({ name, call: $('#uCall').value.trim(), sym: uDraft.sym, f: +$('#uF').value || 0, u: +$('#uU').value || 0, h: +$('#uH').value || 0, status: $('#uStatus').value, sectionId: $('#uSect').value || null });
+    ['#uName', '#uCall', '#uF', '#uU', '#uH'].forEach(i => { $(i).value = ''; }); upd(); uDraft.sym = null; $('#uSymPrev').textContent = 'kein Zeichen gewählt';
+    if (place) { stopDraw(); runtime.mode = { type: 'unitloc', id: u.id }; map.getContainer().style.cursor = 'crosshair'; say('Ort der Einheit anklicken. Esc bricht ab.'); }
+  };
+  $('#uAdd').onclick = () => make(false); $('#uPlace').onclick = () => make(true);
+  ['#uFltStatus', '#uFltSect'].forEach(i => $(i).addEventListener('change', renderUnits)); $('#uFltText').addEventListener('input', renderUnits);
+  $('#uStatAdd').onclick = () => { state.unitStatus.push({ id: 's' + uid(), label: 'neuer Status', color: '#7c3aed' }); renderUnits(); save('Status hinzugefügt'); };
+}
+
+/* Abschnitte-Reiter */
+function secTotals(sx) { const us = state.units.filter(u => u.sectionId === sx.id); return { us, f: us.reduce((a, u) => a + (u.f || 0), 0), u: us.reduce((a, u) => a + (u.u || 0), 0), h: us.reduce((a, u) => a + (u.h || 0), 0) }; }
+function renderAbschnitte() {
+  const box = $('#abList'); if (!box) return; const active = document.activeElement;
+  if (active && box.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) return;   // nicht mitten im Tippen neu aufbauen
+  box.replaceChildren();
+  const secs = state.sections.filter(x => x.kind !== 'line');
+  if (!secs.length) box.append(el('div', { class: 'hint', text: 'Noch kein Abschnitt.' }));
+  secs.forEach(sx => {
+    const t = secTotals(sx), fld = (key, ph, label) => el('label', { class: 'hint' }, label, el('input', { type: 'text', value: sx[key] || '', placeholder: ph, style: 'width:100%', onchange: ev => { sx[key] = ev.target.value.trim(); save('Abschnitt ' + sx.name + ': ' + label + ' geändert'); } }));
+    const free = state.units.filter(u => !u.sectionId);
+    const add = el('select', { 'aria-label': 'Einheit zuteilen' }, el('option', { value: '', text: 'Einheit zuteilen…' }), ...free.map(u => el('option', { value: u.id, text: (u.name || 'Einheit') + ' (' + fmtStr(u) + ')' })));
+    add.addEventListener('change', ev => { const u = state.units.find(x => x.id === ev.target.value); if (u) assignUnit(u, sx.id); });
+    const card = el('div', { class: 'card', 'data-sid': sx.id, style: '--c:' + safeColor(sx.color, '#e11d48') },
+      el('input', { type: 'text', class: 'title', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) }),
+      el('div', { class: 'row' }, fld('leader', 'Name, Funktion', 'Abschnittsleiter'), fld('deputy', 'Name', 'Stellvertreter')),
+      el('div', { class: 'row' }, fld('radio', 'Rufname oder Kanal', 'Funk')),
+      el('label', { class: 'hint' }, 'Auftrag', el('textarea', { rows: '2', onchange: ev => { sx.task = ev.target.value; save('Abschnitt ' + sx.name + ': Auftrag geändert'); } })),
+      el('div', { class: 'hint', text: t.us.length + ' Einheiten, Stärke ' + t.f + '/' + t.u + '/' + t.h + '/' + (t.f + t.u + t.h) }),
+      ...t.us.map(u => el('div', { class: 'row' }, el('img', { class: 'uimg', src: unitSym(u).url, alt: '', style: 'width:34px;height:28px;object-fit:contain' }), el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) }),
+        el('span', { class: 'chip', style: 'margin-left:auto' }, el('span', { class: 'dot', style: 'background:' + safeColor(ustat(u.status).color) }), ustat(u.status).label),
+        el('button', { class: 'btn small', text: 'Entlassen', onclick: () => assignUnit(u, null) }))),
+      add,
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', disabled: sx.pts && sx.pts.length > 1 ? null : 'disabled', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) }),
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeSection(sx) })));
+    card.querySelector('textarea').value = sx.task || ''; box.append(card);
+  });
+  if (runtime.viewer) lockViewer(box);
+}
+function initAbschnitte() {
+  $('#abAdd').onclick = () => {
+    const name = $('#abName').value.trim(); if (!name) { $('#abName').focus(); return; }
+    state.sections.push({ id: uid(), kind: 'poly', name, color: PAL[state.sections.length % PAL.length], pts: [] }); $('#abName').value = '';
+    addJournal('Abschnitt angelegt: ' + name, true); renderSections(); renderUnits(); renderAbschnitte(); save('Abschnitt angelegt: ' + name);
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Meldungen, Lagestände, Rückblick                                    */
+/* ------------------------------------------------------------------ */
+const MSG_KINDS = ['Meldung', 'Befehl', 'Auftrag', 'Anfrage', 'Information'];
+const MSG_DIR = { ein: 'Eingang', aus: 'Ausgang', intern: 'intern' };
+const MSG_STAT = { neu: 'neu', bearb: 'in Bearbeitung', erl: 'erledigt' };
+const MSG_WAY = ['', 'Funk', 'Telefon', 'Bote', 'E-Mail', 'mündlich'];
+function addMessage(d) {
+  const m = Object.assign({ id: uid(), nr: ++state.msgSeq, time: nowIso(), dir: 'ein', kind: 'Meldung', from: '', to: '', text: '', prio: 2, status: 'neu', way: '', sign: '', dist: '', quit: '', ref: '', hist: [] }, d);
+  m.hist = [{ time: m.time, status: m.status, by: state.author || '' }]; state.messages.unshift(m);
+  addJournal('Nachricht Nr. ' + m.nr + ' (' + MSG_DIR[m.dir] + ', ' + m.kind + '): ' + (m.from || '–') + ' an ' + (m.to || '–') + (m.ref ? ', Bezug ' + m.ref : ''), true);
+  renderMessages(); persist(); return m;
+}
+function setMessageStatus(m, st) {
+  if (m.status === st) return; m.status = st; m.hist.push({ time: nowIso(), status: st, by: state.author || '' });
+  addJournal('Nachricht Nr. ' + m.nr + ': ' + MSG_STAT[st], true); renderMessages(); persist();
+}
+function renderMessages() {
+  const box = $('#mList'); if (!box) return;
+  const fd = $('#mFDir').value, fs = $('#mFStat').value, q = $('#mFText').value.trim().toLowerCase();
+  const rows = state.messages.filter(m => (!fd || m.dir === fd) && (!fs || (fs === 'offen' ? m.status !== 'erl' : m.status === fs)) && (!q || (m.text + ' ' + m.from + ' ' + m.to + ' ' + m.ref + ' ' + m.nr).toLowerCase().includes(q)));
+  $('#mInfo').textContent = rows.length + ' von ' + state.messages.length + ' Nachrichten, ' + state.messages.filter(m => m.status !== 'erl').length + ' nicht erledigt';
+  box.replaceChildren();
+  rows.forEach(m => {
+    const sel = el('select', { 'aria-label': 'Bearbeitungsstand', onchange: ev => setMessageStatus(m, ev.target.value) }, Object.entries(MSG_STAT).map(([k, v]) => el('option', { value: k, text: v }))); sel.value = m.status;
+    box.append(el('div', { class: 'card mcard' + (m.status === 'erl' ? ' done' : ''), style: '--c:' + prioColor(m.prio) },
+      el('div', {}, el('b', { text: 'Nr. ' + m.nr + ' · ' + m.kind }), el('span', { class: 'meta', text: ' · ' + fmtTime(m.time) + ' · ' + MSG_DIR[m.dir] + ' · Prio ' + m.prio })),
+      el('div', { class: 'meta', text: 'von ' + (m.from || '–') + ' an ' + (m.to || '–') + (m.way ? ' · ' + m.way : '') + (m.ref ? ' · Bezug: ' + m.ref : '') }),
+      el('div', { text: m.text, style: 'white-space:pre-wrap;margin:4px 0' }),
+      (m.sign || m.dist || m.quit) ? el('div', { class: 'meta', text: [m.sign && 'Handzeichen ' + m.sign, m.dist && 'Verteiler ' + m.dist, m.quit && 'Quittung ' + m.quit].filter(Boolean).join(' · ') }) : null,
+      m.corrects ? el('div', { class: 'meta', text: 'Berichtigung zu Nr. ' + m.corrects }) : null, m.correctedBy ? el('div', { class: 'meta', text: 'berichtigt durch Nr. ' + m.correctedBy }) : null,
+      el('div', { class: 'row' }, sel, el('span', { class: 'hint', text: m.hist.length > 1 ? 'zuletzt ' + fmtTime(m.hist[m.hist.length - 1].time) : '' }),
+        !runtime.viewer && !m.correctedBy ? el('button', { class: 'btn small', text: 'Berichtigen', onclick: async () => { const v = await askText('Berichtigter Inhalt zu Nr. ' + m.nr, m.text); if (v == null || !v.trim() || v.trim() === m.text) return; const n = addMessage({ dir: m.dir, kind: m.kind, from: m.from, to: m.to, text: v.trim(), prio: m.prio, way: m.way, ref: m.ref, corrects: m.nr }); m.correctedBy = n.nr; renderMessages(); persist(); } }) : null)));
+  });
+  if (runtime.viewer) lockViewer(box);
+}
+function fillMsgRefs() {
+  const sel = $('#mRef'), cur = sel.value; sel.replaceChildren(el('option', { value: '', text: 'Kein Bezug' }),
+    ...state.sections.filter(x => x.kind !== 'line').map(x => el('option', { value: 'Abschnitt ' + x.name, text: 'Abschnitt: ' + x.name })), ...state.units.map(u => el('option', { value: 'Einheit ' + (u.name || ''), text: 'Einheit: ' + (u.name || '') })));
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  $('#roleList').replaceChildren(...state.roles.map(r => el('option', { value: r.label }))); 
+}
+function initMeldungen() {
+  $('#mKind').append(...MSG_KINDS.map(k => el('option', { value: k, text: k }))); $('#mWay').append(...MSG_WAY.map(w => el('option', { value: w, text: w || '– Weg –' })));
+  $('#mExtraOn').addEventListener('change', e => { state.msgExtra = e.target.checked; $('#mExtra').hidden = !e.target.checked; persist(); });
+  $('#mAdd').onclick = () => {
+    const text = $('#mText').value.trim(); if (!text) { $('#mText').focus(); return; }
+    addMessage({ dir: $('#mDir').value, kind: $('#mKind').value, from: $('#mFrom').value.trim(), to: $('#mTo').value.trim(), text, prio: prioNum($('#mPrio').value), ref: $('#mRef').value,
+      way: state.msgExtra ? $('#mWay').value : '', sign: state.msgExtra ? $('#mSign').value.trim() : '', dist: state.msgExtra ? $('#mDist').value.trim() : '', quit: state.msgExtra ? $('#mQuit').value.trim() : '' });
+    ['#mText', '#mSign', '#mDist', '#mQuit'].forEach(i => { $(i).value = ''; });
+  };
+  ['#mFDir', '#mFStat'].forEach(i => $(i).addEventListener('change', renderMessages)); $('#mFText').addEventListener('input', renderMessages);
+}
+/* Rollen (Sachgebiete) frei einstellbar */
+function renderRoles() {
+  const box = $('#roleEdit'); if (!box) return; box.replaceChildren();
+  state.roles.forEach((r, i) => box.append(el('div', { class: 'row' }, el('input', { type: 'text', value: r.label, onchange: ev => { r.label = ev.target.value.trim() || r.label; renderJournal(); fillMsgRefs(); persist(); } }),
+    el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.roles.splice(i, 1); renderRoles(); renderJournal(); fillMsgRefs(); persist(); } }))));
+}
+
+/* Lagestände */
+function standData() {
+  recomputeVisible(); const vis = {}; visiblePois().forEach(p => { if (p.manual || state.layerOn[p.layer]) vis[p.id] = p; });
+  const d = JSON.parse(snapshot()); d.pois = vis; d.weather = state.weather; d.layerOn = state.layerOn; d.unitStatus = state.unitStatus; return d;
+}
+const packStand = d => LZString.compressToUTF16(JSON.stringify(d));
+const unpackStand = z => JSON.parse(LZString.decompressFromUTF16(z));
+function standSummary() {
+  const c = { unbekannt: 0, intakt: 0, eingeschraenkt: 0, ausgefallen: 0 }; visiblePois().forEach(p => { if (state.layerOn[p.layer]) c[(state.objects[p.id] || {}).status || 'unbekannt']++; });
+  const ct = casTotals().t; return { obj: c, cas: ct, probOpen: state.problems.filter(x => x.status !== 'erledigt').length, units: state.units.length, strength: state.units.reduce((a, u) => a + uTotal(u), 0), msgOpen: state.messages.filter(m => m.status !== 'erl').length };
+}
+function takeStand(title, note) {
+  const st = { id: uid(), nr: ++state.standSeq, time: nowIso(), title: title || ('Lagestand ' + (state.standSeq)), note: note || '', by: state.author || '', sum: standSummary(), z: packStand(standData()) };
+  state.stands.unshift(st); addJournal('Lagestand Nr. ' + st.nr + ' festgehalten: ' + st.title, true); renderStands(); persist(); return st;
+}
+function storageInfo() { try { return JSON.stringify(state).length * 2; } catch (e) { return 0; } }
+function renderStands() {
+  const box = $('#stList'); if (!box) return; box.replaceChildren();
+  const mb = storageInfo() / 1048576; $('#stStore').textContent = 'Speicherbedarf der Lage im Browser: etwa ' + mb.toFixed(1).replace('.', ',') + ' MB von rund 5 MB.' + (mb > 3.5 ? ' Bald voll: Lage als Datei sichern (Reiter Daten).' : '');
+  if (!state.stands.length) box.append(el('div', { class: 'hint', text: 'Noch kein Lagestand festgehalten.' }));
+  state.stands.forEach(st => {
+    const o = st.sum.obj, c = st.sum.cas;
+    box.append(el('div', { class: 'card', style: '--c:#1e40af' },
+      el('div', {}, el('b', { text: 'Nr. ' + st.nr + ' · ' + st.title }), el('span', { class: 'hint', text: ' · ' + fmtTime(st.time) + (st.by ? ' · ' + st.by : '') })),
+      st.note ? el('div', { text: st.note, style: 'white-space:pre-wrap' }) : null,
+      el('div', { class: 'hint', text: 'Objekte: ' + o.ausgefallen + ' ausgefallen, ' + o.eingeschraenkt + ' eingeschränkt, ' + o.intakt + ' intakt · Verletzte ' + (c.verletzt + c.schwer) + ', Tote ' + c.tot + ', Betroffene ' + c.betroffen + ' · Probleme offen ' + st.sum.probOpen + ' · Einheiten ' + st.sum.units + ' (Stärke ' + st.sum.strength + ')' }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Anzeigen', onclick: () => enterReview(st) }), el('button', { class: 'btn small', text: 'Mit jetzt vergleichen', onclick: () => compareStand(st) }),
+        !runtime.viewer ? el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => { if (confirm('Lagestand Nr. ' + st.nr + ' endgültig löschen?')) { state.stands = state.stands.filter(x => x !== st); addJournal('Lagestand Nr. ' + st.nr + ' gelöscht', true); renderStands(); persist(); } } }) : null)));
+  });
+}
+function compareStand(st) {
+  let a; try { a = unpackStand(st.z); } catch (e) { say('Lagestand nicht lesbar.', 4000); return; }
+  const b = standData(), L = [], name = id => { const q = (b.pois && b.pois[id]) || (a.pois && a.pois[id]); return q ? poiTitle(q) : id; };
+  const ids = new Set([...Object.keys(a.objects || {}), ...Object.keys(b.objects || {})]);
+  ids.forEach(id => { const x = (a.objects[id] || {}).status || 'unbekannt', y = (b.objects[id] || {}).status || 'unbekannt'; if (x !== y) L.push('Objekt ' + name(id) + ': ' + STATUS[x].label + ' zu ' + STATUS[y].label); });
+  const sumPers = d => Object.fromEntries(Object.keys(CAS).map(k => [k, (d.casualties || []).filter(c => c.cat === k).reduce((q, c) => q + c.n, 0)]));
+  const pa = sumPers(a), pb = sumPers(b); Object.keys(CAS).forEach(k => { if (pa[k] !== pb[k]) L.push(CAS[k].label + ' (Einträge): ' + pa[k] + ' zu ' + pb[k]); });
+  const pm = new Map((a.problems || []).map(x => [x.id, x])); (b.problems || []).forEach(x => { const o = pm.get(x.id); if (!o) L.push('Problem neu: ' + x.title + ' (Prio ' + x.prio + ')'); else if (o.status !== x.status) L.push('Problem ' + x.title + ': ' + PSTAT[o.status] + ' zu ' + PSTAT[x.status]); }); (a.problems || []).forEach(x => { if (!(b.problems || []).some(y => y.id === x.id)) L.push('Problem entfernt: ' + x.title); });
+  const um = new Map((a.units || []).map(x => [x.id, x])); (b.units || []).forEach(x => { const o = um.get(x.id); if (!o) L.push('Einheit neu: ' + (x.name || '–') + ' (' + fmtStr(x) + ')'); else { if (o.status !== x.status) L.push('Einheit ' + x.name + ': Status ' + ((state.unitStatus.find(s => s.id === o.status) || {}).label || o.status) + ' zu ' + ustat(x.status).label); if ((o.sectionId || null) !== (x.sectionId || null)) L.push('Einheit ' + x.name + ': Abschnitt ' + sectionName(o.sectionId) + ' zu ' + sectionName(x.sectionId)); if (uTotal(o) !== uTotal(x)) L.push('Einheit ' + x.name + ': Stärke ' + fmtStr(o) + ' zu ' + fmtStr(x)); } });
+  (a.units || []).forEach(x => { if (!(b.units || []).some(y => y.id === x.id)) L.push('Einheit entfernt: ' + (x.name || '–')); });
+  const names = arr => new Set((arr || []).map(x => x.name)); const diffNames = (label, x, y) => { names(y).forEach(n => { if (!names(x).has(n)) L.push(label + ' neu: ' + n); }); names(x).forEach(n => { if (!names(y).has(n)) L.push(label + ' entfernt: ' + n); }); };
+  diffNames('Gebiet', a.areas, b.areas); diffNames('Abschnitt', a.sections, b.sections);
+  const wa = a.wind || {}, wb = b.wind || {}; if (wa.dir !== wb.dir || wa.speed !== wb.speed) L.push('Wind: ' + (wa.dir != null ? wa.dir + '° ' + wa.speed + ' m/s' : '–') + ' zu ' + (wb.dir != null ? wb.dir + '° ' + wb.speed + ' m/s' : '–'));
+  const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', { style: 'width:min(640px,94vw)' }, el('h3', { text: 'Änderungen seit Lagestand Nr. ' + st.nr + ' (' + fmtTime(st.time) + ')' }),
+    L.length ? el('ul', {}, L.slice(0, 200).map(x => el('li', { text: x }))) : el('p', { text: 'Keine Änderungen.' }), L.length > 200 ? el('p', { class: 'hint', text: (L.length - 200) + ' weitere Änderungen.' }) : null,
+    el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Schließen', onclick: () => dlg.remove() }))));
+  dlg.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); dlg.remove(); } }); dlg.addEventListener('mousedown', e => { if (e.target === dlg) dlg.remove(); });
+  document.body.append(dlg); dlg.querySelector('button').focus();
+}
+function enterReview(st) {
+  if (runtime.review) leaveReview();
+  let d; try { d = unpackStand(st.z); } catch (e) { say('Lagestand nicht lesbar.', 4000); return; }
+  const live = state; runtime.review = { id: st.id, live, hist: { past: hist.past, future: hist.future, cur: hist.cur }, viewerBefore: runtime.viewer };
+  const r = migrate(Object.assign(freshState(), d)); ['exercise', 'meeting', 'journal', 'messages', 'stands', 'roles', 'msgSeq', 'diarySeq', 'standSeq', 'author'].forEach(k => { r[k] = live[k]; });
+  r.pois = d.pois || {}; r.unitStatus = d.unitStatus || live.unitStatus;
+  runtime.viewer = true; document.body.classList.add('viewer', 'review'); applyState(r, true);
+  $('#reviewTxt').textContent = 'Rückblick auf Lagestand Nr. ' + st.nr + ' (' + st.title + ', ' + fmtTime(st.time) + '), nur Ansicht'; $('#reviewBar').classList.add('on');
+}
+function leaveReview() {
+  const r = runtime.review; if (!r) return; runtime.viewer = r.viewerBefore; runtime.review = null; document.body.classList.remove('review'); if (!runtime.viewerBefore) document.body.classList.remove('viewer');
+  applyState(r.live, false); hist.past = r.hist.past; hist.future = r.hist.future; hist.cur = r.hist.cur; updateUndoButtons(); $('#reviewBar').classList.remove('on');
+}
+function initStaende() {
+  $('#reviewBack').onclick = leaveReview;
+  $('#stTake').onclick = () => { takeStand($('#stTitle').value.trim(), $('#stNote').value.trim()); $('#stTitle').value = ''; $('#stNote').value = ''; };
+  $('#btnMeeting').onclick = () => {
+    const n = state.standSeq + 1; takeStand('Lagebesprechung ' + n, ''); state.meeting.lastIso = nowIso(); addJournal('Lagebesprechung begonnen (Lagestand Nr. ' + state.standSeq + ')', true); renderEinsatz(); persist();
+  };
+}
+
 /* Karte anklicken */
 map.on('click', e => {
   if (runtime.edit) { const b = runtime.edit.layer.getBounds ? runtime.edit.layer.getBounds().pad(0.03) : null; if (b && !b.contains(e.latlng)) finishEdit(true); return; }
@@ -2337,6 +2810,10 @@ map.on('click', e => {
   else if (runtime.mode === 'plume') { const m = $('#kMode').value; stopDraw(); addPlume(e.latlng, m); }
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
+  else if (runtime.mode && runtime.mode.type === 'unitloc') {
+    const un = state.units.find(x => x.id === runtime.mode.id); stopDraw();
+    if (un) { un.lat = e.latlng.lat; un.lng = e.latlng.lng; renderUnits(); save('Einheit gesetzt: ' + un.name); }
+  }
   else if (runtime.mode && runtime.mode.type === 'probloc') {
     const pr = state.problems.find(x => x.id === runtime.mode.id); stopDraw();
     if (pr) { pr.lat = e.latlng.lat; pr.lng = e.latlng.lng; renderProblems(); save('Problemort gesetzt: ' + pr.title); }
@@ -2423,6 +2900,7 @@ $('#btnLoad').onclick = () => { Object.keys(runtime.sector).forEach(k => { if (r
 $('#btnSecPoly').onclick = e => startDraw('polygon', 'section', e.currentTarget);
 $('#btnSecLine').onclick = e => startDraw('polyline', 'section', e.currentTarget);
 $('#btnJ').onclick = () => { const t = $('#jText').value.trim(); if (t) { addJournal(t); $('#jText').value = ''; } };
+$('#jBy').addEventListener('change', e => { state.author = e.target.value; persist(); }); $('#jFlt').addEventListener('input', renderJournal); $('#jAuto').addEventListener('change', renderJournal);
 $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ').click(); });
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
 $('#btnPrint').onclick = () => window.print();
@@ -2478,7 +2956,7 @@ $('#btnGeo').onclick = () => {
   visiblePois().forEach(p => { const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
     f.push({ type: 'Feature', properties: { art: 'objekt', osm: p.osm, sektor: SECTORS[l.sector].name, typ: l.name, name: poiTitle(p), status: o.status || 'unbekannt', ansprechpartner: o.contact || '', notiz: o.note || '' }, geometry: { type: 'Point', coordinates: [p.lng, p.lat] } }); });
   state.symbols.forEach(s => f.push({ type: 'Feature', properties: { art: 'taktisches_zeichen', zeichen: s.name, label: s.label }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] } }));
-  state.sections.forEach(s => f.push({ type: 'Feature', properties: { art: s.kind === 'line' ? 'linie' : 'abschnitt', name: s.name, farbe: s.color },
+  state.sections.filter(s => s.pts && s.pts.length > 1).forEach(s => f.push({ type: 'Feature', properties: { art: s.kind === 'line' ? 'linie' : 'abschnitt', name: s.name, farbe: s.color },
     geometry: s.kind === 'line' ? { type: 'LineString', coordinates: s.pts.map(p => [p[1], p[0]]) } : { type: 'Polygon', coordinates: [s.pts.concat([s.pts[0]]).map(p => [p[1], p[0]])] } }));
   download('lage-' + stamp() + '.geojson', JSON.stringify({ type: 'FeatureCollection', features: f }), 'application/geo+json');
 };
@@ -2489,7 +2967,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); histInit(); persist();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra; histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -2505,8 +2983,8 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz();
-renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz();
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
