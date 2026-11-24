@@ -1111,6 +1111,9 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 [data-theme="dark"] .leaflet-tile-pane { filter: none; }
 [data-theme="dark"] .leaflet-container { background: #0b1220; }
 @media print { [data-theme="dark"] body { background: #fff; color: #000; } }
+.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; cursor: help; }
+.notice.clamp { -webkit-line-clamp: 2; }
+.clamp.open { display: block; -webkit-line-clamp: unset; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -2144,10 +2147,12 @@ const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.2
 const baseLayers = {
   'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
   'Satellit (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
-  'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'bm-inv', attribution: '&copy; OpenStreetMap-Mitwirkende' }),
+  'Topografie (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
   'NRW Topografie (DTK)': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { className: 'bm-inv', layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
   'NRW Luftbild': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dop', { layers: 'nw_dop_rgb', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' })
 };
+// Die OSM-Server sperren Seiten ohne Referer (Datei vom Laufwerk geöffnet, Fehler 403). Die Ebene gibt es nur, wenn die Seite über http(s) kommt.
+if (/^https?:$/.test(location.protocol)) baseLayers['OpenStreetMap'] = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'bm-inv', attribution: '&copy; OpenStreetMap-Mitwirkende' });
 baseLayers['Straßenkarte (Esri)'].addTo(map);
 { // Ohne Kartenkacheln (kein Internet) bleibt die Lage benutzbar, nur der Hintergrund fehlt
   let ok = 0, bad = 0, warned = false;
@@ -3518,7 +3523,7 @@ function updateMeetingChip() {
   const c = $('#mtLine'); if (!c) return; const due = meetingDue();
   if (due == null) { c.hidden = true; } else {
     const d = due - nowMs(); c.hidden = false; c.classList.toggle('due', d < 0); c.classList.toggle('soon', d >= 0 && d < 5 * 60000);
-    c.textContent = 'Nächste Lagebesprechung ' + fmtHM(due) + (d >= 0 ? ' · in ' + fmtDur(d) : ' · überfällig ' + fmtDur(-d)); c.title = 'Nächste Lagebesprechung um ' + fmtHM(due) + ' Uhr. Klick auf die Uhr ändert den Termin.';
+    c.textContent = 'Nächste Lagebesprechung ' + fmtHM(due) + ' Uhr' + (d >= 0 ? ' · in ' + fmtDur(d) : ' · überfällig ' + fmtDur(-d)); c.title = 'Nächste Lagebesprechung um ' + fmtHM(due) + ' Uhr. Klick auf die Uhr ändert den Termin.';
   }
   if (document.activeElement !== $('#mtInt') && $('#tab-einsatz').classList.contains('active')) $('#mtInfo').textContent = meetingText();
 }
@@ -3730,6 +3735,21 @@ function popStatusText() {
   const idx = popIndex(), codes = Object.keys(idx); if (!codes.length) return 'Keine Bevölkerungsdaten gefunden.';
   const have = codes.filter(c => window.ZENSUS_PKG && (window.ZENSUS_PKG[c] || POP.pkg[c]));
   return have.length + ' von ' + codes.length + ' Bundesländern verfügbar' + (have.length < codes.length ? ' (nicht geladen: ' + codes.filter(c => !have.includes(c)).join(', ') + ')' : '') + '.';
+}
+/* Lange Hinweise im Seitenbereich werden gekürzt, der volle Text erscheint beim Darüberfahren (Klick klappt auf) */
+function tidyLong() {
+  document.querySelectorAll('#panel .hint, #panel .notice').forEach(n => {
+    if (n.closest('details') || n.querySelector('input,select,button,textarea')) return;
+    const t = (n.textContent || '').trim(), lim = n.classList.contains('notice') ? 100 : 52;
+    if (t.length > lim) { n.classList.add('clamp'); if (n.dataset.full !== t) { n.dataset.full = t; n.title = t + '\n(Klick: aufklappen)'; } }
+    else if (n.classList.contains('clamp')) { n.classList.remove('clamp', 'open'); n.removeAttribute('title'); delete n.dataset.full; }
+  });
+}
+function initTidy() {
+  let q = 0; const go = () => { cancelAnimationFrame(q); q = requestAnimationFrame(tidyLong); };
+  new MutationObserver(go).observe($('#panel'), { childList: true, subtree: true, characterData: true });
+  $('#panel').addEventListener('click', e => { const n = e.target.closest('.clamp'); if (n && !e.target.closest('a,button,input,select,textarea')) n.classList.toggle('open'); });
+  go();
 }
 function initPop() {
   const r = $('#popR'); r.value = state.popRadius || 300;
@@ -4359,7 +4379,7 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
