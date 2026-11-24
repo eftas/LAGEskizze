@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LAGEkarte</title>
+<script>window.IMG_URIS={"ghs/GHS02": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMCIgdmlld0JveD0iMCAwIDU3OSA1NzkiPjxwYXRoIGQ9Im0yNSAyOTAgMjY0IDI2NCAyNjQtMjY0TDI4OSAyNiAyNSAyOTB6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTE0OCAxNDggNiAyOTBsMTQyIDE0MSAxNDEgMTQyIDE0Mi0xNDIgMTQyLTE0MS0xNDItMTQyTDI4OSA2IDE0OCAxNDh6bTI2MSAyMiAxMTkgMTIwLTExOSAxMTktMTIwIDExOS0xMTktMTE5TDUxIDI5MGwxMTktMTIwTDI4OSA1MWwxMjAgMTE5eiIgZmlsbD0icmVkIi8+PHBhdGggZD0iTTI5MCAxMjFjLTE4IDM0IDMgNTMtMjAgMTAyLTEzLTEwLTYtNDctMzAtNDggMyAxMiAxIDE2IDAgMjAtMyAxNy04IDMxIDMgNTItMTctOC0xOC0yMy0zMi0zMyAzIDE2LTQgNDkgMTUgODEtMTctMi0yMy04LTQxLTI2IDE5IDEwMCAzNCAxMDMgMTA1IDEwOS02LTEtNDItNy01NS00OCAwLTEwLTEgOSAzNCAxMC0yMi0zNS0xNi0yOC0xNC00OCAxMCAxMyAyIDE1IDI3IDI1LTgtMjYgMTMtNDMgOC03MyA2IDEzIDI2IDExIDI1IDczIDE3LTE5IDE4LTYgMjYtMjYgMSAxMSA2IDI1LTE3IDQ5IDYgMiAxNiAzIDMxLTgtMTUgMTgtMSAxOC00MCA0NiA0OSAxIDgxLTMwIDgwLTk3LTIgNi0zIDE4LTI5IDIxIDE2LTE2IDI1LTQ5IDEyLTc1LTUgNC0xMiAyNC0yOSAyOSA4LTE0IDYtMzIgNi0zMnMzLTI1LTEyLTQ1Yy00IDMwLTQgNDYtMjMgNTAgMy0xNyA0LTI2LTYtNDYtMTAtMjEtMjItNDItMjQtNjJ6bS04MSAyNzR2MThoMTcxdi0xOEgyMDl6Ii8+PC9zdmc+", "ghs/GHS07": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1NzkwIDU3OTAiPjxwYXRoIGQ9Im0yNTMgMjg5NyAyNjQwIDI2NDAgMjY0MS0yNjQwYy04ODAtODgwLTE3NjAtMTc2Mi0yNjQwLTI2NDBMMjUzIDI4OTciIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJtNjAgMjg5NyAyODMzIDI4MzMgMjgzNC0yODM0TDI4OTQgNjMgNjAgMjg5N3ptNTIxOCAwTDI4OTMgNTI4MCA1MTAgMjg5NiAyODk0IDUxMmwyMzg0IDIzODQiIGZpbGw9InJlZCIvPjxwYXRoIGQ9Ik0yODkyIDE0MjhoLTIwYTQ3NSA0NzUgMCAwIDAtMzAxIDEyMSAyMjkgMjI5IDAgMCAwLTY0IDExM2MtMyAxMS0zIDE0LTMgMzVzMCAyNSAzIDM3YzIgMTQgMTk1IDEzMTQgMTk3IDEzMzZhMjEzIDIxMyAwIDAgMCAyMzkgMTgyIDIxMyAyMTMgMCAwIDAgMTgwLTE4MmMzLTI3IDE5NS0xMzI0IDE5OC0xMzM3IDItMTIgMi0xNiAyLTM1IDAtMjMgMC0zMS01LTQ3YTIzNCAyMzQgMCAwIDAtMTA2LTEzOCA0OTYgNDk2IDAgMCAwLTI5MS04NWgtMzB6bTIwIDIwMTFoLTEyYTMwMiAzMDIgMCAwIDAtMjQzIDE0MSAzMzggMzM4IDAgMCAwLTU1IDIzMiAzNDMgMzQzIDAgMCAwIDExNCAyMTggMzEwIDMxMCAwIDAgMCAxOTkgNzQgMzE2IDMxNiAwIDAgMCAyNTgtMTQxIDM0MSAzNDEgMCAwIDAgNTQtMjM0IDM5MCAzOTAgMCAwIDAtMzItMTEwIDMxNyAzMTcgMCAwIDAtMjgxLTE4MCIvPjwvc3ZnPg==", "ghs/GHS08": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIj8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNzI0IiB3aWR0aD0iNzI0IiB2aWV3Qm94PSIwIDAgOTE5IDkxOSI+PHBhdGggZmlsbD0iI2YwMCIgZD0ibTQ1OS41IDkwOS4zbDQ0OS44LTQ0OS44LTQ0OS44LTQ0OS44LTQ0OS44IDQ0OS44eiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Im00NTkuNSA4MzgtMzc4LjUtMzc4LjUgMzc4LjUtMzc4LjYgMzc4LjUgMzc4LjZ6Ii8+PHBhdGggZD0ibTQ2MS42IDE3MC4xYy01MyAwLTk2IDQ2LjMtOTYgMTAzLjQgMCAzNy4xIDEzLjg4IDg5LjIgNDAuOTQgMTIxLjFsLTMuMzEgMzMuODYtNzIuNiAyNi4zYzEuMTYgNS42NyA2LjE4IDkuOTMgMTIuMTggOS45MyAxLjA2IDAgMi4wOS0uMTUgMy4wNy0uNCAxLjM4IDUuMzYgNi4yMyA5LjMxIDEyIDkuMzEuNjEgMCAxLjIxLS4wNSAxLjgtLjE0IDEuNDIgNS4zIDYuMjQgOS4yMSAxMiA5LjIxIDEuNjkgMCAzLjMtLjM0IDQuNzctLjk1LjM5IDMuOTggMy43NiA3LjEgNy44NSA3LjEuOCAwIDEuNTgtLjEyIDIuMzEtLjM1IDEgNS44NSA2LjEgMTAuMzEgMTIuMjQgMTAuMzEgNC43OCAwIDguOTMtMi43IDExLTYuNjUgMi4wOSAxLjU5IDQuNjkgMi41NCA3LjUxIDIuNTQgMS44MyAwIDMuNTctLjQxIDUuMTMtMS4xMiAxLjYyIDMuNDQgNC42MyA2LjA5IDguMjkgNy4yMy0uMTQuNDUtLjI1LjkzLS4yNSAxLjQzIDAgMi41MyAyLjA1IDQuNTcgNC41NyA0LjU3czQuNTctMi4wNCA0LjU3LTQuNTdjMC0uNTYtLjExLTEuMDktLjMtMS41OSA1LjMzLTEuODcgOS4xNi02LjkzIDkuMTYtMTIuOSAwLTIuNzMtLjgxLTUuMjctMi4xOS03LjQgMi4yNC0uMyAzLjk2LTIuMTkgMy45Ni00LjUxIDAtMS45Ny0xLjI1LTMuNjQtMy00LjI3IDEuOS0yLjE5IDMuMDctNSAzLjA3LTguMTcgMC0uNTktLjA2LTEuMTgtLjE0LTEuNzUgNC42OS0xLjc4IDgtNi4zMSA4LTExLjYyIDAtMy4zMi0xLjMyLTYuMzItMy40NC04LjU1LjM5LjExLjc5LjE5IDEuMjEuMTkgMi41MiAwIDQuNTYtMi4wNSA0LjU2LTQuNTcgMC0yLjUzLTIuMDQtNC41Ny00LjU2LTQuNTctMSAwLTEuOTIuMzMtMi42OC44OC0uOTEtMS43LTIuNTYtMi45My00LjUyLTMuMjUgMS41NC0yLjUyIDIuNDQtNS40NiAyLjQ0LTguNjMgMC0yLjA1LS4zOS00LTEuMDctNS44MiA0LjcxLTEuNzYgOC4xLTYuMyA4LjEtMTEuNjIgMC0zLjExLTEuMTQtNS45NC0zLTguMTIgMy40NS0xLjE0IDUuOTQtNC4zOSA1Ljk0LTguMjMgMC0zLjE1LTEuNjktNS45LTQuMi03LjQyIDEuMTgtMS40OCAxLjg4LTMuMzQgMS44OC01LjM4IDAtLjUyLS4wNS0xLjAzLS4xNC0xLjUyIDEuOC0uMDkgMy40Ni0uNyA0LjgyLTEuNzItLjExLjU0LS4xNiAxLjA4LS4xNiAxLjY0IDAgMy4wOCAxLjYgNS43OCA0IDcuMzItLjQ4IDEuMzItLjc1IDIuNzQtLjc1IDQuMjIgMCA1LjA3IDMgOS40MSA3LjM2IDExLjM1LS40IDEuNDItLjYzIDIuOTItLjYzIDQuNDYgMCA1LjI2IDIuNDggOS45NCA2LjMzIDEyLjk0LTMuMzcgMS40Ny01LjczIDQuODMtNS43MyA4Ljc0czIuMzUgNy4yNiA1LjcxIDguNzRjLS42NyAxLjE2LTEuMDYgMi41MS0xLjA2IDMuOTUgMCAzLjE2IDEuODUgNS44NyA0LjUzIDcuMTMtLjc3IDEuOTEtMS4yIDMuOTktMS4yIDYuMTcgMCAyLjYyLjYzIDUuMSAxLjczIDcuMy0uNTMuNi0xIDEuMjItMS40NSAxLjg5LS44My0uODQtMS45OC0xLjM2LTMuMjUtMS4zNi0yLjUyIDAtNC41NyAyLjA0LTQuNTcgNC41NyAwIDIuNTIgMi4wNSA0LjU2IDQuNTcgNC41Ni4yMiAwIC40Mi0uMDMuNjMtLjA2LS4wMy40Mi0uMDYuODQtLjA2IDEuMjcgMCAzLjE3LjkxIDYuMTEgMi40NiA4LjYyLTEuMzMgMi41Mi0yLjA5IDUuMzktMi4wOSA4LjQ0IDAgNC42OCAxLjc4IDguOTIgNC42NyAxMi4xNC0uOCAxLjMtMS4yNyAyLjgyLTEuMjcgNC40NiAwIDQuNjcgMy43OCA4LjQ2IDguNDYgOC40NiA0LjE2IDAgNy42MS0zIDguMzItNi45NiAyLjI5LS4yNSA0LjQ0LS45MiA2LjM5LTEuOTMgMSAyLjE3IDMuMiAzLjY5IDUuNzUgMy42OSAzLjUxIDAgNi4zNS0yLjg0IDYuMzUtNi4zNSAwLTIuNjUtMS42NC00LjkyLTMuOTUtNS44Ny42NC0xLjM4IDEuMS0yLjg3IDEuMzgtNC40MSAxLjM3LjM3IDIuOC41OCA0LjI5LjU4LjE4IDAgLjM3LS4wMi41Ni0uMDIgMS4xMSAyLjg2IDMuODkgNC44OCA3LjE1IDQuODggMi41IDAgNC43Mi0xLjIgNi4xMi0zLjA2Ljc5IDIuODggMy40MiA1IDYuNTYgNSAyLjM3IDAgNC40Ni0xLjIyIDUuNjgtMy4wNyAxLjMyLjgxIDIuODYgMS4yOSA0LjUzIDEuMjkgNC43OSAwIDguNjctMy44OSA4LjY3LTguNjggMC0xLjYtLjQ0LTMuMDktMS4yLTQuMzguNjYuMjIgMS4zNy4zMyAyLjA5LjMzIDMuNzYgMCA2LjgxLTMuMDQgNi44MS02LjggMC0uMzItLjAzLS42My0uMDgtLjk0IDEuNDUgMi43OSA0LjM1IDQuNjkgNy43MSA0LjY5IDQuNzMgMCA4LjU3LTMuNzggOC42Ni04LjQ5IDIuMjYtMS40IDMuODQtMy44MSA0LjA5LTYuNi40NC4xNS45LjI0IDEuMzkuMjQgMi41MiAwIDQuNTctMi4wNCA0LjU3LTQuNTcgMC0uNTItLjA5LTEuMDMtLjI2LTEuNWwtNi45NC0yLjIzLTcyLjUtMjMuMzQtLjI5LTMwLjk1YzExLTExLjg0IDE5LjU5LTI3LjEgMjUuODEtNDMuNjkgMTEuNzgtMzEuNCAxOC4xLTY0LjYgMTguMS04MS45OCAwLTQ1LTQzLTEwMy40LTk2LTEwMy40em0tMTQ4LjYgMjkxLjljLTEuMjUgMC0yLjQyLjM2LTMuNDEuOTctMTcuMjUgNi42MS0zMS41NyAxMi4xLTM3IDE0LjMtMTIuMTcgNC44Ni0yMS4yIDE3Ljg3LTIxLjIgMzAuNzZ2NDEuNTRsNjcuMyA2OC4zYy42OC4xNSAxLjQuMjIgMi4xMy4yMiAzLjczIDAgNi45OS0yLjAzIDguNzMtNSAxLjM1LjUxIDIuODIuOCA0LjM1LjggNi44NyAwIDEyLjQ0LTUuNTcgMTIuNDQtMTIuNDQgMC0uNDktLjA0LS45OC0uMDktMS40NSAxLjg0IDIuMjggNC42NiAzLjc0IDcuODMgMy43NCA1LjU2IDAgMTAuMS00LjUxIDEwLjEtMTAuMSAwLTEuNTEtLjM0LTIuOTMtLjkzLTQuMjEgMi0uNzEgMy43NC0yLjA0IDQuOTQtMy43NiAxLjI4IDEuMzEgMy4wNiAyLjEyIDUgMi4xMiAzLjg5IDAgNy4xLTMuMTYgNy4xLTcgMC0yLjAzLS44Ni0zLjg1LTIuMjMtNS4xNCAyLjU4LTEuMjUgNC41NC0zLjU3IDUuMzEtNi4zOSAxLjYyIDEuNzggMy44NyAyLjk4IDYuMzkgMy4yNC0xIDEuMjMtMS42MyAyLjgtMS42MyA0LjUyIDAgMy44OSAzLjE2IDcgNy4xIDdzNy4xLTMuMTYgNy4xLTdjMC0zLjE5LTIuMTItNS44OC01LTYuNzUgMi4yNC0xLjg1IDMuNjctNC42NSAzLjY3LTcuNzggMC0uOTMtLjEzLTEuODEtLjM3LTIuNjYuMzEuMDIuNjIuMDQuOTMuMDQgMS40MiAwIDIuNzctLjI5IDMuOTktLjgyLjExIDIuNzEgMi4zMiA0Ljg4IDUuMDYgNC44OCAyLjggMCA1LjA4LTIuMjggNS4wOC01LjA4IDAtMi43NC0yLjE3LTQuOTUtNC44OS01LjA2LjUzLTEuMjIuODMtMi41Ny44My0zLjk5IDAtLjg3LS4xMy0xLjctLjM0LTIuNSAyLjUzIDAgNC41OC0yLjA0IDQuNTgtNC41NyAwLTIuNTItMi4wNS00LjU2LTQuNTgtNC41Ni0uMTMgMC0uMjUuMDItLjM4LjAzLS4yNi0zLjgtMi4yMi03LjEzLTUuMTMtOS4yMy4wMDEtLjI5LjA0LS41OC4wNC0uODggMC02Ljg3LTUuNTctMTIuNDMtMTIuNDQtMTIuNDMtMi4zOSAwLTQuNjIuNjgtNi41MSAxLjg2LjI3LS43Mi40Mi0xLjUuNDItMi4zMSAwLTMuNi0yLjkxLTYuNTItNi41MS02LjUyLS42NSAwLTEuMjYuMS0xLjg1LjI3LjA5LS41OC4xNC0xLjE4LjE0LTEuNzggMC02Ljg3LTUuNTYtMTIuNDQtMTIuNDMtMTIuNDQtMi4xMyAwLTQuMTMuNTMtNS44OCAxLjQ3LTEuNTctMi41Ni00LTQuNS02Ljk3LTUuMzkuMzctLjgyLjU5LTEuNzQuNTktMi43IDAtMy42LTIuOTItNi41Mi02LjUyLTYuNTItLjg1IDAtMS42NS4xNy0yLjM5LjQ2LS4wNS02LjgzLTUuNTktMTIuMzUtMTIuNDMtMTIuMzUtMS4xMSAwLTIuMTcuMTYtMy4xOS40My0uOTktMi4zMy0zLjMtMy45Ny02LTMuOTctMS41OSAwLTMuMDQuNTctNC4xNyAxLjUyLS40NC0zLjE4LTMuMTUtNS42My02LjQ1LTUuNjNtMzA0LjMgMS40NmMtMy4wNi4yNC01LjU1IDIuNDktNi4xNCA1LjQ0LS45My0uNDgtMS45OC0uNzUtMy4xLS43NS0zLjc2IDAtNi44IDMuMDQtNi44IDYuOCAwIC4zNy4wMy43My4wOSAxLjA4LTIuMDctMS41NC00LjYzLTIuNDYtNy40MS0yLjQ2LTYuODcgMC0xMi40NCA1LjU2LTEyLjQ0IDEyLjQzdi4wNmMtMS4yNi0uMy0yLjU3LS40OS0zLjkzLS40OS05LjEgMC0xNi40MSA3LjM1LTE2LjQxIDE2LjQyIDAgLjg1LjA4IDEuNjguMjEgMi41LS45Ny0uNDMtMi4wNC0uNjctMy4xNi0uNjctMi41OSAwLTQuODggMS4yNi02LjMyIDMuMTgtMS40OS0uNDktMy4wNy0uNzYtNC43Mi0uNzYtOC4wOSAwLTE0LjY3IDYuMzktMTUgMTQuNC0uNTItLjExLTEuMDUtLjE2LTEuNi0uMTYtNC4zNSAwLTcuODggMy41My03Ljg4IDcuODggMCAxLjMzLjMzIDIuNTcuOSAzLjY3LTEuMjUtLjcxLTIuNy0xLjEyLTQuMjQtMS4xMi00Ljc5IDAtOC42OCAzLjg5LTguNjggOC42OCAwIDIuNSAxLjA3IDQuNzUgMi43NiA2LjMzdi4wOGMtMiAuMi0zLjY4IDEuNTUtNC4zMiAzLjM5LS4yNi41Ny0uNCAxLjItLjQgMS44NiAwIDEuNi44MyAzIDIuMDggMy44My44Ny42NyAxLjk0IDEuMDggMy4xMiAxLjA4IDIuMTggMCA0LTEuMzcgNC43Ni0zLjI5IDEuMTguNjQgMi41MyAxIDMuOTcgMSAuNjUgMCAxLjI4LS4wOCAxLjg5LS4yMi0uMDUuNTItLjA4IDEuMDUtLjA4IDEuNTkgMCAxLjk4LjM5IDMuODcgMS4wOSA1LjYxLTIuOC42Ni00Ljg5IDMuMTYtNC44OSA2LjE2IDAgLjkzLjIgMS44LjU2IDIuNTkuOSAyLjI5IDMuMTIgMy45MiA1LjczIDMuOTIgMi4xNyAwIDQuMDYtMS4xMiA1LjE2LTIuOC40MS0uNTguNzQtMS4yMS45NS0xLjkgMS45NS45MyA0LjEzIDEuNDYgNi40NCAxLjQ2LjcyIDAgMS40MS0uMDcgMi4xLS4xNi0uNDEgMS4wOS0uNjQgMi4yNy0uNjQgMy41MSAwIDEuNjMuNCAzLjE2IDEuMDkgNC41Mi0uMzItLjA2LS42NS0uMS0uOTktLjEtMi44IDAtNS4wOCAyLjI3LTUuMDggNS4wOCAwIDIuOCAyLjI4IDUuMDggNS4wOCA1LjA4IDIuNTMgMCA0LjYxLTEuODYgNC45OS00LjI4IDEuMzcgNS4zOCA2LjI0IDkuMzYgMTIgOS4zNiAyLjYxIDAgNS0uOCA3LTIuMTcuNiA0Ljk5IDQuODUgOC44NiAxMCA4Ljg2IDIuNjIgMCA1LTEgNi44LTIuNjYtLjAyLjMtLjA1LjYxLS4wNS45MiAwIDYuODYgNS41NyAxMi40MyAxMi40NCAxMi40MyAyLjM1IDAgNC41NC0uNjYgNi40Mi0xLjgtLjk0IDEuMjgtMS41IDIuODYtMS41IDQuNTcgMCA0LjI5IDMuNDcgNy43NiA3Ljc1IDcuNzYgMi41OSAwIDQuODgtMS4yOCA2LjI5LTMuMjJsNjcuMy02MS45OXYtNDUuNGMwLTEzLjc3LTE0LjgyLTMwLjk4LTMyLjc0LTM3LjEtNC0xLjM3LTMwLjU2LTEwLTMwLjU2LTEwbS0xNTMuNCA2Yy0zLjUxIDAtNi4zNSAyLjg0LTYuMzUgNi4zNSAwIDIuNDIgMS4zNyA0LjUgMy4zNyA1LjU3LTEuOTEuNTUtMy4zMSAyLjI5LTMuMzEgNC4zNyAwIDIuNTMgMi4wNSA0LjU3IDQuNTcgNC41N3M0LjU3LTIuMDQgNC41Ny00LjU3YzAtMS41Mi0uNzUtMi44Ni0xLjktMy42OSAzLjA1LS40NiA1LjM5LTMuMDcgNS4zOS02LjI1IDAtMy41MS0yLjg0LTYuMzUtNi4zNC02LjM1bS0yMi43IDUuODlsLS4wMy4yNy0uMzItLjE3Yy4xMi0uMDMuMjQtLjA3LjM1LS4xbTEzLjc4IDIxLjYxYy0yLjUzIDAtNC41NyAyLjA1LTQuNTcgNC41N3MyLjA0IDQuNTcgNC41NyA0LjU3YzIuNTIgMCA0LjU3LTIuMDUgNC41Ny00LjU3cy0yLjA1LTQuNTctNC41Ny00LjU3bS00Mi4xIDQuODZjLTMuNiAwLTYuNTIgMi45Mi02LjUyIDYuNTJzMi45MiA2LjUxIDYuNTIgNi41MSA2LjUyLTIuOTEgNi41Mi02LjUxLTIuOTItNi41Mi02LjUyLTYuNTJtNzMuODYgMTEuNThjLTIuODEgMC01LjEgMi4yOS01LjEgNS4xIDAgMi44MiAyLjI5IDUuMTEgNS4xIDUuMTEuNDEgMCAuODEtLjA2IDEuMTgtLjE2LjE5IDMuNiAzLjE1IDYuNDYgNi43OSA2LjQ2LjUgMCAuOTgtLjA2IDEuNDUtLjE2IDMuMTYtLjM2IDUuNjItMyA1LjYyLTYuMjcgMC0xLjE2LS4zMy0yLjIzLS44Ny0zLjE3LTEuMDctMi4zNi0zLjQ0LTQtNi4yLTQtMS4xMiAwLTIuMTcuMjctMy4xLjc1LS42My0yLjEtMi41Ni0zLjY1LTQuODctMy42NW0tNzAuODUgMTEuNjdjLTIuNTMgMC00LjU3IDIuMDUtNC41NyA0LjU3IDAgMi41MyAyLjA0IDQuNTcgNC41NyA0LjU3Ljk2IDAgMS44Ni0uMyAyLjYtLjgyLjE3IDMuMzYgMi45MSA2IDYuMzEgNiAzLjUxIDAgNi4zNS0yLjg0IDYuMzUtNi4zNSAwLTMuNS0yLjg0LTYuMzQtNi4zNS02LjM0LTEuNzUgMC0zLjMzLjcxLTQuNDggMS44NS0uNDgtMi0yLjI4LTMuNTEtNC40My0zLjUxbTg5IDMyLjUxYy0zLjc2IDAtNi44IDMuMDQtNi44IDYuOCAwIC44Ni4xNiAxLjY4LjQ1IDIuNDQtMi40Ni4zNC00LjM3IDIuNDQtNC4zNyA1IDAgLjcyLjE2IDEuNC40MyAyIC43MSAxLjc5IDIuNDUgMy4wNyA0LjUgMy4wN2guMTNjMi44MiAwIDUuMS0yLjI4IDUuMS01LjA4IDAtLjIzLS4wNC0uNDUtLjA3LS42Ny4yMS4wMi40Mi4wMy42My4wMyAzLjc2IDAgNi44LTMuMDQgNi44LTYuOHMtMy4wNC02LjgtNi44LTYuOG0tNTMuMyA4LjU4Yy0zLjUxIDAtNi4zNSAyLjg1LTYuMzUgNi4zNSAwIDMuNTEgMi44NCA2LjM1IDYuMzUgNi4zNSAzLjUgMCA2LjM0LTIuODQgNi4zNC02LjM1IDAtMy41LTIuODQtNi4zNS02LjM0LTYuMzVtLTM3IC45M2MtMi44IDAtNS4wOCAyLjI3LTUuMDggNS4wOCAwIDIuOCAyLjI4IDUuMDcgNS4wOCA1LjA3czUuMDctMi4yNyA1LjA3LTUuMDdjMC0yLjgxLTIuMjctNS4wOC01LjA3LTUuMDhtNy40NCAxMy43OGMtMy44OSAwLTcuMSAzLjE2LTcuMSA3IDAgMy41NCAyLjYxIDYuNDYgNiA2Ljk3LS4wMi4yNi0uMDUuNTItLjA1Ljc5LTIuMTYtMS43OC00LjkyLTIuODYtNy45NC0yLjg2LTQuNTIgMC04LjQ3IDIuNDMtMTAuNjUgNi0xLjg0LTIuMDMtNC40OS0zLjMxLTcuNDUtMy4zMS00LjcgMC04LjY0IDMuMjItOS43NSA3LjU4LTEuNjItMS4xMS0zLjU3LTEuNzUtNS42OC0xLjc1LTUuNTYgMC0xMC4xIDQuNS0xMC4xIDEwLjEgMCAuNzguMDkgMS41My4yNiAyLjI2LTIuNjctMi40My02LjIxLTMuOTMtMTAuMS0zLjkzLTYuMjEgMC0xMS41MyAzLjc2LTEzLjgzIDkuMTItMS42Mi0xLjEtMy41Ny0xLjc1LTUuNjgtMS43NS01LjU2IDAtMTAuMSA0LjUtMTAuMSAxMC4xIDAgLjgxLjEgMS42LjI4IDIuMzVsMTIyLjIgMTI0LjFjMS42LS42NyAyLjcyLTIuMjUgMi43Mi00LjA5IDAtMS43NC0xLjAyLTMuMjMtMi40OC0zLjk2IDEuNzMtLjYxIDIuOTgtMi4yMyAyLjk4LTQuMTcgMC0xLjgzLTEuMTEtMy40LTIuNjktNC4wOCAxLjU3LTEuMDMgMi42LTIuOCAyLjYtNC44MSAwLTIuNzUtMS45Mi01LTQuNDktNS42MiA1LjExLTMuNTMgOC40Ny05LjQyIDguNDctMTYuMSAwLTQuMTMtMS4yOC03Ljk1LTMuNDYtMTEuMSAzLjUyLTIuMiA1Ljg2LTYuMSA1Ljg2LTEwLjU1IDAtNS0yLjk4LTkuMzUtNy4yNy0xMS4zMSAxLjY5LTEuMjkgMi43OC0zLjMxIDIuNzgtNS42IDAtMi4zOS0xLjE5LTQuNS0zLTUuNzggMS4wMy0xLjIyIDEuNjQtMi43OSAxLjY0LTQuNTEgMC0zLjg5LTMuMTYtNy03LjEtNy0uNTkgMC0xLjE1LjA4LTEuNy4yMS43OS0xLjYzIDEuMjUtMy40NiAxLjI1LTUuNCAwLTEuODEtLjQtMy41My0xLjEtNS4wOCAzLjY2LS4yNiA2LjU0LTMuMyA2LjU0LTcgMC0zLTEuOTItNS42MS00LjYxLTYuNiAyLjYzLTIuMjggNC4zMS01LjY0IDQuMzEtOS40IDAtNC4zLTIuMTgtOC4wOS01LjUtMTAuMzIgMS45Mi0yLjE5IDMuMS01LjA2IDMuMS04LjIgMC0yLjc1LS45LTUuMjgtMi40Mi03LjM0IDEuOTYtLjcgMy4zNy0yLjU2IDMuMzctNC43NiAwLTIuOC0yLjI3LTUuMDgtNS4wOC01LjA4LTEuNzEgMC0zLjIyLjg2LTQuMTQgMi4xNi0yLjI3LTIuODEtNS43NS00LjYxLTkuNjUtNC42MS0xLjgzIDAtMy41NS40LTUuMTEgMS4xLTEuMTktMi4yMS0zLjUzLTMuNzItNi4yMi0zLjcyem02OS4xIDIuMDNjLTQuNjcgMC04LjQ2IDMuNzktOC40NiA4LjQ2IDAgMS40NC4zNyAyLjggMSAzLjk4LTEuMjItMS0yLjc4LTEuNjEtNC40OC0xLjYxLTMuOSAwLTcuMSAzLjE1LTcuMSA3IDAgMy4zNSAyLjM0IDYuMTUgNS40OCA2Ljg2LS45MiAxLjc0LTEuNDUgMy43MS0xLjQ1IDUuODEgMCA0IDEuOTMgNy42MSA0LjkxIDkuODgtMS4xNCAyLjEyLTEuNzkgNC41NC0xLjc5IDcuMTEgMCAzLjk5IDEuNTYgNy42MSA0LjEgMTAuMy0uODMgMS44Ny0xLjMgMy45My0xLjMgNi4xIDAgLjg0LjA5IDEuNjYuMjIgMi40Ni0xLjAyLS43LTIuMjMtMS4xNi0zLjU0LTEuMjUuODYtMS4xNyAxLjM4LTIuNjEgMS4zOC00LjE3IDAtMy45LTMuMTYtNy03LjEtNy0zLjkgMC03LjEgMy4xNS03LjEgNyAwIDEuODcuNzIgMy41NiAxLjkxIDQuODItMi45NS44NC01LjEyIDMuNTYtNS4xMiA2Ljc4IDAgMy44OSAzLjE2IDcgNy4xIDcgLjIyIDAgLjQzLS4wNC42NS0uMDYtMS4zIDIuMjItMi4wNiA0LjgxLTIuMDYgNy41NyAwIDUuMjUgMi42OSA5Ljg2IDYuNzYgMTIuNTUtNS4zOCAyLjI5LTkuMTYgNy42My05LjE2IDEzLjg1IDAgNC41MSAxLjk5IDguNTUgNS4xNCAxMS4zMS0zLjI2IDIuMjQtNS40IDUuOTktNS40IDEwLjI0IDAgMS43NC4zNiAzLjM5IDEgNC44OS0uOTEgMS41MS0xLjQ0IDMuMjctMS40NCA1LjE2IDAgMi4xOC43MSA0LjIgMS44OSA1Ljg1LTEuMDIuODEtMS42OSAyLjA1LTEuNjkgMy40NiAwIDEuNTIuNzcgMi44NyAxLjk0IDMuNjctMS4yMi43OS0yIDIuMTUtMiAzLjcxIDAgLjI4LjAzLjU2LjA4LjgzLTEgLjgxLTEuNjggMi4wNC0xLjY4IDMuNDUgMCAxLjg0IDEuMTIgMy40MSAyLjcxIDQuMDlsMTMxLjctMTIxLjZjLjI2LS43NC40MS0xLjUzLjQxLTIuMzYgMC0zLjktMy4xNi03LTctNy0xLjIxIDAtMi4zNS4zMS0zLjM0Ljg0LTEuMjItNC4xOS01LjA5LTcuMjUtOS42Ny03LjI1LTEuOTggMC0zLjgxLjU4LTUuMzcgMS41Ni4wMi0uMjYuMDQtLjUxLjA0LS43NyAwLTYuODctNS41Ny0xMi40NC0xMi40NC0xMi40NC0xLjYxIDAtMy4xNC4zMi00LjU1Ljg4LS4xOC0zLjc0LTMuMjUtNi43Mi03LTYuNzItMy45IDAtNyAzLjE2LTcgNy4xIDAgLjMuMDIuNi4wNi44OS0xLjc3LTIuODgtNC45NS00LjgxLTguNTgtNC44MS0uNTggMC0xLjE0LjA2LTEuNjkuMTUtLjA4LTYuOC01LjYxLTEyLjI5LTEyLjQzLTEyLjI5LS43IDAtMS4zNy4wNy0yLjA0LjE4LS4zMy0zLjU4LTMuMzUtNi4zOC03LTYuMzgtMy4wNCAwLTUuNjIgMS45Mi02LjYyIDQuNjEtLjMxLS4wMi0uNjItLjA0LS45NC0uMDQtMS40MiAwLTIuNzkuMjEtNC4wOS41Ny0xLjIxLTMuMTktNC4yOS01LjQ3LTcuOTEtNS40N3ptLTI4LjIgMjcuNzNjLTIuODEgMC01LjA4IDIuMjgtNS4wOCA1LjA4IDAgMS41Mi42OCAyLjg2IDEuNzMgMy43OS0xLjM2IDEuMjgtMi4yMSAzLjEtMi4yMSA1LjEyIDAgMy44OSAzLjE2IDcgNy4xIDcgMy45IDAgNy4xLTMuMTYgNy4xLTcgMC0yLjg2LTEuNy01LjMxLTQuMTUtNi40Mi40Mi0uNzQuNjgtMS41OC42OC0yLjQ5IDAtMi44LTIuMjctNS4wOC01LjA3LTUuMDgiLz48L3N2Zz4=", "personen/betroffene": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+QmV0cm9mZmVuZSBQZXJzb248L3RpdGxlPjxkZWZzPjxnIGlkPSJvIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0zNiA4IDY0IDM2IDM2IDY0IDggMzZaIi8+PC9nPjwvZGVmcz48dXNlIGhyZWY9IiNvIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNyIvPjxwYXRoIGQ9Ik0zNiA4IDY0IDM2IDM2IDY0IDggMzZaIiBmaWxsPSIjZmZmIiBzdHJva2U9Im5vbmUiLz48dXNlIGhyZWY9IiNvIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==", "personen/gerettet": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+R2VyZXR0ZXRlIFBlcnNvbjwvdGl0bGU+PGRlZnM+PGcgaWQ9Im8iIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTM2IDggNjQgMzYgMzYgNjQgOCAzNloiLz48cGF0aCBkPSJNMjAgNjhINTIiIC8+PC9nPjwvZGVmcz48dXNlIGhyZWY9IiNvIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNyIvPjxwYXRoIGQ9Ik0zNiA4IDY0IDM2IDM2IDY0IDggMzZaIiBmaWxsPSIjZmZmIiBzdHJva2U9Im5vbmUiLz48dXNlIGhyZWY9IiNvIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==", "personen/sk1": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+U0sgSSwgYWt1dCBsZWJlbnNiZWRyb2hsaWNoIHZlcmxldHp0IChyb3QpPC90aXRsZT48ZGVmcz48ZyBpZD0ibyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMzYgOCA2NCAzNiAzNiA2NCA4IDM2WiIvPjxwYXRoIGQ9Ik0zNiA4VjY0Ii8+PC9nPjwvZGVmcz48dXNlIGhyZWY9IiNvIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNyIvPjxwYXRoIGQ9Ik0zNiA4IDY0IDM2IDM2IDY0IDggMzZaIiBmaWxsPSIjZGMyNjI2IiBzdHJva2U9Im5vbmUiLz48dXNlIGhyZWY9IiNvIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==", "personen/sk2": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+U0sgSUksIHNjaHdlciB2ZXJsZXR6dCAoZ2VsYik8L3RpdGxlPjxkZWZzPjxnIGlkPSJvIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0zNiA4IDY0IDM2IDM2IDY0IDggMzZaIi8+PHBhdGggZD0iTTM2IDhWNjQiLz48L2c+PC9kZWZzPjx1c2UgaHJlZj0iI28iIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI3Ii8+PHBhdGggZD0iTTM2IDggNjQgMzYgMzYgNjQgOCAzNloiIGZpbGw9IiNmYWNjMTUiIHN0cm9rZT0ibm9uZSIvPjx1c2UgaHJlZj0iI28iIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+", "personen/sk3": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+U0sgSUlJLCBsZWljaHQgdmVybGV0enQgKGdyw7xuKTwvdGl0bGU+PGRlZnM+PGcgaWQ9Im8iIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTM2IDggNjQgMzYgMzYgNjQgOCAzNloiLz48cGF0aCBkPSJNMzYgOFY2NCIvPjwvZz48L2RlZnM+PHVzZSBocmVmPSIjbyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciLz48cGF0aCBkPSJNMzYgOCA2NCAzNiAzNiA2NCA4IDM2WiIgZmlsbD0iIzIyYzU1ZSIgc3Ryb2tlPSJub25lIi8+PHVzZSBocmVmPSIjbyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=", "personen/tot": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+VG90ZSBQZXJzb248L3RpdGxlPjxkZWZzPjxnIGlkPSJvIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0zNiA4IDY0IDM2IDM2IDY0IDggMzZaIi8+PHBhdGggZD0iTTM2IDhWNjQiLz48cGF0aCBkPSJNMjcgMjJINDUiLz48L2c+PC9kZWZzPjx1c2UgaHJlZj0iI28iIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI3Ii8+PHBhdGggZD0iTTM2IDggNjQgMzYgMzYgNjQgOCAzNloiIGZpbGw9IiNmZmYiIHN0cm9rZT0ibm9uZSIvPjx1c2UgaHJlZj0iI28iIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+", "personen/vermisst": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiIgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIj48dGl0bGU+VmVybWlzc3RlIFBlcnNvbjwvdGl0bGU+PGRlZnM+PGcgaWQ9Im8iIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTM2IDggNjQgMzYgMzYgNjQgOCAzNloiLz48cGF0aCBkPSJNNC41IDMyLjUgMzIuNSA0LjVNNjcuNSAzOS41IDM5LjUgNjcuNSIvPjwvZz48L2RlZnM+PHVzZSBocmVmPSIjbyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciLz48cGF0aCBkPSJNMzYgOCA2NCAzNiAzNiA2NCA4IDM2WiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSJub25lIi8+PHVzZSBocmVmPSIjbyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="};</script>
 <script>try { var t = localStorage.getItem("kritis-theme"); if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.setAttribute("data-theme", t); } catch (e) { /* ohne Speicher: hell */ }</script>
 
 <style>/* required styles */
@@ -1134,11 +1135,60 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 [data-theme="dark"] .ovunit { border-bottom-color: #2a3850; }
 [data-theme="dark"] .ovst:hover, [data-theme="dark"] .ovmore:hover { background: rgba(138, 180, 255, .16); }
 .tile { position: relative; }
-.tile .casico { position: absolute; right: 6px; top: 6px; background: #fff; border-radius: 3px; padding: 1px; }
-.ctx-item img.casico, .entry .casico, .chip .casico { background: #fff; border-radius: 3px; padding: 1px; vertical-align: middle; }
+.tile .casico { position: absolute; right: 6px; top: 6px; }
+.entry .casico, .chip .casico { vertical-align: middle; }
 .ctx-item img { background: #fff; border-radius: 3px; padding: 1px; }
-.ctx-item img.casico { width: 36px; height: 30px; object-fit: contain; }
+.ctx-item img.casico { width: 26px; height: 26px; object-fit: contain; background: none; padding: 0; }
 .cas { min-width: 30px; width: auto; white-space: nowrap; }
+
+/* ===== Gefahrstoffe ===== */
+.cm-plate { display: inline-flex; flex-direction: column; border: 2px solid #000; background: #f97316; color: #000; font: 700 14px/1.15 Inter, sans-serif; text-align: center; min-width: 54px; flex: none; }
+.cm-plate span { padding: 2px 6px; } .cm-plate span:first-child { border-bottom: 2px solid #000; }
+.cm-plate.big { transform: scale(1.25); margin: 0 10px; }
+.cm-head { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.cm-sub { color: var(--muted); font-size: 12px; }
+.cm-card { border: 1px solid var(--line); border-radius: 8px; background: var(--panel, #fff); padding: 10px; margin: 8px 0; }
+.cm-card h3 { margin: 0; font-size: 18px; }
+.cm-h { font-size: 13px !important; margin: 12px 0 4px !important; text-transform: none; }
+.cm-pics { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.cm-pics .ghs { display: block; }
+.cm-list { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12.5px; }
+.cm-list li { padding: 4px 8px; border-left: 4px solid var(--c, #dc2626); margin: 4px 0; background: rgba(100, 116, 139, .09); }
+.cm-ul { margin: 4px 0 6px; padding-left: 18px; font-size: 12.5px; }
+.cm-kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12.5px; margin: 8px 0; }
+.cm-kv b { font-weight: 600; }
+.cm-sel { width: 100%; padding: 7px 8px; font-size: 14px; font-weight: 600; }
+.cm-zt { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0; }
+.cm-zt th, .cm-zt td { padding: 4px 4px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.cm-zt th:first-child, .cm-zt td:first-child { text-align: left; }
+.cm-sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.cm-zone { display: flex; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 6px; margin: 6px 0; font-size: 12.5px; background: var(--panel, #fff); }
+.cm-zone b { display: block; }
+.cm-chk { display: flex; gap: 6px; align-items: center; font-size: 12.5px; margin: 4px 0; }
+.cm-inc { border-left-color: #f97316 !important; }
+.cm-ohd { font-weight: 700; font-size: 12px; margin: 6px 0 2px; }
+.cm-ob { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 3px 6px; font-size: 12.5px; cursor: pointer; border-radius: 4px; color: inherit; }
+.cm-ob:hover { background: rgba(30, 64, 175, .1); }
+#chemBand { position: absolute; left: 40px; right: 40px; bottom: 36px; z-index: 1300; background: rgba(255, 255, 255, .97); color: var(--ink); border: 1px solid #cbd5e1; border-top: 6px solid #f97316; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.25); padding: 10px 40px 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+#chemBand[hidden] { display: none; }
+#chemBand .nm { font: 700 26px/1.05 Inter, sans-serif; }
+#chemBand .cm-pics { margin: 0; }
+.cm-tile { border-left: 5px solid var(--c); padding: 2px 10px; min-width: 104px; }
+.cm-tile b { display: block; font: 700 21px/1.1 Inter, sans-serif; font-variant-numeric: tabular-nums; }
+.cm-tile span { font-size: 11.5px; color: var(--muted); }
+.cm-leg { margin-left: auto; font-size: 12.5px; line-height: 1.7; }
+.cm-x { position: absolute; right: 8px; top: 6px; border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); }
+.chip.chem { background: #ffedd5; border-color: #f97316; color: #7c2d12; }
+body.beamer #chemBand .nm { font-size: 34px; }
+@media (max-width: 860px) { #chemBand { max-height: 45%; overflow: auto; } }
+.cm-inc input.num { width: 100%; min-width: 0; }
+.cm-inc .row label { flex: 1 1 120px; min-width: 0; }
+#tab-chem { overflow-x: hidden; }
+[data-theme="dark"] #chemBand { background: rgba(17, 26, 43, .97); border-color: #3a4a63; border-top-color: #f97316; }
+[data-theme="dark"] .cm-card, [data-theme="dark"] .cm-zone { background: #152036; }
+[data-theme="dark"] .cm-ob:hover { background: rgba(138, 180, 255, .16); }
+[data-theme="dark"] .chip.chem { background: #3a1d0a; color: #fdba74; border-color: #c2410c; }
+@media (max-width: 860px) { #chemBand { left: 8px; right: 8px; } #chemBand .cm-tile { min-width: 80px; } }
 </style>
 </head>
 <body>
@@ -1178,6 +1228,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
       <button role="tab" data-tab="keule" aria-selected="false" title="Wetter, Wind und Keule">Wetter</button>
+      <button role="tab" data-tab="chem" aria-selected="false" title="Gefahrstoffe: Datenblatt, Absperrzonen, Betroffene, Keule">Gefahr&shy;stoff</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="staende" aria-selected="false">Stände</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
@@ -1442,6 +1493,14 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 
     </section>
 
+    <section class="tabpane" id="tab-chem">
+      <h2>Gefahrstoff</h2>
+      <div class="row"><select id="chemSel" class="cm-sel" aria-label="Stoff"></select></div>
+      <div class="row editonly"><button class="btn primary" id="chemPlace">Freisetzungsort auf Karte setzen</button></div>
+      <label class="cm-chk"><input type="checkbox" id="chemBandOn" checked> Gefahrenband über der Karte (Lagevortrag)</label>
+      <div id="chemBox"></div>
+    </section>
+
     <section class="tabpane" id="tab-daten">
       <h2>Lagestand</h2>
       <div class="row">
@@ -1466,6 +1525,9 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <details class="lic"><summary>Lizenzen der enthaltenen Bestandteile</summary>
         <p class="hint">Diese Datei enthält fremde Bestandteile. Die Lizenzen im Überblick:</p>
         <ul class="hint">
+          <li>GHS-Piktogramme (Flamme, Gesundheitsgefahr, Ausrufezeichen): UNECE, Dateien von Wikimedia Commons, gemeinfrei (PD-ineligible)</li>
+          <li>Stoffdaten Benzol: GESTIS-Stoffdatenbank (DGUV), Emergency Response Guidebook 2024 (PHMSA/Transport Canada), CAMEO Chemicals (NOAA), AEGL (US EPA). Quellen mit Adresse im Reiter Gefahrstoff</li>
+          <li>Zeichen für Personen (Betroffene, Sichtungskategorien, Tote, Vermisste, Gerettete): eigene Zeichnung für diese Anwendung, MIT-Lizenz wie das Repository</li>
           <li>Zensus 2022, Gitterzellen (Bevölkerung, Alter): © Statistische Ämter des Bundes und der Länder, 2025, Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2-0). Für diese Anwendung als Auszug aufbereitet, Altersklassen zusammengefasst</li>
           <li>Leaflet 1.9.4: BSD-2-Clause, (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade</li>
           <li>Leaflet.draw 1.0.4: MIT, (c) 2012-2017 Jacob Toye, Jon West, Smartrak, Leaflet</li>
@@ -1579,6 +1641,7 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     <div id="map"></div>
     <form id="placeSearch" role="search" autocomplete="off"><button type="button" id="placeToggle" aria-label="Ortssuche ein- oder ausklappen" aria-expanded="true" title="Ortssuche ein- oder ausklappen"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM15.5 15.5 21 21"/></svg></button><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
+    <section id="chemBand" aria-label="Gefahrstoff" hidden></section>
     <section id="unitOv" aria-label="Alle Einheiten auf einen Blick" hidden>
       <div class="ovhead"><h2>Einheiten auf einen Blick</h2><div id="ovSum"></div>
         <div class="ovtools"><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
@@ -1940,6 +2003,8 @@ function freshState() {
     stands: [],          // { id, nr, time, title, note, by, sum, z (komprimierter Stand) }
     units: [],           // { id, name, call, sym, f, u, h, status, sectionId, task, note, lat?, lng?, time }
     unitStatus: JSON.parse(JSON.stringify(UNIT_STATUS_DEFAULT)),
+    chem: [],            // { id, sid, name, lat, lng, large, fire, Q, H, plumeId }
+    chemBand: true,
     popRadius: 300,      // Umkreis in m für die Wohnbevölkerung an Objekten (nicht Teil des Rückgängig-Verlaufs)
     casualties: [],      // { id, cat, n, note, time, lat?, lng? }
     problems: []         // { id, title, text, prio, status, owner, time, poi?, poiName?, lat?, lng? }
@@ -2032,7 +2097,7 @@ function snapshot() {
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
     units: state.units, manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
-    wind: state.wind, plumes: state.plumes
+    wind: state.wind, plumes: state.plumes, chem: state.chem
   });
 }
 function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
@@ -2078,9 +2143,9 @@ function restore(snap) {
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
-  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || [];
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || [];
   d.manual.forEach(q => { state.pois[q.id] = q; });
-  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
   hist.cur = snapshot(); persist();
 }
 
@@ -2572,7 +2637,7 @@ function poiPopup(p) {
 function personsBox(p) {
   const o = obj(p.id); o.persons = o.persons || {};
   const grid = el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-top:4px' });
-  Object.entries(CAS).forEach(([k, v]) => {
+  casEntries().forEach(([k, v]) => {
     const inp = el('input', { type: 'number', min: '0', step: '1', value: o.persons[k] || '', placeholder: '0', style: 'width:100%', oninput: ev => {
       const n = Math.max(0, Math.round(+ev.target.value || 0)); if (n) o.persons[k] = n; else delete o.persons[k];
       renderCas(); renderList(); save(); }, onchange: () => save('Personen am Objekt: ' + poiTitle(p)) });
@@ -2729,15 +2794,22 @@ function renderJournal() {
 /* Eigene Objekte, Personenzahlen, Problemliste                        */
 /* ------------------------------------------------------------------ */
 const CAS = {
-  betroffen: { label: 'Betroffene',      short: 'B',  color: '#475569', sym: 'betroffene_Person' },
-  verletzt:  { label: 'Verletzte',       short: 'V',  color: '#d97706', sym: 'verletzte_Person' },
-  schwer:    { label: 'Schwerverletzte', short: 'SV', color: '#c2410c', sym: 'verletzte_Person' },   // kein eigenes Zeichen im Vorrat: Zeichen Verletzte, Kürzel SV
-  tot:       { label: 'Tote',            short: 'T',  color: '#111827', sym: 'tote_Person' },
-  vermisst:  { label: 'Vermisste',       short: 'Vm', color: '#7c3aed', sym: 'vermisste_Person' },
-  evakuiert: { label: 'Evakuierte',      short: 'E',  color: '#0369a1' },                       // im Zeichenvorrat gibt es kein Zeichen für Evakuierte
-  gerettet:  { label: 'Gerettete',       short: 'G',  color: '#15803d', sym: 'gerettete_Person' }
+  betroffen: { label: 'Betroffene',  short: 'B',     color: '#475569', sym: 'betroffene' },
+  sk1:       { tag: 'SK I', label: 'SK I (rot), akut lebensbedrohlich', short: 'SK I',   color: '#dc2626', sym: 'sk1' },
+  sk2:       { tag: 'SK II', label: 'SK II (gelb), schwer verletzt',     short: 'SK II',  color: '#ca8a04', sym: 'sk2' },
+  sk3:       { tag: 'SK III', label: 'SK III (grün), leicht verletzt',    short: 'SK III', color: '#16a34a', sym: 'sk3' },
+  tot:       { label: 'Tote',        short: 'T',     color: '#111827', sym: 'tot' },
+  vermisst:  { label: 'Vermisste',   short: 'Vm',    color: '#7c3aed', sym: 'vermisst' },
+  evakuiert: { label: 'Evakuierte',  short: 'E',     color: '#0369a1' },                 // kein Zeichen im Vorrat
+  gerettet:  { label: 'Gerettete',   short: 'G',     color: '#0d9488', sym: 'gerettet' },
+  verletzt:  { label: 'Verletzte (alt, ohne Sichtung)',      short: 'V',  color: '#d97706', legacy: true },   // nur sichtbar, wenn alte Einträge existieren
+  schwer:    { label: 'Schwerverletzte (alt, ohne Sichtung)', short: 'SV', color: '#c2410c', legacy: true }
 };
-const casIcon = k => CAS[k] && CAS[k].sym ? symUrl(CAS[k].sym) : null;
+const legacyUsed = k => state.casualties.some(c => c.cat === k) || Object.values(state.objects).some(o => o.persons && o.persons[k]);
+const casEntries = () => Object.entries(CAS).filter(([k, v]) => !v.legacy || legacyUsed(k));
+const casNew = () => Object.entries(CAS).filter(([k, v]) => !v.legacy);
+const imgUrl = n => (window.IMG_URIS && window.IMG_URIS[n]) || 'images/' + n + '.svg';
+const casIcon = k => CAS[k] && CAS[k].sym ? imgUrl('personen/' + CAS[k].sym) : null;
 const casMark = (k, h) => casIcon(k) ? el('img', { src: casIcon(k), alt: '', class: 'casico', style: 'height:' + (h || 22) + 'px' }) : el('span', { class: 'dot', style: 'background:' + CAS[k].color });
 const PRIO_COL = ['#dc2626', '#ea580c', '#f59e0b', '#84cc16', '#64748b'];
 const prioNum = v => { const n = Math.round(parseFloat(v)); return n >= 1 ? n : 1; };
@@ -2751,7 +2823,7 @@ function initNewUi() {
     LAYERS.filter(l => l.sector === sid).forEach(l => g.append(el('option', { value: l.id, text: SINGULAR[l.id] })));
     sel.append(g);
   });
-  Object.entries(CAS).forEach(([k, v]) => $('#casCat').append(el('option', { value: k, text: v.label })));
+  casNew().forEach(([k, v]) => $('#casCat').append(el('option', { value: k, text: v.label })));
   $('#btnPoiPlace').onclick = startPoiMode;
   $('#btnAddPoi').onclick = () => { openTab('ebenen'); startPoiMode(); };
   $('#btnCasAdd').onclick = () => addCas();
@@ -2818,7 +2890,7 @@ function pushCas(cat, n, note, lat, lng) {
 }
 function renderCas() {
   const { t, outside, ot } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
-  Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, casIcon(k) ? casMark(k, 28) : null, el('b', { text: String(t[k]) }), el('span', { text: v.label + (ot[k] ? ' (davon ' + ot[k] + ' an Objekten)' : '') }))));
+  casEntries().forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, casIcon(k) ? casMark(k, 28) : null, el('b', { text: String(t[k]) }), el('span', { text: v.label + (ot[k] ? ' (davon ' + ot[k] + ' an Objekten)' : '') }))));
   $('#casHint').textContent = (state.areas.length ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb der Abfragegebiete.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '') + ' Zahlen an Objekten (Objekt-Popup) werden zu den Einträgen addiert: denselben Fall nicht an beiden Stellen erfassen.';
   const list = $('#casList'); list.replaceChildren();
   if (!state.casualties.length) list.append(el('div', { class: 'hint', text: 'Noch keine Einträge.' }));
@@ -2833,7 +2905,7 @@ function renderCas() {
   if (runtime.viewer) lockViewer(list);
   casLayer.clearLayers();
   state.casualties.filter(c => c.lat != null).forEach(c => {
-    const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: casIcon(c.cat) ? [64, 26] : [34, 24], iconAnchor: casIcon(c.cat) ? [32, 13] : [17, 12], html: el('div', { class: 'cas', style: '--c:' + CAS[c.cat].color }, casIcon(c.cat) ? el('img', { src: casIcon(c.cat), alt: '', style: 'height:18px;vertical-align:-4px;margin-right:3px;background:#fff;border-radius:2px' }) : null, CAS[c.cat].short + ' ' + c.n) }), draggable: true });
+    const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: casIcon(c.cat) ? [74, 26] : [34, 24], iconAnchor: casIcon(c.cat) ? [37, 13] : [17, 12], html: el('div', { class: 'cas', style: '--c:' + CAS[c.cat].color }, casIcon(c.cat) ? el('img', { src: casIcon(c.cat), alt: '', style: 'height:18px;vertical-align:-4px;margin-right:3px' }) : null, CAS[c.cat].short + ' ' + c.n) }), draggable: true });
     m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save('Zahl verschoben'); });
     m.bindTooltip(el('span', { text: CAS[c.cat].label + ': ' + c.n + (c.note ? ', ' + c.note : '') }));
     m.on('contextmenu', e => ctxOpen(e, casItems(c), null, CAS[c.cat].label + ': ' + c.n));
@@ -3087,10 +3159,11 @@ function mapItems(ll) {
     { label: 'Taktisches Zeichen hier setzen', sub: () => symbolItems(ll) },
     { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
     { sep: true },
+    { label: 'Gefahrstoff hier melden', sub: Object.values(SUBSTANCES).filter(x => x.verified).map(x => ({ label: x.name + ' (UN ' + x.un + ')', onclick: () => addChem(x.id, ll) })) },
     { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
     { label: 'Einheit hier einsetzen…', onclick: async () => { const v = await askText('Bezeichnung der Einheit', ''); if (v == null || !v.trim()) return; addUnit({ name: v.trim(), lat: ll.lat, lng: ll.lng }); } },
     { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
-    { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: () => askNumberCas(k, ll) })) },
+    { label: 'Personenzahl hier erfassen', sub: casNew().map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: () => askNumberCas(k, ll) })) },
     { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
     { sep: true },
     { label: 'Entfernung messen ab hier', onclick: () => startMeasure(ll) },
@@ -3140,7 +3213,7 @@ function poiItems(p) {
     { label: 'Status setzen', swatch: STATUS[cur].color, sub: Object.entries(STATUS).map(([k, v]) => ({ label: v.label, swatch: v.color, check: k === cur, onclick: () => setPoiStatus(p, k) })) },
     { label: 'Problem melden', onclick: () => reportProblemFor(p) },
     { label: 'Versorgt…', onclick: () => startLink(p) },
-    { label: 'Personen erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: async () => {
+    { label: 'Personen erfassen', sub: casNew().map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: async () => {
       const t = await askText(v.label + ' am Objekt (aktuell ' + ((o.persons || {})[k] || 0) + ')', String((o.persons || {})[k] || '')); if (t == null) return;
       const n = Math.max(0, Math.round(parseFloat(t) || 0)); const ob = obj(p.id); ob.persons = ob.persons || {}; if (n) ob.persons[k] = n; else delete ob.persons[k];
       renderCas(); renderList(); save('Personen am Objekt: ' + poiTitle(p)); } })) },
@@ -3340,7 +3413,7 @@ function plumeLine(pl) {
 }
 // Teilaktualisierung ohne Neuaufbau der Eingabefelder (sonst geht beim Tabben der Fokus verloren)
 function refreshKeule() {
-  renderPlumes(); renderWindUi(); if (windCtl) windCtl.refresh(); renderCounts();
+  renderPlumes(); renderWindUi(); if (windCtl) windCtl.refresh(); renderCounts(); if (typeof chemWindChanged === 'function') chemWindChanged();
   document.querySelectorAll('#kList .kcard').forEach(c => {
     const pl = state.plumes.find(x => x.id === c.dataset.kid); if (!pl) return;
     const ln = plumeLine(pl), r = c.querySelector('.kres'); if (r) { r.className = 'kres hint' + (ln.err ? ' err' : ''); r.textContent = ln.text; }
@@ -3796,6 +3869,209 @@ function initPop() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Gefahrstoffe: Datenblatt, Absperrzonen nach ERG, Betroffene, Keule  */
+/* ------------------------------------------------------------------ */
+/* Nur geprüfte Stoffe (verified). Jeder Wert mit Quelle. Eine Übersetzung der ERG-Texte ist unsere eigene, die amtliche Fassung gilt. */
+const GHS_INFO = { GHS02: 'entzündbar', GHS07: 'Achtung (Reizwirkung, Aspiration u. a.)', GHS08: 'Gesundheitsgefahr' };
+const ghsUrl = c => imgUrl('ghs/' + c);
+const ghsImg = (c, h) => el('img', { class: 'ghs', src: ghsUrl(c), alt: GHS_INFO[c] || c, title: c + ': ' + (GHS_INFO[c] || ''), style: 'height:' + (h || 44) + 'px' });
+const SUBSTANCES = {
+  benzol: {
+    id: 'benzol', name: 'Benzol', formula: 'C6H6', cas: '71-43-2', un: '1114', kemler: '33', klasse: '3', vg: 'II', molMass: 78.11,
+    erg: { guide: '130', title: 'Entzündbare Flüssigkeiten (nicht mit Wasser mischbar, gesundheitsschädlich)', isolate: 50, spillDownwind: 300, fire: 800 },
+    ghs: ['GHS02', 'GHS08', 'GHS07'], signal: 'Gefahr',
+    h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H304', 'Kann bei Verschlucken und Eindringen in die Atemwege tödlich sein.'], ['H315', 'Verursacht Hautreizungen.'], ['H319', 'Verursacht schwere Augenreizung.'],
+      ['H340', 'Kann genetische Defekte verursachen.'], ['H350', 'Kann Krebs erzeugen.'], ['H372', 'Schädigt die Organe (Blut) bei längerer oder wiederholter Exposition.'], ['H412', 'Schädlich für Wasserorganismen, mit langfristiger Wirkung.']],
+    props: { flash: -11, boil: 80, lel: 1.2, uel: 8.6, vapDens: 2.7 },
+    heavy: true,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Leicht entzündbar, Zündung durch Wärme, Funken oder Flammen. Dämpfe bilden mit Luft explosionsfähige Gemische und können zur Zündquelle zurückschlagen. Explosionsgefahr in Räumen, im Freien und in der Kanalisation. Behälter können bei Erwärmung bersten.' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Dampf ist schwerer als Luft (Dichte 2,7). Er breitet sich am Boden aus und sammelt sich in Senken, Kellern, Schächten und Kanälen. Flüssigkeit schwimmt auf Wasser.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Krebserzeugend (H350), erbgutverändernd (H340), schädigt bei Dauerbelastung die Organe, vor allem das Blut (H372). Giftig beim Einatmen und bei Hautaufnahme, reizt Haut und Augen, Dämpfe können Schwindel und Erstickung in geschlossenen Räumen verursachen.' },
+      { c: '#b45309', t: 'Verschlucken', x: 'Aspirationsgefahr (H304): nicht zum Erbrechen bringen.' },
+      { c: '#475569', t: 'Umwelt', x: 'Schädlich für Wasserorganismen (H412). Abfluss in Gewässer, Kanalisation und Keller verhindern.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Feuerwehr-Schutzkleidung schützt thermisch, aber nur begrenzt chemisch.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Nicht durch ausgelaufenes Material gehen oder es berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Dampfunterdrückender Schaum kann die Dämpfe verringern.', 'Mit trockener Erde, Sand oder anderem nicht brennbarem Material aufnehmen, mit funkenfreiem Werkzeug sammeln.', 'Großes Leck: weit vor der Flüssigkeit eindämmen. Sprühwasser kann Dampf mindern, verhindert aber in geschlossenen Räumen keine Zündung.'],
+      brand: ['Vorsicht: Der Flammpunkt ist sehr niedrig, Wassersprühstrahl kann wirkungslos sein.', 'Kleinbrand: Pulver, CO2, Sprühwasser oder normaler Schaum. Ist normaler Schaum wirkungslos, alkoholbeständigen Schaum nehmen.', 'Großbrand: Sprühstrahl, Nebel oder normaler Schaum, kein Vollstrahl direkt aufs Produkt.', 'Tank, Kesselwagen oder Tankwagen im Brand: aus größtmöglichem Abstand mit unbemannten Strahlrohren, Behälter bis lange nach dem Löschen kühlen, bei Zischen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { status: 'vorläufig (interim)', t: '60 min', a1: 52, a2: 800, a3: 4000, edition: 'EPA/NAC, Stand 2006' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'GESTIS-Stoffdatenbank (DGUV), Benzol', u: 'https://gestis.dguv.de/data?name=010060', f: 'UN 1114, Gefahrnummer 33, Klasse 3, VG II, H-Sätze, Flammpunkt, Siedepunkt, Explosionsgrenzen, relative Gasdichte 2,70, Molmasse' },
+      { t: 'Emergency Response Guidebook 2024, Leitfaden 130; Verzeichnis UN 1114 = Leitfaden 130', u: 'https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/2024-04/ERG2024-Eng-Web-a.pdf', f: 'Absperr- und Evakuierungsdistanzen, Maßnahmen bei Leck und Brand' },
+      { t: 'CAMEO Chemicals (NOAA), Benzene', u: 'https://cameochemicals.noaa.gov/chemical/2577', f: 'AEGL (interim), ERG-Auszug' },
+      { t: 'EPA AEGL-Programm, Benzene', u: 'https://www.epa.gov/aegl/benzene-results-acute-exposure-guideline-levels-aegl-program', f: 'AEGL 60 min: 52 / 800 / 4000 ppm' }
+    ]
+  }
+};
+const chemSub = id => SUBSTANCES[id];
+const ppmToMg = (ppm, M) => ppm * M / 24.055;        // 20 °C, 1013 hPa
+const nfmt = (n, d) => Number(n).toLocaleString('de-DE', { maximumFractionDigits: d == null ? 0 : d });
+const chemLayer = L.layerGroup().addTo(map);
+map.createPane('chemz').style.zIndex = 391;
+function chemWindDir() { const w = state.wind; return w && w.dir != null ? w.dir : null; }
+function chemRings(inc) {
+  const s = chemSub(inc.sid), e = s.erg, src = { lat: inc.lat, lng: inc.lng }, dir = chemWindDir(), out = { dirKnown: dir != null };
+  out.z1 = circleRing(inc.lat, inc.lng, e.isolate / 1000, 72);
+  if (inc.large) {
+    if (dir != null) { const pts = [[inc.lat, inc.lng]]; for (let a = -30; a <= 30; a += 3) { const t = rad(a); pts.push(toLL(src, dir, e.spillDownwind * Math.cos(t), e.spillDownwind * Math.sin(t))); } out.z2 = pts; }
+    else out.z2 = circleRing(inc.lat, inc.lng, e.spillDownwind / 1000, 72);
+  }
+  if (inc.fire) out.z3 = circleRing(inc.lat, inc.lng, e.fire / 1000, 90);
+  return out;
+}
+const CHEM_ZONES = [{ k: 'z1', c: '#ef4444', n: 'Absperrung', fill: .42 }, { k: 'z2', c: '#ea580c', n: 'Großes Leck, Windrichtung', fill: .28 }, { k: 'z3', c: '#7c2d12', n: 'Behälterbrand', fill: .06, dash: '8 6' }];
+function chemPlate(s, big) { return el('div', { class: 'cm-plate' + (big ? ' big' : '') }, el('span', { text: s.kemler }), el('span', { text: s.un })); }
+function chemItems(inc) {
+  return [
+    { label: 'Zoom', onclick: () => map.setView([inc.lat, inc.lng], Math.max(map.getZoom(), 15)) },
+    { label: 'Großes Leck (300 m in Windrichtung)', check: !!inc.large, onclick: () => { inc.large = !inc.large; renderChem(); save('Zone Großes Leck ' + (inc.large ? 'an' : 'aus')); } },
+    { label: 'Behälterbrand (800 m rundum)', check: !!inc.fire, onclick: () => { inc.fire = !inc.fire; renderChem(); save('Zone Behälterbrand ' + (inc.fire ? 'an' : 'aus')); } },
+    { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('chem'); } },
+    { sep: true }, { label: 'Entfernen', onclick: () => removeChem(inc) }
+  ];
+}
+let chemSeq = 0;
+function renderChemMap() {
+  chemLayer.clearLayers();
+  state.chem.forEach(inc => {
+    const s = chemSub(inc.sid); if (!s) return; const R = chemRings(inc);
+    CHEM_ZONES.forEach(z => { const ring = R[z.k]; if (!ring) return;
+      L.polygon(ring, { pane: 'chemz', color: z.c, weight: 2, dashArray: z.dash || null, fillColor: z.c, fillOpacity: z.fill, interactive: true })
+        .on('contextmenu', e => ctxOpen(e, chemItems(inc), e.latlng, 'Gefahrstoff: ' + s.name)).bindTooltip(z.n + (z.k === 'z1' ? ', ' + s.erg.isolate + ' m' : z.k === 'z2' ? ', ' + s.erg.spillDownwind + ' m' : ', ' + s.erg.fire + ' m'), { sticky: true }).addTo(chemLayer); });
+    const plate = chemPlate(s); const m = L.marker([inc.lat, inc.lng], { draggable: !runtime.viewer, zIndexOffset: 900, icon: L.divIcon({ className: '', iconSize: [56, 44], iconAnchor: [28, 22], html: plate }) });
+    m.bindTooltip(el('span', { text: s.name + ' (UN ' + s.un + ')' }));
+    m.on('dragend', () => { const ll = m.getLatLng(); inc.lat = ll.lat; inc.lng = ll.lng; const pl = state.plumes.find(x => x.id === inc.plumeId); if (pl) { pl.lat = ll.lat; pl.lng = ll.lng; } refreshKeule(); renderChem(); save('Gefahrstoff verschoben: ' + s.name); });
+    m.on('contextmenu', e => ctxOpen(e, chemItems(inc), null, 'Gefahrstoff: ' + s.name));
+    m.addTo(chemLayer);
+  });
+}
+function addChem(sid, ll) {
+  const s = chemSub(sid); if (!s) return;
+  const inc = { id: uid(), sid, name: s.name + ' (UN ' + s.un + ')', lat: ll.lat, lng: ll.lng, large: true, fire: false, Q: null, H: 0, plumeId: null };
+  const pl = { id: uid(), name: 'Keule ' + s.name, lat: ll.lat, lng: ll.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: null, H: 0, thr1: Math.round(ppmToMg(s.aegl.a2, s.molMass)), thr2: Math.round(ppmToMg(s.aegl.a1, s.molMass)), len: null, angle: null, r0: null };
+  state.plumes.push(pl); inc.plumeId = pl.id; state.chem.push(inc); runtime.chemActive = inc.id;
+  addJournal('Gefahrstoff ' + inc.name + ' gemeldet, Absperrung 50 m', true, { lat: ll.lat, lng: ll.lng });
+  renderKeulen(); renderChem(); save('Gefahrstoff gesetzt: ' + s.name); setPanel(true); openTab('chem');
+}
+function removeChem(inc) {
+  state.chem = state.chem.filter(x => x !== inc); state.plumes = state.plumes.filter(x => x.id !== inc.plumeId);
+  addJournal('Gefahrstoff ' + inc.name + ' entfernt', true); renderKeulen(); renderChem(); save('Gefahrstoff entfernt: ' + inc.name);
+}
+const chemActive = () => state.chem.find(x => x.id === runtime.chemActive) || state.chem[state.chem.length - 1] || null;
+function chemSheet(s) {
+  const p = s.props, a = s.aegl, ueg = p.lel * 10000;
+  const kv = (k, v) => [el('b', { text: k }), el('span', { text: v })];
+  return el('div', { class: 'cm-card' },
+    el('div', { class: 'cm-head' }, el('div', {}, el('h3', { text: s.name }), el('div', { class: 'cm-sub', text: s.formula + ' · CAS ' + s.cas + ' · UN ' + s.un + ' · Klasse ' + s.klasse + ' · VG ' + s.vg + ' · ERG ' + s.erg.guide })), chemPlate(s)),
+    el('div', { class: 'cm-pics' }, ...s.ghs.map(c => ghsImg(c, 46)), el('span', { class: 'cm-sub', text: 'Signalwort: ' + s.signal })),
+    el('ul', { class: 'cm-list' }, ...s.gefahren.map(g => el('li', { style: '--c:' + g.c }, el('b', { text: g.t + ': ' }), g.x))),
+    el('div', { class: 'cm-kv' }, ...kv('Flammpunkt', nfmt(p.flash) + ' °C'), ...kv('Siedepunkt', nfmt(p.boil) + ' °C'), ...kv('Zündbereich', nfmt(p.lel, 1) + ' bis ' + nfmt(p.uel, 1) + ' Vol.-%'), ...kv('Dampfdichte', nfmt(p.vapDens, 1) + (p.vapDens > 1 ? ' (schwerer als Luft)' : ''))),
+    el('h3', { class: 'cm-h', text: 'Absperrung nach ERG 2024, Leitfaden ' + s.erg.guide }),
+    el('div', { class: 'cm-zone', style: '--c:#ef4444' }, el('span', {}, el('b', { text: s.erg.isolate + ' m rundum' }), 'Sofort: Leck- oder Austrittsbereich in alle Richtungen mindestens ' + s.erg.isolate + ' m absperren. Unbefugte fernhalten.')),
+    el('div', { class: 'cm-zone', style: '--c:#ea580c' }, el('span', {}, el('b', { text: s.erg.spillDownwind + ' m in Windrichtung' }), 'Großes Leck: erste Evakuierung in Windrichtung auf mindestens ' + s.erg.spillDownwind + ' m erwägen.')),
+    el('div', { class: 'cm-zone', style: '--c:#7c2d12' }, el('span', {}, el('b', { text: s.erg.fire + ' m rundum' }), 'Behälter, Kesselwagen oder Tankwagen im Brand: ' + s.erg.fire + ' m in alle Richtungen absperren und erste Evakuierung auf ' + s.erg.fire + ' m erwägen.')),
+    el('h3', { class: 'cm-h', text: 'Maßnahmen' }),
+    el('div', { class: 'hint' }, el('b', { text: 'Schutz: ' }), s.massnahmen.schutz),
+    el('details', {}, el('summary', { text: 'Leck und Austritt' }), el('ul', { class: 'cm-ul' }, ...s.massnahmen.leck.map(t => el('li', { text: t })))),
+    el('details', {}, el('summary', { text: 'Brand' }), el('ul', { class: 'cm-ul' }, ...s.massnahmen.brand.map(t => el('li', { text: t })))),
+    el('h3', { class: 'cm-h', text: 'Grenzwerte für die Keule (AEGL, ' + a.t + ')' }),
+    el('table', { class: 'cm-zt' }, el('thead', {}, el('tr', {}, ...['Stufe', 'ppm', 'mg/m³'].map(x => el('th', { text: x })))),
+      el('tbody', {}, ...[['AEGL-1', a.a1], ['AEGL-2', a.a2], ['AEGL-3', a.a3]].map(r => el('tr', {}, el('td', { text: r[0] }), el('td', { text: nfmt(r[1]) }), el('td', { text: nfmt(ppmToMg(r[1], s.molMass)) }))))),
+    el('div', { class: 'hint', text: 'AEGL ' + a.status + ', ' + a.edition + '. mg/m³ bei 20 °C und 1013 hPa umgerechnet (Molmasse ' + nfmt(s.molMass, 2) + '). AEGL-3 liegt bei ' + nfmt(100 * a.a3 / ueg) + ' % der unteren Explosionsgrenze, die Explosionsgefahr kommt dort vor der Giftwirkung.' }),
+    el('div', { class: 'hint', text: s.verified ? 'Werte geprüft am ' + s.verifiedAt + ' gegen die unten genannten Quellen. Die deutschen Maßnahmentexte sind sinngemäß nach ERG 2024 übersetzt, die amtliche Fassung gilt.' : 'NICHT GEPRÜFT' }),
+    el('details', {}, el('summary', { text: 'Quellen' }), el('ul', { class: 'cm-ul' }, ...s.src.map(r => el('li', {}, el('a', { href: r.u, target: '_blank', rel: 'noopener', text: r.t }), ' (' + r.f + ')'))),
+      el('div', { class: 'hint', text: 'GHS-Piktogramme: UNECE, Dateien von Wikimedia Commons (gemeinfrei, PD-ineligible).' })));
+}
+function renderChemTab() {
+  const box = $('#chemBox'); if (!box) return; const act = document.activeElement;
+  if (act && box.contains(act) && /^(INPUT|TEXTAREA|SELECT)$/.test(act.tagName)) return;
+  box.replaceChildren();
+  const sel = $('#chemSel'); if (!sel.options.length) Object.values(SUBSTANCES).filter(s => s.verified).forEach(s => sel.append(el('option', { value: s.id, text: s.name + ' (UN ' + s.un + ')' })));
+  const cur = chemSub(sel.value) || Object.values(SUBSTANCES)[0];
+  $('#chemBandOn').checked = state.chemBand !== false;
+  if (!state.chem.length) box.append(el('div', { class: 'hint', text: 'Noch keine Freisetzung. Stoff wählen und „Freisetzungsort auf Karte setzen“ klicken, oder mit Rechtsklick auf die Karte.' }));
+  state.chem.forEach(inc => {
+    const s = chemSub(inc.sid); if (!s) return; const pl = state.plumes.find(x => x.id === inc.plumeId);
+    const chk = (key, label) => el('label', { class: 'cm-chk' }, el('input', { type: 'checkbox', checked: inc[key] ? 'checked' : null, onchange: ev => { inc[key] = ev.target.checked; renderChem(); save(label + (inc[key] ? ' an' : ' aus') + ': ' + s.name); } }), ' ' + label);
+    const q = el('input', { type: 'number', min: '0', step: 'any', class: 'num', value: inc.Q == null ? '' : inc.Q, placeholder: 'g/s', onchange: ev => { inc.Q = numOrNull(ev.target.value); if (pl) pl.Q = inc.Q; refreshKeule(); save('Quellstärke ' + s.name + ': ' + (inc.Q == null ? 'leer' : inc.Q + ' g/s')); } });
+    const h = el('input', { type: 'number', min: '0', step: '1', class: 'num', value: inc.H || 0, onchange: ev => { inc.H = numOrNull(ev.target.value) || 0; if (pl) pl.H = inc.H; refreshKeule(); save('Quellhöhe ' + s.name); } });
+    const zrow = (k, c, n) => el('tr', { 'data-z': k }, el('td', {}, el('span', { class: 'cm-sw', style: 'background:' + c }), n), el('td', { 'data-c': 'pop', text: '…' }), el('td', { 'data-c': 'u18', text: '' }), el('td', { 'data-c': 'o65', text: '' }), el('td', { 'data-c': 'age', text: '' }));
+    const card = el('div', { class: 'card cm-inc', 'data-cid': inc.id, style: '--c:#f97316' },
+      el('div', { class: 'cm-head' }, el('div', {}, el('b', { text: s.name }), el('div', { class: 'cm-sub', text: 'UN ' + s.un + ' · Kemler ' + s.kemler + ' · ' + nfmt(inc.lat, 5) + ', ' + nfmt(inc.lng, 5) })), chemPlate(s)),
+      el('div', { class: 'row' }, chk('large', 'Großes Leck, ' + s.erg.spillDownwind + ' m in Windrichtung'), chk('fire', 'Behälterbrand, ' + s.erg.fire + ' m rundum')),
+      el('div', { class: 'hint', text: chemWindDir() == null ? 'Wind ist nicht gesetzt: die Zone für das große Leck wird als Kreis gezeigt. Wind im Reiter Wetter eintragen.' : 'Zone für das große Leck als Sektor von 60 Grad um die Windrichtung (eigene Darstellung, die ERG nennt nur die Entfernung).' }),
+      el('h3', { class: 'cm-h', text: 'Betroffene nach Zonen' }),
+      el('table', { class: 'cm-zt' }, el('thead', {}, el('tr', {}, ...['Zone', 'Einwohner', 'unter 18', 'ab 65', 'Ø Alter'].map(x => el('th', { text: x })))),
+        el('tbody', {}, zrow('z1', '#ef4444', s.erg.isolate + ' m'), inc.large ? zrow('z2', '#ea580c', s.erg.spillDownwind + ' m Wind') : null, inc.fire ? zrow('z3', '#7c2d12', s.erg.fire + ' m Brand') : null)),
+      el('div', { class: 'hint', text: 'Zensus 2022, Wohnbevölkerung, nicht die tatsächlich Anwesenden. Die Zonen überlappen, die Zahlen nicht addieren. Unter etwa 100 m Zonenbreite ist das 100-m-Raster zu grob, die Zahl der 50-m-Zone ist nur ein Anhalt.' }),
+      el('h3', { class: 'cm-h', text: 'Objekte in den Zonen' }), el('div', { 'data-c': 'objs', class: 'cm-objs', text: '…' }),
+      el('h3', { class: 'cm-h', text: 'Ausbreitungskeule' }),
+      el('div', { class: 'row' }, el('label', {}, 'Quelle g/s ', q), el('label', {}, 'Höhe m ', h)),
+      el('div', { class: 'hint', text: 'Äußere Linie AEGL-1 (' + nfmt(ppmToMg(s.aegl.a1, s.molMass)) + ' mg/m³), innere Linie AEGL-2 (' + nfmt(ppmToMg(s.aegl.a2, s.molMass)) + ' mg/m³), jeweils 60 min, vorläufig. Die Quellstärke muss die Einsatzleitung schätzen, sie wird nicht vorgegeben.' }),
+      el('div', { class: 'notice', text: 'Das Gauß-Modell rechnet mit einem Gas, das sich wie Luft verhält. ' + s.name + '-Dampf ist schwerer als Luft und sammelt sich in Senken. Die Keule ist eine grobe Schätzung, Messungen gehen vor.' }),
+      pl ? el('div', { class: 'kres hint', 'data-c': 'plume', text: plumeLine(pl).text }) : el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Die zugehörige Keule wurde gelöscht.' }), el('button', { class: 'btn small', text: 'Keule neu anlegen', onclick: () => { const np = { id: uid(), name: 'Keule ' + s.name, lat: inc.lat, lng: inc.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: inc.Q, H: inc.H || 0, thr1: Math.round(ppmToMg(s.aegl.a2, s.molMass)), thr2: Math.round(ppmToMg(s.aegl.a1, s.molMass)), len: null, angle: null, r0: null }; state.plumes.push(np); inc.plumeId = np.id; renderKeulen(); renderChem(); save('Keule neu: ' + s.name); } })),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => { map.setView([inc.lat, inc.lng], Math.max(map.getZoom(), 15)); runtime.chemActive = inc.id; renderChemBand(); } }),
+        el('button', { class: 'btn small', text: 'Problem eintragen', onclick: () => { const pr = addProblemFromChem(inc, s); if (pr) say('Problem eingetragen.', 2500); } }),
+        el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => removeChem(inc) })));
+    box.append(card);
+  });
+  box.append(el('h2', { text: 'Datenblatt: ' + cur.name }), chemSheet(cur));
+  if (runtime.viewer) lockViewer(box);
+  fillChemNumbers();
+}
+function addProblemFromChem(inc, s) {
+  const pr = { id: uid(), title: 'Gefahrstoff ' + s.name + ': Absperrung und Betroffene prüfen', text: 'UN ' + s.un + ', Absperrung ' + s.erg.isolate + ' m' + (inc.large ? ', großes Leck: Evakuierung in Windrichtung bis ' + s.erg.spillDownwind + ' m erwägen' : '') + (inc.fire ? ', Brand: ' + s.erg.fire + ' m' : ''), prio: 1, status: 'offen', owner: '', time: nowIso(), lat: inc.lat, lng: inc.lng };
+  state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
+}
+async function fillChemNumbers() {
+  const tok = ++chemSeq;
+  for (const inc of state.chem) {
+    const s = chemSub(inc.sid), card = document.querySelector('[data-cid="' + inc.id + '"]'); if (!s || !card) continue;
+    const R = chemRings(inc), res = {};
+    for (const z of ['z1', 'z2', 'z3']) { if (!R[z]) continue; res[z] = await popFor([R[z]]); if (tok !== chemSeq) return;
+      const row = card.querySelector('tr[data-z="' + z + '"]'); if (!row) continue; const r = res[z]; const c = k => row.querySelector('[data-c="' + k + '"]');
+      if (r.noData || r.missing.length) { c('pop').textContent = r.noData ? 'keine Daten' : 'Daten fehlen'; continue; }
+      c('pop').textContent = '≈ ' + popFmtN(r.pop); c('u18').textContent = popPct(r.u18, r.pop); c('o65').textContent = popPct(r.o65, r.pop); c('age').textContent = popAge(r); }
+    // Objekte: innerste Zone gewinnt
+    const named = { z1: [], z2: [], z3: [] }, circ = (p, rad2) => Math.hypot((p.lat - inc.lat) * 111320, (p.lng - inc.lng) * 111320 * Math.cos(rad(inc.lat))) <= rad2;
+    visiblePois().forEach(p => { if (!state.layerOn[p.layer] && !p.manual) return; const lay = LAYER_BY_ID[p.layer];
+      const z = circ(p, s.erg.isolate) ? 'z1' : (R.z2 && pip(p.lat, p.lng, R.z2)) ? 'z2' : (R.z3 && circ(p, s.erg.fire)) ? 'z3' : null; if (z) named[z].push({ p, lay }); });
+    const box = card.querySelector('[data-c="objs"]'); if (!box) continue; box.replaceChildren();
+    const names = { z1: s.erg.isolate + ' m', z2: s.erg.spillDownwind + ' m Wind', z3: s.erg.fire + ' m Brand' }; let any = false;
+    ['z1', 'z2', 'z3'].forEach(z => { if (!R[z] || !named[z].length) return; any = true;
+      box.append(el('div', { class: 'cm-ohd', text: names[z] + ': ' + named[z].length + ' Objekte' }), ...named[z].slice(0, 8).map(o => el('button', { class: 'cm-ob', title: 'Auf Karte zeigen', onclick: () => map.setView([o.p.lat, o.p.lng], Math.max(map.getZoom(), 17)) }, poiTitle(o.p) + ' (' + (o.lay ? o.lay.name : '') + ')')),
+        named[z].length > 8 ? el('div', { class: 'hint', text: '… und ' + (named[z].length - 8) + ' weitere' }) : null); });
+    if (!any) box.append(el('div', { class: 'hint', text: visiblePois().length ? 'Keine geladenen Objekte in den Zonen.' : 'Keine Objekte geladen. Objekte werden über das Abfragegebiet geholt (Reiter Gebiete).' }));
+  }
+}
+function renderChemBand() {
+  const b = $('#chemBand'); if (!b) return; const inc = chemActive(), s = inc && chemSub(inc.sid);
+  if (!inc || !s || state.chemBand === false) { b.hidden = true; return; }
+  const p = s.props, tile = (v, l, c) => el('div', { class: 'cm-tile', style: '--c:' + c }, el('b', { text: v }), el('span', { text: l }));
+  const keyH = s.h.find(x => x[0] === 'H350') || s.h[0];
+  b.replaceChildren(chemPlate(s, true), el('div', {}, el('div', { class: 'nm', text: s.name }), el('div', { class: 'cm-sub', text: s.formula + ' · CAS ' + s.cas + ' · Klasse ' + s.klasse + ' · ERG ' + s.erg.guide })),
+    el('div', { class: 'cm-pics' }, ...s.ghs.map(c => ghsImg(c, 48))),
+    tile(nfmt(p.flash) + ' °C', 'Flammpunkt', '#ea580c'), tile(nfmt(p.lel, 1) + ' bis ' + nfmt(p.uel, 1) + ' %', 'Zündbereich (Vol.-%)', '#ea580c'), tile(nfmt(p.vapDens, 1), 'Dampfdichte, schwerer als Luft', '#0e7490'), tile(keyH[0], keyH[1].replace(/\.$/, ''), '#7f1d1d'),
+    el('div', { class: 'cm-leg' }, el('span', { class: 'cm-sw', style: 'background:#ef4444' }), s.erg.isolate + ' m Absperrung', el('br'), inc.large ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#ea580c' }), s.erg.spillDownwind + ' m Windrichtung', el('br')) : null, inc.fire ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#7c2d12' }), s.erg.fire + ' m Brand') : null),
+    runtime.viewer ? null : el('button', { class: 'cm-x', 'aria-label': 'Band ausblenden', title: 'Band ausblenden', text: '×', onclick: () => { state.chemBand = false; renderChemBand(); const c = $('#chemBandOn'); if (c) c.checked = false; persist(); } }));
+  b.hidden = false;
+}
+function renderChem() { renderChemMap(); renderChemTab(); renderChemBand(); }
+function chemWindChanged() {
+  renderChemMap(); fillChemNumbers();
+  state.chem.forEach(inc => { const pl = state.plumes.find(x => x.id === inc.plumeId), n = document.querySelector('[data-cid="' + inc.id + '"] [data-c="plume"]'); if (pl && n) { const ln = plumeLine(pl); n.textContent = ln.text; n.className = 'kres hint' + (ln.err ? ' err' : ''); } });
+}
+function initChem() {
+  $('#chemPlace').onclick = () => { stopDraw(); runtime.mode = { type: 'chemloc', sid: $('#chemSel').value }; map.getContainer().style.cursor = 'crosshair'; say('Freisetzungsort auf der Karte anklicken. Esc bricht ab.'); };
+  $('#chemSel').addEventListener('change', () => { renderChemTab(); });
+  $('#chemBandOn').addEventListener('change', e => { state.chemBand = e.target.checked; renderChemBand(); persist(); });
+  renderChem();
+}
+
+/* ------------------------------------------------------------------ */
 /* Kräfte (Einheiten) und Abschnitte mit Führung                       */
 /* ------------------------------------------------------------------ */
 const unitLayer = L.layerGroup().addTo(map);
@@ -4248,7 +4524,7 @@ function compareStand(st) {
   const um = new Map((a.units || []).map(x => [x.id, x])); (b.units || []).forEach(x => { const o = um.get(x.id); if (!o) L.push('Einheit neu: ' + (x.name || '–') + ' (' + fmtStr(x) + ')'); else { if (o.status !== x.status) L.push('Einheit ' + x.name + ': Status ' + ((state.unitStatus.find(s => s.id === o.status) || {}).label || o.status) + ' zu ' + ustat(x.status).label); if ((o.sectionId || null) !== (x.sectionId || null)) L.push('Einheit ' + x.name + ': Abschnitt ' + sectionName(o.sectionId) + ' zu ' + sectionName(x.sectionId)); if (uTotal(o) !== uTotal(x)) L.push('Einheit ' + x.name + ': Stärke ' + fmtStr(o) + ' zu ' + fmtStr(x)); } });
   (a.units || []).forEach(x => { if (!(b.units || []).some(y => y.id === x.id)) L.push('Einheit entfernt: ' + (x.name || '–')); });
   const names = arr => new Set((arr || []).map(x => x.name)); const diffNames = (label, x, y) => { names(y).forEach(n => { if (!names(x).has(n)) L.push(label + ' neu: ' + n); }); names(x).forEach(n => { if (!names(y).has(n)) L.push(label + ' entfernt: ' + n); }); };
-  diffNames('Gebiet', a.areas, b.areas); diffNames('Abschnitt', a.sections, b.sections);
+  diffNames('Gebiet', a.areas, b.areas); diffNames('Abschnitt', a.sections, b.sections); diffNames('Gefahrstoff', a.chem, b.chem);
   const wa = a.wind || {}, wb = b.wind || {}; if (wa.dir !== wb.dir || wa.speed !== wb.speed) L.push('Wind: ' + (wa.dir != null ? wa.dir + '° ' + wa.speed + ' m/s' : '–') + ' zu ' + (wb.dir != null ? wb.dir + '° ' + wb.speed + ' m/s' : '–'));
   const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', { style: 'width:min(640px,94vw)' }, el('h3', { text: 'Änderungen seit Lagestand Nr. ' + st.nr + ' (' + fmtTime(st.time) + ')' }),
     L.length ? el('ul', {}, L.slice(0, 200).map(x => el('li', { text: x }))) : el('p', { text: 'Keine Änderungen.' }), L.length > 200 ? el('p', { class: 'hint', text: (L.length - 200) + ' weitere Änderungen.' }) : null,
@@ -4330,6 +4606,7 @@ map.on('click', e => {
   else if (runtime.mode === 'plume') { const m = $('#kMode').value; stopDraw(); addPlume(e.latlng, m); }
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
+  else if (runtime.mode && runtime.mode.type === 'chemloc') { const sid = runtime.mode.sid; stopDraw(); addChem(sid, e.latlng); }
   else if (runtime.mode && runtime.mode.type === 'unitloc') {
     const un = state.units.find(x => x.id === runtime.mode.id); stopDraw();
     if (un) { un.lat = e.latlng.lat; un.lng = e.latlng.lng; renderUnits(); save('Einheit gesetzt: ' + un.name); }
@@ -4383,11 +4660,12 @@ function renderCounts() {
   const wtxt = [wx.temp != null ? String(wx.temp).replace('.', ',') + ' °C' : '', wx.sky || '', wd.dir != null ? 'Wind ' + compassName(wd.dir) + (wd.speed != null ? ' ' + String(wd.speed).replace('.', ',') + ' m/s' : '') : ''].filter(Boolean).join(', ');
   if (wtxt) box.append(el('span', { class: 'chip', title: 'Wetter und Wind', text: wtxt }));
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
+  { const ca = chemActive(); if (ca) box.append(el('span', { class: 'chip chem', title: 'Gefahrstoff-Lage: ' + ca.name, text: 'Gefahrstoff ' + (chemSub(ca.sid) || {}).name })); }
   if (POP.total != null) box.append(el('span', { class: 'chip', title: 'Wohnbevölkerung im Abfragegebiet nach Zensus 2022', text: 'ca. ' + popFmtN(POP.total) + ' Einwohner' }));
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
   if (openP) box.append(el('span', { class: 'chip', text: openP + ' Probleme offen' }));
   const ct = casTotals().t;
-  Object.entries(CAS).forEach(([k, v]) => { if (ct[k]) box.append(el('span', { class: 'chip' }, casMark(k, 18), ct[k] + ' ' + v.label)); });
+  Object.entries(CAS).forEach(([k, v]) => { if (ct[k]) box.append(el('span', { class: 'chip' }, casMark(k, 18), ct[k] + ' ' + (v.tag || v.label))); });
   ['ausgefallen', 'eingeschraenkt', 'intakt'].forEach(k => { if (c[k]) box.append(el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + STATUS[k].color }), c[k] + ' ' + STATUS[k].label)); });
 }
 function renderList() {
@@ -4488,7 +4766,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra; histInit(); persist();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra; histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -4504,8 +4782,8 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
-renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initChem(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));

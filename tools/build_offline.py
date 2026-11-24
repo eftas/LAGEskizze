@@ -73,6 +73,16 @@ def inline_local(m):
     return '<script>' + open(f, encoding='utf-8').read().replace('</script', '<\\/script') + '</script>'
 html = re.sub(r'<script src="(lib/[^"]+)"></script>', inline_local, html)
 
+# ---- Bilder fuer Gefahrstoffe und Personenzeichen (ghs, personen) als Data-URIs ----
+imgdir = os.path.join(os.path.dirname(os.path.abspath(a.src)), 'images')
+uris = {}
+for sub in ('ghs', 'personen'):
+    d = os.path.join(imgdir, sub)
+    if os.path.isdir(d):
+        for f in sorted(os.listdir(d)):
+            if f.endswith('.svg'): uris[sub + '/' + f[:-4]] = 'data:image/svg+xml;base64,' + base64.b64encode(open(os.path.join(d, f), 'rb').read()).decode()
+html = html.replace('<!--IMG_URIS-->', '<script>window.IMG_URIS=' + json.dumps(uris) + ';</script>')
+
 # ---- Bevoelkerungspakete (Zensus 2022) ----
 zdir = os.path.join(os.path.dirname(os.path.abspath(a.src)), 'zensus')
 if a.zensus != 'none' and os.path.exists(os.path.join(zdir, 'zensus-index.js')):
