@@ -1196,6 +1196,55 @@ body.beamer #chemBand .nm { font-size: 34px; }
 [data-theme="dark"] .cm-ob:hover { background: rgba(138, 180, 255, .16); }
 [data-theme="dark"] .chip.chem { background: #3a1d0a; color: #fdba74; border-color: #c2410c; }
 @media (max-width: 860px) { #chemBand { left: 8px; right: 8px; } #chemBand .cm-tile { min-width: 80px; } }
+
+/* ===== Führungsstruktur ===== */
+#fueOv { position: absolute; inset: 0; z-index: 1500; background: rgba(244, 246, 250, .99); overflow: auto; padding: 14px 18px 40px 30px; }
+#fueOv[hidden] { display: none; }
+.fuehd { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 10px; position: sticky; top: -14px; background: rgba(244, 246, 250, .99); padding: 6px 0; z-index: 2; }
+.fuehd h2 { margin: 0; font-size: 17px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.fuehd .ovtools { margin-left: auto; display: flex; gap: 6px; }
+.fhd { font-weight: 700; font-size: 13px; margin: 6px 0; }
+.fhd.small { font-size: 12px; color: var(--muted); margin-top: 10px; }
+.forg { display: flex; flex-direction: column; align-items: center; min-width: min-content; }
+.frow.c { display: flex; justify-content: center; }
+.fv { width: 2px; height: 18px; background: #94a3b8; }
+.fmid { display: flex; align-items: flex-start; width: 100%; justify-content: center; }
+.fmid .fl, .fmid .fr { flex: 0 1 auto; }
+.fmid .fh { flex: 0 0 34px; border-top: 2px solid #94a3b8; margin-top: 30px; }
+.fmid .fspine { width: 2px; background: #94a3b8; align-self: stretch; min-height: 60px; }
+.fbox { display: block; text-align: left; font: inherit; color: inherit; cursor: pointer; min-width: 150px; max-width: 220px; border: 1px solid #cbd5e1; border-top: 5px solid var(--c, #1e40af); border-radius: 6px; background: #fff; padding: 6px 9px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+div.fbox { cursor: default; }
+.fbox:hover:not(div) { border-color: var(--c); }
+.fbox b { display: block; font-size: 12.5px; }
+.fbox small { display: block; color: var(--muted); font-size: 11.5px; }
+.fbox .who { display: block; font-weight: 600; font-size: 12.5px; margin-top: 2px; }
+.fbox .who.free { color: #b45309; }
+.fbox.free { border-style: dashed; background: #fffaf0; }
+.fbox .funk { display: inline-block; margin-top: 3px; font-size: 10.5px; background: #e0e7ff; color: #1e3a8a; border-radius: 3px; padding: 0 5px; }
+.fstab { border: 2px solid #1e40af; border-radius: 8px; background: rgba(30, 64, 175, .04); padding: 8px 10px; max-width: 520px; }
+.fgrid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.feas { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; align-items: flex-start; }
+.fsec { border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 6px; background: var(--panel, #fff); padding: 8px; min-width: 210px; max-width: 280px; }
+.fsec.uea { margin-top: 8px; background: rgba(100, 116, 139, .07); }
+.ftag { display: inline-block; font-size: 10.5px; font-weight: 700; color: #fff; background: var(--c); border-radius: 3px; padding: 0 6px; margin-bottom: 4px; }
+.ftask { font-size: 12px; color: var(--muted); margin: 4px 0; }
+.fsum { font-size: 11.5px; color: var(--muted); margin: 4px 0; }
+.fu { display: flex; gap: 6px; align-items: center; border-left: 4px solid var(--c); padding: 2px 6px; margin: 3px 0; font-size: 12px; background: rgba(100, 116, 139, .08); }
+.fu img { width: 26px; height: 22px; object-fit: contain; flex: none; }
+.fact { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.fuea { margin-top: 8px; border-top: 2px solid #94a3b8; padding-top: 2px; }
+#fueFunk { margin-top: 24px; }
+.fst { border-collapse: collapse; width: 100%; background: var(--panel, #fff); border: 1px solid var(--line); }
+.fst th, .fst td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.fst th { background: rgba(100, 116, 139, .12); font-size: 12px; }
+.fst input { width: 100%; min-width: 80px; }
+[data-theme="dark"] #fueOv, [data-theme="dark"] .fuehd { background: rgba(11, 18, 32, .99); }
+[data-theme="dark"] .fbox, [data-theme="dark"] .fsec { background: #152036; border-color: #3a4a63; }
+[data-theme="dark"] .fbox.free { background: #2a2010; }
+[data-theme="dark"] .fbox .funk { background: #1e3a8a; color: #dbeafe; }
+[data-theme="dark"] .fstab { background: rgba(138, 180, 255, .06); border-color: #4a6fd1; }
+[data-theme="dark"] .fst { background: #152036; }
+@media (max-width: 860px) { .fmid { flex-direction: column; align-items: center; } .fmid .fh, .fmid .fspine { display: none; } }
 </style>
 </head>
 <body>
@@ -1217,6 +1266,7 @@ body.beamer #chemBand .nm { font-size: 34px; }
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
+    <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Funkplan">Führung</button>
     <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
@@ -1649,6 +1699,11 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     <form id="placeSearch" role="search" autocomplete="off"><button type="button" id="placeToggle" aria-label="Ortssuche ein- oder ausklappen" aria-expanded="true" title="Ortssuche ein- oder ausklappen"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM15.5 15.5 21 21"/></svg></button><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
     <section id="chemBand" aria-label="Gefahrstoff" hidden></section>
+    <section id="fueOv" aria-label="Führungsstruktur" hidden>
+      <div class="fuehd"><h2>Führungsstruktur nach FwDV 100</h2><div class="ovtools"><button class="btn primary" id="fueAddEA">+ EA</button><button class="btn" id="fueClose">Schließen</button></div></div>
+      <div id="fueBody"></div>
+      <div id="fueFunk"></div>
+    </section>
     <section id="unitOv" aria-label="Alle Einheiten auf einen Blick" hidden>
       <div class="ovhead"><h2>Einheiten auf einen Blick</h2><div id="ovSum"></div>
         <div class="ovtools"><button class="btn primary" id="ovAdd">+ Einheit</button><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
@@ -2010,6 +2065,7 @@ function freshState() {
     stands: [],          // { id, nr, time, title, note, by, sum, z (komprimierter Stand) }
     units: [],           // { id, name, call, sym, f, u, h, status, sectionId, task, note, lat?, lng?, time }
     unitStatus: JSON.parse(JSON.stringify(UNIT_STATUS_DEFAULT)),
+    fue: { people: {}, fb: [], funk: [] },   // Führungsstruktur: people[EL|LS|S1..|SL] = { name, call }, fb = Fachberater, funk = Funkplan
     chem: [],            // { id, sid, name, lat, lng, large, fire, Q, H, plumeId }
     chemBand: true,
     popRadius: 300,      // Umkreis in m für die Wohnbevölkerung an Objekten (nicht Teil des Rückgängig-Verlaufs)
@@ -2053,7 +2109,7 @@ function migrate(s) {
   const d = freshState(); Object.keys(d).forEach(k => { if (s[k] === undefined) s[k] = d[k]; });
   s.areas.forEach(a => { a.color = safeColor(a.color); a.sections = undefined; delete a.sections; });
   s.sections.forEach(x => { x.color = safeColor(x.color, '#e11d48'); });
-  fixProblems(s.problems);
+  fixProblems(s.problems); s.fue = Object.assign({ people: {}, fb: [], funk: [] }, s.fue);
   if (s.journal.some(j => j.nr == null)) { const L = s.journal.length; for (let i = L - 1; i >= 0; i--) if (s.journal[i].nr == null) s.journal[i].nr = L - i; s.diarySeq = Math.max(s.diarySeq || 0, ...s.journal.map(j => j.nr || 0)); }
   return s;
 }
@@ -2104,7 +2160,7 @@ function snapshot() {
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
     units: state.units, manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
-    wind: state.wind, plumes: state.plumes, chem: state.chem
+    wind: state.wind, plumes: state.plumes, chem: state.chem, fue: state.fue
   });
 }
 function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
@@ -2150,7 +2206,7 @@ function restore(snap) {
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
-  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || [];
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || []; state.fue = d.fue || freshState().fue;
   d.manual.forEach(q => { state.pois[q.id] = q; });
   renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
   hist.cur = snapshot(); persist();
@@ -2735,7 +2791,7 @@ function renameSection(sx, name) {
   name = (name || '').trim(); if (!name || name === sx.name) { renderSecList(); return; }
   const old = sx.name; sx.name = name; renderSections(); save('Abschnitt umbenannt: ' + old + ' zu ' + name);
 }
-function removeSection(sx) { state.sections = state.sections.filter(x => x !== sx); state.units.forEach(u => { if (u.sectionId === sx.id) u.sectionId = null; }); renderSections(); renderUnits(); renderAbschnitte(); save('Abschnitt entfernt: ' + sx.name); }
+function removeSection(sx) { state.sections.forEach(x => { if (x.parentId === sx.id) x.parentId = sx.parentId || null; }); state.sections = state.sections.filter(x => x !== sx); state.units.forEach(u => { if (u.sectionId === sx.id) u.sectionId = null; }); renderSections(); renderUnits(); renderAbschnitte(); save('Abschnitt entfernt: ' + sx.name); }
 function renderSecList() {
   const box = $('#secList'); if (!box) return; box.replaceChildren();
   if (!state.sections.length) box.append(el('div', { class: 'hint', text: 'Noch keine. Im Reiter Lage zeichnen.' }));
@@ -4420,7 +4476,7 @@ function initOvDrag() {
   window.addEventListener('pointercancel', () => ovDragEnd(false));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && ovDrag && ovDrag.on) { e.stopPropagation(); ovDragEnd(false); } }, true);
 }
-function openUnitOverview() { $('#unitOv').hidden = false; renderUnitOverview(); $('#ovClose').focus(); }
+function openUnitOverview() { closeFue(); $('#unitOv').hidden = false; renderUnitOverview(); $('#ovClose').focus(); }
 function closeUnitOverview() { $('#unitOv').hidden = true; }
 function initUnitOverview() {
   $('#btnUnits').onclick = () => ($('#unitOv').hidden ? openUnitOverview() : closeUnitOverview());
@@ -4431,9 +4487,118 @@ function initUnitOverview() {
   $('#unitOv').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeUnitOverview(); } });
 }
 
+/* ------------------------------------------------------------------ */
+/* Führungsstruktur nach FwDV 100: EL, Führungsstab, Leitstelle,       */
+/* Einsatzabschnitte (EA) und Untereinsatzabschnitte (UEA), Funkplan   */
+/* ------------------------------------------------------------------ */
+function fieldsDialog(title, fields, okLabel) {
+  return new Promise(resolve => {
+    const inputs = fields.map(f => el(f.area ? 'textarea' : 'input', Object.assign({ placeholder: f.ph || '', 'aria-label': f.l }, f.area ? { rows: '2' } : { type: 'text' })));
+    inputs.forEach((i, k) => { i.value = fields[k].v || ''; });
+    const done = v => { dlg.remove(); resolve(v); };
+    const ok = () => done(Object.fromEntries(fields.map((f, k) => [f.k, inputs[k].value])));
+    const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', {}, el('h3', { text: title }),
+      ...fields.map((f, k) => el('label', { class: 'hint' }, f.l, inputs[k])),
+      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: okLabel || 'OK', onclick: ok }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(null) }))));
+    dlg.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); ok(); } else if (e.key === 'Escape') { e.stopPropagation(); done(null); } });
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(null); });
+    document.body.append(dlg); inputs[0].focus();
+  });
+}
+const fuePerson = key => Object.assign({ name: '', call: '' }, (state.fue.people || {})[key]);
+async function fueEditPerson(key, title) {
+  if (runtime.viewer) return; const cur = fuePerson(key);
+  const d = await fieldsDialog(title, [{ k: 'name', l: 'Name, Funktion', v: cur.name, ph: 'z. B. Vorname Name, Organisation' }, { k: 'call', l: 'Funkrufname', v: cur.call }]); if (!d) return;
+  state.fue.people[key] = { name: d.name.trim(), call: d.call.trim() }; addJournal('Führung: ' + title + ' ' + (d.name.trim() || 'unbesetzt'), true); renderFue(); save('Führungsstruktur: ' + title);
+}
+async function fueEditSection(sx) {
+  if (runtime.viewer) return;
+  const d = await fieldsDialog((sx.parentId ? 'UEA ' : 'EA ') + sx.name, [{ k: 'name', l: 'Bezeichnung', v: sx.name }, { k: 'leader', l: 'Abschnittsleiter', v: sx.leader || '' }, { k: 'deputy', l: 'Stellvertreter', v: sx.deputy || '' }, { k: 'radio', l: 'Funk (Kanal, Rufname)', v: sx.radio || '' }, { k: 'task', l: 'Auftrag', v: sx.task || '', area: true }]); if (!d) return;
+  Object.assign(sx, { name: d.name.trim() || sx.name, leader: d.leader.trim(), deputy: d.deputy.trim(), radio: d.radio.trim(), task: d.task }); renderSections(); renderUnits(); renderAbschnitte(); save('Führung Abschnitt ' + sx.name);
+}
+async function fueAddSection(parent) {
+  const d = await fieldsDialog(parent ? 'Neues UEA unter ' + parent.name : 'Neuer Einsatzabschnitt (EA)', [{ k: 'name', l: 'Bezeichnung', v: '', ph: parent ? 'z. B. Wasserförderung' : 'z. B. EA Nord' }], 'Anlegen'); if (!d || !d.name.trim()) return;
+  const name = d.name.trim(); state.sections.push({ id: uid(), kind: 'poly', name, color: PAL[state.sections.length % PAL.length], pts: [], parentId: parent ? parent.id : null });
+  addJournal((parent ? 'UEA' : 'EA') + ' angelegt: ' + name, true); renderSections(); renderUnits(); renderAbschnitte(); save((parent ? 'UEA' : 'EA') + ' angelegt: ' + name);
+}
+async function fueRemoveSection(sx) {
+  const kids = state.sections.filter(x => x.parentId === sx.id).length, un = state.units.filter(u => u.sectionId === sx.id).length;
+  if (await askYesNo((sx.parentId ? 'UEA' : 'EA') + ' „' + sx.name + '“ entfernen?', un + ' Einheiten werden „ohne Abschnitt“.' + (kids ? ' Die ' + kids + ' UEA rücken eine Ebene hoch.' : '') + ' Rückgängig ist möglich.', 'Entfernen')) { state.sections.forEach(x => { if (x.parentId === sx.id) x.parentId = sx.parentId || null; }); removeSection(sx); }
+}
+function fBox(o) {
+  const who = o.name, vw = runtime.viewer;
+  const b = el(vw ? 'div' : 'button', { class: 'fbox' + (who ? '' : ' free'), style: '--c:' + (o.color || '#1e40af'), title: vw ? null : 'Klicken: Person und Funk eintragen', onclick: vw ? null : o.onclick },
+    el('b', { text: o.title }), o.sub ? el('small', { text: o.sub }) : null, el('span', { class: 'who' + (who ? '' : ' free'), text: who || 'unbesetzt' }), o.call ? el('span', { class: 'funk', text: o.call }) : null);
+  return b;
+}
+function fueUnit(u) { const st = ustat(u.status); return el('div', { class: 'fu', style: '--c:' + safeColor(st.color), title: st.label }, el('img', { src: unitSym(u).url, alt: '' }), el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) })); }
+function fueSecBox(sx, level) {
+  const ch = state.sections.filter(x => x.parentId === sx.id && x.kind !== 'line'), us = state.units.filter(u => u.sectionId === sx.id), vw = runtime.viewer;
+  const tot = us.reduce((a, u) => a + uTotal(u), 0);
+  const box = el('div', { class: 'fsec' + (level ? ' uea' : ''), style: '--c:' + safeColor(sx.color, '#2563eb') },
+    el('div', { class: 'ftag', text: level ? 'UEA' : 'EA' }),
+    fBox({ title: sx.name, sub: 'Leiter' + (sx.deputy ? ', Stv.: ' + sx.deputy : ''), name: sx.leader, call: sx.radio, color: sx.color, onclick: () => fueEditSection(sx) }),
+    sx.task ? el('div', { class: 'ftask', text: sx.task }) : null,
+    el('div', { class: 'fsum', text: us.length + ' Einheiten, Stärke ' + tot }),
+    ...us.map(fueUnit),
+    vw ? null : el('div', { class: 'fact' }, level ? null : el('button', { class: 'btn small', text: '+ UEA', onclick: () => fueAddSection(sx) }), el('button', { class: 'btn small', text: '+ Einheit', onclick: () => addUnitDialog({ sectionId: sx.id }) }), el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => fueRemoveSection(sx) })),
+    ch.length ? el('div', { class: 'fuea' }, ...ch.map(c => fueSecBox(c, 1))) : null);
+  return box;
+}
+function renderFue() {
+  const ov = $('#fueOv'); if (!ov || ov.hidden) return; const body = $('#fueBody'), vw = runtime.viewer;
+  const act = document.activeElement; if (act && body.contains(act) && /^(INPUT|TEXTAREA|SELECT)$/.test(act.tagName)) return;
+  body.replaceChildren();
+  const roles = state.roles.filter(r => r.id !== 'SL'), sl = state.roles.find(r => r.id === 'SL');
+  const sP = (id, label) => { const p = fuePerson(id); return fBox({ title: label || id, name: p.name, call: p.call, color: '#1e40af', onclick: () => fueEditPerson(id, label || id) }); };
+  const el1 = fuePerson('EL'), ls = fuePerson('LS');
+  const staff = el('div', { class: 'fstab' }, el('div', { class: 'fhd', text: 'Führungsstab' }), sP('SL', sl ? sl.label : 'Leiter des Führungsstabs'),
+    el('div', { class: 'fgrid' }, ...roles.map(r => sP(r.id, r.label))),
+    el('div', { class: 'fhd small', text: 'Fachberater und Verbindungspersonen' }),
+    el('div', { class: 'fgrid' }, ...state.fue.fb.map(f => fBox({ title: f.title || 'Fachberater', name: f.name, call: f.call, color: '#7c3aed', onclick: async () => { const d = await fieldsDialog('Fachberater oder Verbindung', [{ k: 'title', l: 'Bezeichnung', v: f.title }, { k: 'name', l: 'Name, Funktion', v: f.name }, { k: 'call', l: 'Funkrufname', v: f.call }]); if (d) { Object.assign(f, { title: d.title.trim(), name: d.name.trim(), call: d.call.trim() }); renderFue(); save('Führungsstruktur: Fachberater'); } } })),
+      vw ? null : el('button', { class: 'btn small', text: '+ Fachberater oder Verbindung', onclick: async () => { const d = await fieldsDialog('Fachberater oder Verbindung', [{ k: 'title', l: 'Bezeichnung', v: '', ph: 'z. B. Fachberater THW, Verbindung Polizei' }, { k: 'name', l: 'Name, Funktion', v: '' }, { k: 'call', l: 'Funkrufname', v: '' }], 'Anlegen'); if (d && d.title.trim()) { state.fue.fb.push({ id: uid(), title: d.title.trim(), name: d.name.trim(), call: d.call.trim() }); renderFue(); save('Führungsstruktur: Fachberater angelegt'); } } })));
+  const roots = state.sections.filter(x => x.kind !== 'line' && !x.parentId), free = state.units.filter(u => !u.sectionId || !state.sections.some(x => x.id === u.sectionId));
+  body.append(el('div', { class: 'forg' },
+    el('div', { class: 'frow c' }, fBox({ title: 'Einsatzleiter (EL)', sub: 'Leiter der Einsatzleitung', name: el1.name, call: el1.call, color: '#0f2a47', onclick: () => fueEditPerson('EL', 'Einsatzleiter (EL)') })),
+    el('div', { class: 'fv' }),
+    el('div', { class: 'fmid' }, el('div', { class: 'fl' }, staff), el('div', { class: 'fh' }), el('div', { class: 'fspine' }), el('div', { class: 'fh' }),
+      el('div', { class: 'fr' }, fBox({ title: 'Leitstelle', sub: 'Verbindung zur Leitstelle', name: ls.name, call: ls.call, color: '#475569', onclick: () => fueEditPerson('LS', 'Leitstelle') }))),
+    el('div', { class: 'fv' }),
+    el('div', { class: 'fhd', text: 'Einsatzabschnitte (EA) und Untereinsatzabschnitte (UEA)' }),
+    el('div', { class: 'feas' }, ...roots.map(r => el('div', { class: 'fea' }, fueSecBox(r, 0))),
+      free.length ? el('div', { class: 'fea' }, el('div', { class: 'fsec', style: '--c:#94a3b8' }, el('div', { class: 'ftag', text: 'nicht zugeteilt' }), ...free.map(fueUnit))) : null,
+      !roots.length && !vw ? el('div', { class: 'hint', text: 'Noch kein Einsatzabschnitt. Mit „+ EA“ anlegen.' }) : null)));
+  renderFunk(); if (vw) lockViewer(body);
+}
+function renderFunk() {
+  const box = $('#fueFunk'); if (!box) return; const act = document.activeElement;
+  if (act && box.contains(act) && /^(INPUT|TEXTAREA|SELECT)$/.test(act.tagName)) return;
+  box.replaceChildren(); const vw = runtime.viewer, rows = state.fue.funk;
+  const cell = (r, k, ph, w) => el('input', { type: 'text', value: r[k] || '', placeholder: ph, style: w ? 'width:' + w : null, onchange: ev => { r[k] = ev.target.value; save('Funkplan geändert'); } });
+  box.append(el('div', { class: 'fhd', text: 'Funkplan (S6 Information und Kommunikation)' }),
+    el('table', { class: 'fst' }, el('thead', {}, el('tr', {}, ...['Kanal oder Gruppe', 'Verwendung', 'Teilnehmer (Rufnamen)', 'Bemerkung', ''].map(h => el('th', { text: h })))),
+      el('tbody', {}, ...(rows.length ? rows : [null]).map(r => r ? el('tr', {}, el('td', {}, cell(r, 'ch', 'z. B. Kanal 1')), el('td', {}, cell(r, 'use', 'z. B. Führung')), el('td', {}, cell(r, 'who', 'Rufnamen')), el('td', {}, cell(r, 'note', '')),
+        el('td', {}, vw ? null : el('button', { class: 'btn small danger', text: '×', 'aria-label': 'Zeile entfernen', onclick: () => { state.fue.funk = state.fue.funk.filter(x => x !== r); renderFunk(); save('Funkplan: Zeile entfernt'); } }))) : el('tr', {}, el('td', { colspan: '5', class: 'hint', text: 'Noch keine Zeile. „+ Zeile“ oder „Aus Abschnitten übernehmen“.' }))))),
+    vw ? null : el('div', { class: 'row' }, el('button', { class: 'btn small', text: '+ Zeile', onclick: () => { state.fue.funk.push({ id: uid(), ch: '', use: '', who: '', note: '' }); renderFunk(); save('Funkplan: Zeile angelegt'); } }),
+      el('button', { class: 'btn small', text: 'Aus Abschnitten übernehmen', title: 'Je EA und UEA eine Zeile mit dem eingetragenen Funk und den Rufnamen der zugeteilten Einheiten', onclick: () => {
+        let n = 0; state.sections.filter(x => x.kind !== 'line').forEach(sx => { if (state.fue.funk.some(r => r.sec === sx.id)) return; const who = state.units.filter(u => u.sectionId === sx.id).map(u => u.call || u.name).filter(Boolean).join(', ');
+          state.fue.funk.push({ id: uid(), sec: sx.id, ch: sx.radio || '', use: sx.name + (sx.parentId ? ' (UEA von ' + sectionName(sx.parentId) + ')' : ''), who, note: '' }); n++; });
+        renderFunk(); save('Funkplan aus Abschnitten übernommen'); say(n ? n + ' Zeilen übernommen.' : 'Alle Abschnitte stehen schon im Funkplan.', 3000); } })),
+    el('div', { class: 'hint', text: 'Kanäle und Rufnamen trägt der S6 ein. Es werden keine Werte vorgegeben.' }));
+  if (vw) lockViewer(box);
+}
+function openFue() { closeUnitOverview(); $('#fueOv').hidden = false; renderFue(); $('#fueClose').focus(); }
+function closeFue() { $('#fueOv').hidden = true; }
+function initFue() {
+  $('#btnFue').onclick = () => ($('#fueOv').hidden ? openFue() : closeFue()); $('#fueClose').onclick = closeFue;
+  $('#fueAddEA').onclick = () => fueAddSection(null);
+  $('#fueOv').addEventListener('keydown', e => { if (e.key === 'Escape' && !document.querySelector('.dlg')) { e.stopPropagation(); closeFue(); } });
+}
+
 /* Abschnitte-Reiter */
 function secTotals(sx) { const us = state.units.filter(u => u.sectionId === sx.id); return { us, f: us.reduce((a, u) => a + (u.f || 0), 0), u: us.reduce((a, u) => a + (u.u || 0), 0), h: us.reduce((a, u) => a + (u.h || 0), 0) }; }
 function renderAbschnitte() {
+  renderFue();
   const box = $('#abList'); if (!box) return; const active = document.activeElement;
   if (active && box.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) return;   // nicht mitten im Tippen neu aufbauen
   box.replaceChildren();
@@ -4448,6 +4613,7 @@ function renderAbschnitte() {
       el('input', { type: 'text', class: 'title', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) }),
       el('div', { class: 'row' }, fld('leader', 'Name, Funktion', 'Abschnittsleiter'), fld('deputy', 'Name', 'Stellvertreter')),
       el('div', { class: 'row' }, fld('radio', 'Rufname oder Kanal', 'Funk')),
+      (() => { const hasKids = state.sections.some(x => x.parentId === sx.id), sel2 = el('select', { 'aria-label': 'Unterabschnitt von', disabled: hasKids ? 'disabled' : null, onchange: ev => { sx.parentId = ev.target.value || null; renderAbschnitte(); save('Abschnitt ' + sx.name + ': ' + (sx.parentId ? 'UEA von ' + sectionName(sx.parentId) : 'EA')); } }, el('option', { value: '', text: 'keiner, eigener Einsatzabschnitt (EA)' }), ...state.sections.filter(x => x.kind !== 'line' && x.id !== sx.id && !x.parentId).map(x => el('option', { value: x.id, text: 'UEA von ' + x.name }))); sel2.value = sx.parentId || ''; return el('label', { class: 'hint' }, hasKids ? 'Hat selbst UEA, bleibt EA' : 'Einordnung', sel2); })(),
       el('label', { class: 'hint' }, 'Auftrag', el('textarea', { rows: '2', onchange: ev => { sx.task = ev.target.value; save('Abschnitt ' + sx.name + ': Auftrag geändert'); } })),
       el('div', { class: 'hint', 'data-pop-sx': sx.id, text: sx.pts && sx.pts.length > 2 ? 'Wohnbevölkerung: wird berechnet…' : '' }),
       el('div', { class: 'hint', text: t.us.length + ' Einheiten, Stärke ' + t.f + '/' + t.u + '/' + t.h + '/' + (t.f + t.u + t.h) }),
@@ -4829,7 +4995,7 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initChem(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initChem(); initFue(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
