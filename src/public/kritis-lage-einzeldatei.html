@@ -1662,7 +1662,6 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
       <div class="hint">Tabelle mit Semikolon als Trennzeichen und Zeichensatz für Excel. Karte als PDF: Drucken, dann „Als PDF speichern“.</div>
       <h2>Zusammenarbeit</h2>
       <div class="row"><button class="btn primary" id="expMine">Meine Daten exportieren (JSON)</button></div>
-      <div class="row"><label class="btn" id="ovLoadLbl" style="cursor:pointer">Gesamtes Lagebild laden (Gesamtstand vom S2)<input type="file" id="ovLoad" accept=".json,application/json" hidden></label></div>
       <div class="row"><button class="btn" id="mtGuided">Lagebesprechung führen (5 Schritte)</button><button class="btn" id="lvShow">Lagevortrag zeigen (Karte groß)</button></div>
       <div class="row"><button class="btn" id="impOthers">Daten der anderen einlesen (nur S2)</button><button class="btn" id="expAll">Gesamtstand speichern</button></div>
       <div class="hint">Jede Funktion speichert nur ihren Bereich. Der S2 liest alle Dateien ein, seine Karte wird aktualisiert. Ihre Funktion wechseln Sie oben über den Namen.</div>
@@ -4740,7 +4739,7 @@ function applyRole() {
   document.body.dataset.role = r;
   document.querySelectorAll('#tabs button').forEach(b => { b.hidden = !!(tabs && !tabs.includes(b.dataset.tab)); });
   $('#btnAddPoi').hidden = r !== 'S2' || runtime.viewer;
-  $('#lvShow').hidden = r !== 'S2'; $('#impOthers').hidden = r !== 'S2'; $('#ovLoadLbl').hidden = r === 'S2'; $('#expAll').hidden = r !== 'S2';
+  $('#lvShow').hidden = r !== 'S2'; $('#impOthers').hidden = r !== 'S2';
   const chip = $('#roleChip'); chip.hidden = runtime.viewer; chip.textContent = roleName();
   $('#btnExport').hidden = runtime.viewer; $('#btnExport').title = r === 'S2' ? 'Eigene Daten und Gesamtstand als JSON-Datei' : 'Nur Ihre Daten als JSON-Datei speichern';
   const sel = document.querySelector('#tabs button[aria-selected="true"]'); if (!sel || sel.hidden) openTab((tabs && tabs[0]) || 'einsatz');
@@ -4776,18 +4775,6 @@ function exportRole(all) {
   const data = {}; keys.forEach(k => { data[k] = JSON.parse(JSON.stringify(dget(k))); });
   const file = { format: 'lagekarte-teil', version: 1, role: all ? 'Gesamt' : r, exported: new Date().toISOString(), data, shared: { messages: state.messages, journal: state.journal } };
   download('lagekarte-' + (all ? 'gesamt' : r) + '-' + stamp() + '.json', JSON.stringify(file, null, 1), 'application/json'); say((all ? 'Gesamtstand' : 'Ihre Daten (' + r + ')') + ' gespeichert.', 3500);
-}
-/* Gesamtes Lagebild (Gesamtstand vom S2) laden: alles, was nicht zur eigenen Funktion gehört, wird übernommen, die eigenen Eingaben bleiben */
-async function loadOverview(file) {
-  try {
-    const j = JSON.parse(await file.text()); if (j.format !== 'lagekarte-teil' || j.role !== 'Gesamt') throw new Error('Das ist kein Gesamtstand. Der S2 speichert ihn im Reiter Daten.');
-    const t = Date.parse(j.exported), cur = state.sources.Gesamt; if (cur && cur.time >= t) { say('Dieser Gesamtstand ist nicht neuer als der geladene.', 4500); return; }
-    const mine = ROLE_DOM[roleId()] || []; let n = 0; Object.keys(j.data || {}).forEach(k => { if (!mine.includes(k)) { dset(k, j.data[k]); n++; } });
-    let jAdded = 0; if (j.shared && Array.isArray(j.shared.journal)) jAdded = mergeJournal(j.shared.journal);
-    if (j.shared && Array.isArray(j.shared.messages)) { const ids = new Set(state.messages.map(m => m.id)); j.shared.messages.forEach(m => { if (!ids.has(m.id)) state.messages.push(m); }); state.messages.sort((a, b) => String(a.time || '').localeCompare(String(b.time || ''))); }
-    state.sources.Gesamt = { time: t, file: file.name }; applyState(state, true); addJournal('Gesamtes Lagebild geladen (Stand ' + fmtHM2(t) + ' Uhr), ' + jAdded + ' Tagebucheinträge einsortiert', true); save('Lagebild geladen');
-    say('Lagebild vom ' + fmtHM2(t) + ' Uhr geladen. Ihre eigenen Eingaben (' + roleName() + ') sind unverändert.', 5000);
-  } catch (e) { say('Lagebild nicht lesbar: ' + e.message, 6000); }
 }
 function importDlg() {
   if (!can('areas')) { say('Nur der S2 liest Daten der anderen ein.', 4000); return; }
@@ -4903,7 +4890,7 @@ function openGuidedMeeting() {
 }
 function initRoles() {
   $('#roleChip').onclick = () => chooseRole(true); $('#btnExport').onclick = () => exportRole(false);
-  $('#ovLoad').addEventListener('change', async ev => { const f = ev.target.files[0]; ev.target.value = ''; if (f) await loadOverview(f); }); $('#mtGuided').onclick = openGuidedMeeting; $('#lvShow').onclick = showLagevortrag; $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
+  $('#mtGuided').onclick = openGuidedMeeting; $('#lvShow').onclick = showLagevortrag; $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
   const q = qs.get('rolle'), saved = (() => { try { return localStorage.getItem('kritis-role'); } catch (e) { return null; } })();
   if (runtime.viewer) { runtime.role = 'S2'; applyRole(); return; }
   if (q && ROLLEN.some(r => r.id === q)) { runtime.role = q; try { localStorage.setItem('kritis-role', q); } catch (e) { /* egal */ } applyRole();  return; }
