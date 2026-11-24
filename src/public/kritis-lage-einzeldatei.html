@@ -1128,6 +1128,13 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 .ovst, .ovmore { border: 0; background: none; font: inherit; font-weight: 700; color: inherit; cursor: pointer; border-radius: 4px; padding: 2px 6px; }
 .ovst:hover, .ovmore:hover { background: rgba(30, 64, 175, .1); }
 .ovmore { font-size: 1.2em; line-height: 1; }
+.ovdel { border: 0; background: none; font: inherit; font-size: 1.25em; line-height: 1; color: #b91c1c; cursor: pointer; border-radius: 4px; padding: 0 6px; }
+.ovdel:hover { background: rgba(185, 28, 28, .12); }
+.ovcol > header { position: relative; }
+.ovplus { position: absolute; right: 8px; top: 8px; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel, #fff); cursor: pointer; font-size: 18px; line-height: 1; color: var(--accent); }
+.ovplus:hover { border-color: var(--accent); }
+[data-theme="dark"] .ovplus { background: #17233a; }
+[data-theme="dark"] .ovdel { color: #f87171; }
 .ovunit .st { display: flex; align-items: center; gap: 2px; }
 #ovGroup, #ovStat { max-width: 200px; }
 [data-theme="dark"] .ovghost { background: #152036; color: var(--ink); }
@@ -1644,7 +1651,7 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     <section id="chemBand" aria-label="Gefahrstoff" hidden></section>
     <section id="unitOv" aria-label="Alle Einheiten auf einen Blick" hidden>
       <div class="ovhead"><h2>Einheiten auf einen Blick</h2><div id="ovSum"></div>
-        <div class="ovtools"><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
+        <div class="ovtools"><button class="btn primary" id="ovAdd">+ Einheit</button><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
       <div id="ovCols"></div>
     </section>
     <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
@@ -4211,6 +4218,45 @@ function assignUnit(u, secId) {
   if ((u.sectionId || null) === (secId || null)) return; u.sectionId = secId; addJournal('Einheit ' + (u.name || '–') + ' zugeteilt: ' + sectionName(secId), true);
   renderUnits(); renderAbschnitte(); save('Einheit zugeteilt: ' + u.name);
 }
+function askYesNo(title, text, okLabel) {
+  return new Promise(resolve => {
+    const done = v => { dlg.remove(); resolve(v); };
+    const dlg = el('div', { class: 'dlg', role: 'alertdialog', 'aria-modal': 'true' }, el('div', {}, el('h3', { text: title }), el('div', { class: 'hint', text: text }),
+      el('div', { class: 'row' }, el('button', { class: 'btn danger', text: okLabel || 'Ja', onclick: () => done(true) }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(false) }))));
+    dlg.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); done(false); } });
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(false); });
+    document.body.append(dlg); dlg.querySelector('.btn:last-child').focus();
+  });
+}
+function newUnitDialog(pre) {
+  pre = pre || {};
+  return new Promise(resolve => {
+    const nm = el('input', { type: 'text', placeholder: 'Bezeichnung, z. B. LF 20' }), call = el('input', { type: 'text', placeholder: 'Funkrufname' });
+    const num = l => el('input', { type: 'number', min: '0', step: '1', value: '0', style: 'width:68px', 'aria-label': l });
+    const nf = num('Führer'), nu = num('Unterführer'), nh = num('Helfer'); let sym = null;
+    const prev = el('span', { class: 'hint', text: 'kein Zeichen' });
+    const sSec = el('select', {}, el('option', { value: '', text: 'ohne Abschnitt' }), ...state.sections.filter(x => x.kind !== 'line').map(x => el('option', { value: x.id, text: x.name }))); sSec.value = pre.sectionId || '';
+    const sSt = el('select', {}, ...state.unitStatus.map(x => el('option', { value: x.id, text: x.label }))); sSt.value = pre.status || state.unitStatus[0].id;
+    const err = el('div', { class: 'notice', hidden: 'hidden' });
+    const done = v => { dlg.remove(); resolve(v); };
+    const ok = () => { const name = nm.value.trim(); if (!name) { err.textContent = 'Bitte eine Bezeichnung eintragen.'; err.hidden = false; nm.focus(); return; }
+      done({ name, call: call.value.trim(), sym, f: Math.max(0, Math.round(+nf.value || 0)), u: Math.max(0, Math.round(+nu.value || 0)), h: Math.max(0, Math.round(+nh.value || 0)), sectionId: sSec.value || null, status: sSt.value }); };
+    const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', {}, el('h3', { text: 'Neue Einheit' }),
+      el('div', { class: 'row' }, nm), el('div', { class: 'row' }, call),
+      el('div', { class: 'row' }, el('span', { text: 'Stärke' }), nf, '/', nu, '/', nh, el('span', { class: 'hint', text: 'Führer/Unterführer/Helfer' })),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Zeichen wählen', onclick: async () => { const v = await pickSymbol(sym); if (v === undefined) return; sym = v; const r = v ? symOf(v) : null; prev.replaceChildren(v && r ? el('img', { src: r.url, alt: '', style: 'height:30px;vertical-align:middle' }) : 'kein Zeichen'); } }), prev),
+      el('div', { class: 'row' }, sSec, sSt), err,
+      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Anlegen', onclick: ok }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(null) }))));
+    dlg.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); ok(); } else if (e.key === 'Escape') { e.stopPropagation(); done(null); } });
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(null); });
+    document.body.append(dlg); nm.focus();
+  });
+}
+async function addUnitDialog(pre) { const d = await newUnitDialog(pre); if (d) addUnit(d); }
+async function removeUnitAsk(u) {
+  const kids = state.units.filter(x => x.parentId === u.id).length;
+  if (await askYesNo('Einheit „' + (u.name || 'Einheit') + '“ entfernen?', 'Stärke ' + fmtStr(u) + '.' + (kids ? ' Abgesetzte Teile (' + kids + ') bleiben bestehen.' : '') + ' Das lässt sich mit Rückgängig zurücknehmen.', 'Entfernen')) removeUnit(u);
+}
 function splitDialog(u) {
   return new Promise(resolve => {
     const nm = el('input', { type: 'text', placeholder: 'Bezeichnung, z. B. HLF 20' }), call = el('input', { type: 'text', placeholder: 'Funkrufname' });
@@ -4272,7 +4318,7 @@ function unitItems(u) {
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Bezeichnung', u.name || ''); if (v == null) return; u.name = v.trim(); renderUnits(); renderAbschnitte(); save('Einheit umbenannt: ' + u.name); } },
     { label: 'Zoom', disabled: u.lat == null, onclick: () => map.setView([u.lat, u.lng], Math.max(map.getZoom(), 17)) },
     { label: 'Duplizieren', onclick: () => addUnit(Object.assign({}, JSON.parse(JSON.stringify(u)), { id: uid(), name: (u.name || '') + ' (Kopie)', lat: u.lat + 0.0004, lng: u.lng + 0.0004, time: nowIso() })) },
-    { sep: true }, { label: 'Löschen', onclick: () => removeUnit(u) }
+    { sep: true }, { label: 'Entfernen…', onclick: () => removeUnitAsk(u) }
   ].filter(Boolean);
 }
 function renderUnitStatList() {
@@ -4308,7 +4354,7 @@ function ovTile(u, mode) {
       par ? el('div', { class: 'meta', text: 'Teil von ' + (par.name || 'Einheit') }) : null,
       kids.length ? el('div', { class: 'meta', text: 'abgesetzt: ' + kids.map(k => (k.name || 'Einheit') + ' (' + fmtStr(k) + ')').join(', ') }) : null,
       u.task ? el('div', { class: 'meta', text: u.task }) : null),
-    el('div', { class: 'st' }, stBtn, vw ? null : el('button', { class: 'ovmore', title: 'Weitere Aktionen: verschieben, aufteilen, Stärke', 'aria-label': 'Weitere Aktionen', text: '⋯', onclick: ev => { const r = ev.currentTarget.getBoundingClientRect(); showMenu(r.left, r.bottom + 2, unitItems(u)); } })));
+    el('div', { class: 'st' }, stBtn, vw ? null : el('button', { class: 'ovdel', title: 'Einheit entfernen', 'aria-label': 'Einheit entfernen', text: '×', onclick: () => removeUnitAsk(u) }), vw ? null : el('button', { class: 'ovmore', title: 'Weitere Aktionen: verschieben, aufteilen, Stärke', 'aria-label': 'Weitere Aktionen', text: '⋯', onclick: ev => { const r = ev.currentTarget.getBoundingClientRect(); showMenu(r.left, r.bottom + 2, unitItems(u)); } })));
   if (!vw) t.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === 'ContextMenu') && e.target === t) { e.preventDefault(); const r = t.getBoundingClientRect(); showMenu(r.left + 30, r.top + 20, unitItems(u)); } });
   return t;
 }
@@ -4335,6 +4381,7 @@ function renderUnitOverview() {
     const body = el('div', { class: 'ovbody' });
     g.list.slice().sort((a, b) => state.unitStatus.findIndex(x => x.id === a.status) - state.unitStatus.findIndex(x => x.id === b.status) || (a.name || '').localeCompare(b.name || '', 'de')).forEach(u => body.append(ovTile(u, mode)));
     if (!g.list.length) body.append(el('div', { class: 'ovempty', text: vw ? 'leer' : 'Leer. Einheit hierher ziehen.' }));
+    if (!vw) head.append(el('button', { class: 'ovplus', title: 'Einheit in diese Spalte einfügen', 'aria-label': 'Einheit hinzufügen', text: '+', onclick: () => addUnitDialog(g.st ? { status: g.st.id } : { sectionId: g.sx ? g.sx.id : null }) }));
     cols.append(el('div', { class: 'ovcol', 'data-drop': g.key }, head, body));
   });
 }
@@ -4377,7 +4424,7 @@ function openUnitOverview() { $('#unitOv').hidden = false; renderUnitOverview();
 function closeUnitOverview() { $('#unitOv').hidden = true; }
 function initUnitOverview() {
   $('#btnUnits').onclick = () => ($('#unitOv').hidden ? openUnitOverview() : closeUnitOverview());
-  $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview); $('#ovGroup').addEventListener('change', renderUnitOverview); initOvDrag();
+  $('#ovAdd').onclick = () => addUnitDialog({}); $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview); $('#ovGroup').addEventListener('change', renderUnitOverview); initOvDrag();
   const sz = d => { const ov = $('#unitOv'), v = Math.min(2.2, Math.max(0.7, (parseFloat(ov.style.getPropertyValue('--ovs')) || 1) + d)); ov.style.setProperty('--ovs', v.toFixed(2)); };
   $('#ovBig').onclick = () => sz(0.15); $('#ovSmall').onclick = () => sz(-0.15);
   $('#ovMap').onclick = () => { const pts = state.units.filter(u => u.lat != null).map(u => [u.lat, u.lng]); closeUnitOverview(); if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 17 }); else say('Keine Einheit hat einen Ort auf der Karte.', 4000); };
