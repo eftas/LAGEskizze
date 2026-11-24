@@ -22,7 +22,16 @@ body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; 
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 
-#app { display: grid; grid-template-columns: 400px 1fr; grid-template-rows: 46px 1fr; height: 100%; }
+#app { display: grid; grid-template-columns: 400px 1fr; grid-template-rows: 46px 1fr; height: 100%; transition: grid-template-columns .2s ease; }
+#app.collapsed { grid-template-columns: 0 1fr; }
+#app.collapsed #panel { visibility: hidden; border-right: 0; overflow: hidden; }
+#panelToggle { position: absolute; left: 0; top: 50%; z-index: 1000; width: 18px; height: 56px; margin-top: -28px; border: 1px solid var(--line); border-left: 0; border-radius: 0 6px 6px 0; background: #fff; color: var(--ink); font-size: 18px; line-height: 1; padding: 0; box-shadow: 1px 1px 4px rgba(0,0,0,.25); }
+#panelToggle:hover { background: #eef3f9; }
+header button:disabled { opacity: .4; cursor: default; }
+.dlg { position: fixed; inset: 0; background: rgba(15,42,71,.35); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+.dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(380px, 92vw); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+.dlg h3 { margin: 0 0 8px; font-size: 15px; }
+.dlg input { width: 100%; }
 header { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 0 14px; background: #0f2a47; color: #fff; }
 header h1 { font-size: 16px; margin: 0; font-weight: 600; white-space: nowrap; }
 header .sp { flex: 1; }
@@ -129,12 +138,14 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .card .row > button { flex: none; }
 .btn.wide { width: 100%; }
 @media (max-width: 860px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; }
+  #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; transition: grid-template-rows .2s ease; }
+  #app.collapsed { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 0; }
+  #panelToggle { left: 50%; top: auto; bottom: 0; margin: 0 0 0 -28px; width: 56px; height: 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
   #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
   #hdrCounts, #hdrArea { display: none; }
 }
 @media print {
-  header button, #panel, .leaflet-control-container, #msg { display: none !important; }
+  header button, #panel, #panelToggle, .leaflet-control-container, #msg { display: none !important; }
   #app { display: block; height: auto; }
   header { background: none; color: #000; }
   #mapWrap { position: static; height: 90vh; }
@@ -150,6 +161,9 @@ table.list tr.clickable:hover { background: #f1f5fa; }
     <span class="sp"></span>
     <div id="hdrCounts"></div>
     <span id="clock"></span>
+    <button id="btnPanel" title="Seitenleiste ein- oder ausklappen (Umschalt+P)">Leiste</button>
+    <button id="btnUndo" disabled>Zurück</button>
+    <button id="btnRedo" disabled>Wiederholen</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
@@ -332,6 +346,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 
   <div id="mapWrap">
     <div id="map"></div>
+    <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
     <div id="msg" role="status"></div>
   </div>
 </div>
@@ -484,11 +499,83 @@ function download(name, text, type) {
 }
 const obj = id => state.objects[id] || (state.objects[id] = { status: 'unbekannt' });
 
+/* ------------------------------------------------------------------ */
+/* Verlauf (Zurück / Wiederholen)                                      */
+/* ------------------------------------------------------------------ */
+const hist = { past: [], future: [], cur: '' };
+const HIST_MAX = 100;
+function snapshot() {
+  const objs = {};
+  Object.keys(state.objects).sort().forEach(id => {
+    const c = Object.assign({}, state.objects[id]);
+    if (c.persons && !Object.keys(c.persons).length) delete c.persons;
+    const k = Object.keys(c);
+    if (!k.length || (k.length === 1 && c.status === 'unbekannt')) return;
+    objs[id] = c;
+  });
+  return JSON.stringify({
+    areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
+    sections: state.sections, symbols: state.symbols, objects: objs,
+    manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems
+  });
+}
+function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
+function commit(label) {
+  const after = snapshot(); if (after === hist.cur) return;
+  hist.past.push({ label, before: hist.cur, after }); if (hist.past.length > HIST_MAX) hist.past.shift();
+  hist.cur = after; hist.future = []; updateUndoButtons();
+}
+function updateUndoButtons() {
+  const u = $('#btnUndo'), r = $('#btnRedo'); if (!u) return;
+  const pu = hist.past[hist.past.length - 1], fr = hist.future[hist.future.length - 1];
+  u.disabled = !pu; r.disabled = !fr;
+  u.title = pu ? 'Rückgängig: ' + pu.label : 'Nichts rückgängig zu machen';
+  r.title = fr ? 'Wiederholen: ' + fr.label : 'Nichts zu wiederholen';
+}
+function undo() {
+  commit('Änderung'); const e = hist.past.pop(); if (!e) return;
+  hist.future.push(e); restore(e.before); addJournal('Rückgängig: ' + e.label, true); updateUndoButtons();
+}
+function redo() {
+  commit('Änderung'); const e = hist.future.pop(); if (!e) return;
+  hist.past.push(e); restore(e.after); addJournal('Wiederholt: ' + e.label, true); updateUndoButtons();
+}
+function restore(snap) {
+  cancelEdit(); closeMenu(); stopDraw(); map.closePopup();
+  const d = JSON.parse(snap);
+  Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
+  state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
+  state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
+  d.manual.forEach(q => { state.pois[q.id] = q; });
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems();
+  hist.cur = snapshot(); persist();
+}
+function cancelEdit() { /* Eckpunkt-Bearbeitung: siehe unten */ }
+function closeMenu() { /* Kontextmenü: siehe unten */ }
+
+/* Kleiner Eingabedialog statt window.prompt */
+function askText(title, value) {
+  return new Promise(resolve => {
+    const inp = el('input', { type: 'text', value: value || '' });
+    const done = v => { dlg.remove(); resolve(v); };
+    const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', {}, el('h3', { text: title }), inp,
+      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'OK', onclick: () => done(inp.value) }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(null) }))));
+    dlg.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); done(inp.value); } else if (e.key === 'Escape') { e.stopPropagation(); done(null); } });
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(null); });
+    document.body.append(dlg); inp.focus(); inp.select();
+  });
+}
+
 let saveTimer;
 window.addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); saveNow(); } });
-function save() {
+function persist() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(saveNow, 300);
+}
+// save('Bezeichnung') legt einen Rückgängig-Schritt an, save() sichert nur im Browser.
+function save(label) {
+  persist();
+  if (label) commit(label);
 }
 function saveNow() {
   saveTimer = 0;
@@ -981,7 +1068,7 @@ function renderMarkers() {
     if (!vis && markers[p.id]) { groups[p.layer].removeLayer(markers[p.id]); delete markers[p.id]; return; }
     if (!vis || markers[p.id]) return;
     const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p), draggable: !!p.manual });
-    if (p.manual) m.on('dragend', () => { const ll = m.getLatLng(); p.lat = ll.lat; p.lng = ll.lng; save(); renderDeps(); });
+    if (p.manual) m.on('dragend', () => { const ll = m.getLatLng(); p.lat = ll.lat; p.lng = ll.lng; save('Objekt verschoben: ' + poiTitle(p)); renderDeps(); });
     m.bindPopup(() => poiPopup(p), { maxWidth: 300 });
     m.on('click', () => {
       if (runtime.mode && runtime.mode.type === 'link') { m.closePopup(); finishLink(p); }
@@ -1010,15 +1097,15 @@ function poiPopup(p) {
     if ((o.status || 'unbekannt') === k) return;
     const was = o.status || 'unbekannt'; o.status = k; o.statusTime = new Date().toISOString();
     addJournal(poiTitle(p) + ': Status ' + STATUS[was].label + ' zu ' + v.label, true);
-    draw(); setTime(); refreshIcons(); renderList(); renderCounts(); renderDeps(); save();
+    draw(); setTime(); refreshIcons(); renderList(); renderCounts(); renderDeps(); save('Status ' + poiTitle(p) + ': ' + v.label);
   } })));
   draw(); setTime();
-  const contact = el('input', { type: 'text', value: o.contact || '', placeholder: 'Name, Telefon', oninput: ev => { o.contact = ev.target.value; save(); } });
-  const note = el('textarea', { rows: '3', oninput: ev => { o.note = ev.target.value; save(); } }); note.value = o.note || '';
+  const contact = el('input', { type: 'text', value: o.contact || '', placeholder: 'Name, Telefon', oninput: ev => { o.contact = ev.target.value; save(); }, onchange: () => save('Ansprechpartner: ' + poiTitle(p)) });
+  const note = el('textarea', { rows: '3', oninput: ev => { o.note = ev.target.value; save(); }, onchange: () => save('Notiz: ' + poiTitle(p)) }); note.value = o.note || '';
 
   const outgoing = state.deps.filter(d => d.from === p.id), incoming = state.deps.filter(d => d.to === p.id);
   wrap.append(
-    p.manual ? el('input', { type: 'text', value: p.name || '', placeholder: 'Bezeichnung', oninput: ev => { p.name = ev.target.value; save(); renderList(); } }) : el('h3', { text: poiTitle(p) }),
+    p.manual ? el('input', { type: 'text', value: p.name || '', placeholder: 'Bezeichnung', oninput: ev => { p.name = ev.target.value; save(); renderList(); }, onchange: () => { if (markers[p.id]) markers[p.id].options.title = poiTitle(p); save('Objekt umbenannt: ' + poiTitle(p)); } }) : el('h3', { text: poiTitle(p) }),
     el('div', { class: 'sub' }, SECTORS[l.sector].name + ' · ' + l.name + (p.manual ? ' · manuell erfasst' : ''), p.addr ? el('br') : null, p.addr || null),
     stBox, timeEl,
     affected.has(p.id) ? el('div', { class: 'notice', text: 'Hängt laut manueller Verknüpfung von einem ausgefallenen Objekt ab.' }) : null,
@@ -1041,7 +1128,7 @@ function personsBox(p) {
   Object.entries(CAS).forEach(([k, v]) => {
     const inp = el('input', { type: 'number', min: '0', step: '1', value: o.persons[k] || '', placeholder: '0', style: 'width:100%', oninput: ev => {
       const n = Math.max(0, Math.round(+ev.target.value || 0)); if (n) o.persons[k] = n; else delete o.persons[k];
-      renderCas(); renderList(); save(); } });
+      renderCas(); renderList(); save(); }, onchange: () => save('Personen am Objekt: ' + poiTitle(p)) });
     grid.append(el('label', { style: 'margin:0' }, v.label, inp));
   });
   const d = el('details', {}, el('summary', { text: 'Personen am Objekt' }), grid);
@@ -1063,7 +1150,7 @@ function finishLink(to) {
   if (from.id === to.id) return;
   if (!state.deps.some(d => d.from === from.id && d.to === to.id)) {
     state.deps.push({ from: from.id, to: to.id, fromName: poiTitle(from), toName: poiTitle(to) });
-    refreshIcons(); renderDeps(); save();
+    refreshIcons(); renderDeps(); save('Abhängigkeit angelegt: ' + poiTitle(from) + ' versorgt ' + poiTitle(to));
   }
 }
 function renderDeps() {
@@ -1075,7 +1162,7 @@ function renderDeps() {
   const box = $('#depList'); box.replaceChildren();
   if (!state.deps.length) box.append(el('div', { class: 'hint', text: 'Keine Verknüpfungen erfasst.' }));
   state.deps.forEach((d, i) => box.append(el('div', { class: 'entry' }, d.fromName + ' versorgt ' + d.toName + ' ',
-    el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.deps.splice(i, 1); refreshIcons(); renderDeps(); save(); } }))));
+    el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.deps.splice(i, 1); refreshIcons(); renderDeps(); save('Abhängigkeit gelöscht'); } }))));
 }
 
 /* ------------------------------------------------------------------ */
@@ -1090,23 +1177,56 @@ function renderSymbols() {
   state.symbols.forEach(s => {
     const m = L.marker([s.lat, s.lng], { icon: symIcon(s.name), draggable: true });
     if (s.label) m.bindTooltip(el('span', { text: s.label }), { permanent: true, direction: 'bottom', className: 'symlabel', offset: [0, 18] });
-    m.on('dragend', () => { const ll = m.getLatLng(); s.lat = ll.lat; s.lng = ll.lng; save(); });
+    m.on('dragend', () => { const ll = m.getLatLng(); s.lat = ll.lat; s.lng = ll.lng; save('Zeichen verschoben'); });
     m.bindPopup(() => {
-      const inp = el('input', { type: 'text', value: s.label || '', placeholder: 'Beschriftung', onchange: ev => { s.label = ev.target.value; save(); renderSymbols(); } });
+      const inp = el('input', { type: 'text', value: s.label || '', placeholder: 'Beschriftung', onchange: ev => { s.label = ev.target.value; save('Zeichen beschriftet'); renderSymbols(); } });
       return el('div', { class: 'pp' }, el('h3', { text: s.title || s.name }), el('div', { class: 'sub', text: 'Gesetzt ' + fmtTime(s.time) }), inp,
-        el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.symbols = state.symbols.filter(x => x !== s); renderSymbols(); save(); } })));
+        el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.symbols = state.symbols.filter(x => x !== s); renderSymbols(); save('Zeichen entfernt'); } })));
     });
     m.addTo(symLayer);
   });
 }
 function renderSections() {
   secLayer.clearLayers();
-  state.sections.forEach(s => {
-    const lyr = s.kind === 'line' ? L.polyline(s.pts, { color: s.color, weight: 5 }) : L.polygon(s.pts, { color: s.color, weight: 3, fillOpacity: .12 });
-    lyr.bindTooltip(el('span', { text: s.name }), { permanent: true, direction: 'center', className: 'seclabel' });
-    lyr.bindPopup(() => el('div', { class: 'pp' }, el('h3', { text: s.name }),
-      el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.sections = state.sections.filter(x => x !== s); renderSections(); save(); } }))));
+  state.sections.forEach(sx => {
+    const c = safeColor(sx.color, '#e11d48');
+    const lyr = sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5 }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: .12 });
+    lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' });
+    lyr._secId = sx.id;
+    lyr.bindPopup(() => {
+      const nm = el('input', { type: 'text', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) });
+      const col = el('input', { type: 'color', value: c, onchange: ev => { sx.color = ev.target.value; renderSections(); renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
+      return el('div', { class: 'pp' }, el('label', { text: 'Bezeichnung' }), nm, el('label', { text: 'Farbe' }), col,
+        el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => removeSection(sx) })));
+    });
     lyr.addTo(secLayer);
+  });
+  renderSecList();
+}
+function renameSection(sx, name) {
+  name = (name || '').trim(); if (!name || name === sx.name) { renderSecList(); return; }
+  const old = sx.name; sx.name = name; renderSections(); save('Abschnitt umbenannt: ' + old + ' zu ' + name);
+}
+function removeSection(sx) { state.sections = state.sections.filter(x => x !== sx); renderSections(); save('Abschnitt entfernt: ' + sx.name); }
+function renderSecList() {
+  const box = $('#secList'); if (!box) return; box.replaceChildren();
+  if (!state.sections.length) box.append(el('div', { class: 'hint', text: 'Noch keine. Im Reiter Lage zeichnen.' }));
+  state.sections.forEach(sx => {
+    const nm = el('span', { class: 'nm', title: 'Doppelklick zum Umbenennen', text: sx.name, ondblclick: () => inlineRename(nm, sx.name, v => renameSection(sx, v)) });
+    const col = el('input', { type: 'color', value: safeColor(sx.color, '#e11d48'), title: 'Farbe',
+      oninput: ev => { sx.color = ev.target.value; renderSectionsKeepList(); }, onchange: () => { renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
+    box.append(el('div', { class: 'arow' }, el('div', { class: 'top' }, col, nm,
+      el('button', { class: 'btn small', text: sx.kind === 'line' ? 'Linie' : 'Fläche', disabled: 'disabled' }),
+      el('button', { class: 'btn small', text: 'Zoom', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) }),
+      el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => removeSection(sx) }))));
+  });
+}
+function renderSectionsKeepList() {   // während der Farbwahl nur die Karte neu zeichnen, die Liste bleibt (sonst schließt sich der Farbwähler)
+  secLayer.clearLayers();
+  state.sections.forEach(sx => {
+    const c = safeColor(sx.color, '#e11d48');
+    const lyr = sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5 }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: .12 });
+    lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' }); lyr.addTo(secLayer);
   });
 }
 function buildPalette() {
@@ -1194,13 +1314,13 @@ function addManualPoi(lat, lng) {
   state.pois[id] = { id, osm: '', manual: true, lat, lng, layer: lid, name: $('#poiName').value.trim(), addr: '' };
   state.layerOn[lid] = true;
   $('#poiName').value = '';
-  renderMarkers(); renderAll(); save();
+  renderMarkers(); renderAll(); save('Objekt gesetzt: ' + (state.pois[id].name || SINGULAR[lid]));
 }
 function removeManualPoi(p) {
   if (markers[p.id]) { groups[p.layer].removeLayer(markers[p.id]); delete markers[p.id]; }
   delete state.pois[p.id]; delete state.objects[p.id];
   state.deps = state.deps.filter(d => d.from !== p.id && d.to !== p.id);
-  refreshIcons(); renderDeps(); renderAll(); save();
+  refreshIcons(); renderDeps(); renderAll(); save('Objekt entfernt: ' + poiTitle(p));
 }
 
 /* Personenzahlen */
@@ -1229,7 +1349,7 @@ function addCas(lat, lng) {
   const note = $('#casNote').value.trim();
   state.casualties.push({ id: uid(), cat, n, note, time: new Date().toISOString(), lat, lng });
   addJournal('Zahlen: ' + n + ' ' + CAS[cat].label + (note ? ' (' + note + ')' : ''), true);
-  renderCas(); save();
+  renderCas(); save('Zahl erfasst: ' + n + ' ' + CAS[cat].label);
 }
 function renderCas() {
   const { t, outside, ot } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
@@ -1239,16 +1359,16 @@ function renderCas() {
   if (!state.casualties.length) list.append(el('div', { class: 'hint', text: 'Noch keine Einträge.' }));
   state.casualties.slice().reverse().forEach(c => {
     const out = c.lat != null && !inArea(c.lat, c.lng);
-    const nIn = el('input', { type: 'number', min: '0', value: c.n, style: 'width:70px', onchange: ev => { c.n = Math.max(0, Math.round(+ev.target.value || 0)); renderCas(); save(); } });
+    const nIn = el('input', { type: 'number', min: '0', value: c.n, style: 'width:70px', onchange: ev => { c.n = Math.max(0, Math.round(+ev.target.value || 0)); renderCas(); save('Zahl geändert: ' + CAS[c.cat].label); } });
     list.append(el('div', { class: 'entry' }, el('span', { class: 'dot', style: 'background:' + CAS[c.cat].color }), ' ', CAS[c.cat].label + ' ', nIn, ' ',
       c.note ? c.note + ' ' : '', el('time', { text: fmtTime(c.time) }), out ? ' (außerhalb, nicht gezählt) ' : ' ',
       c.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
-      el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save(); } })));
+      el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save('Zahl gelöscht: ' + CAS[c.cat].label); } })));
   });
   casLayer.clearLayers();
   state.casualties.filter(c => c.lat != null).forEach(c => {
     const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: [34, 24], iconAnchor: [17, 12], html: '<div class="cas" style="--c:' + CAS[c.cat].color + '">' + CAS[c.cat].short + ' ' + c.n + '</div>' }), draggable: true });
-    m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save(); });
+    m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save('Zahl verschoben'); });
     m.bindTooltip(el('span', { text: CAS[c.cat].label + ': ' + c.n + (c.note ? ', ' + c.note : '') }));
     m.addTo(casLayer);
   });
@@ -1258,7 +1378,7 @@ function renderCas() {
 /* Problemliste */
 function addProblem(data) {
   const pr = Object.assign({ id: uid(), title: '', text: '', prio: 'mittel', status: 'offen', owner: '', time: new Date().toISOString() }, data);
-  state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save(); return pr;
+  state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
 }
 function reportProblemFor(p) {
   const pr = addProblem({ title: poiTitle(p) + ': ', poi: p.id, poiName: poiTitle(p), lat: p.lat, lng: p.lng });
@@ -1277,17 +1397,17 @@ function renderProblems() {
   rows.forEach(x => {
     const sel = (opts, cur, fn) => { const s = el('select', { onchange: ev => fn(ev.target.value) }, Object.entries(opts).map(([k, v]) => el('option', { value: k, text: v.label || v }))); s.value = cur; return s; };
     const card = el('div', { class: 'card' + (x.status === 'erledigt' ? ' done' : ''), 'data-pid': x.id, style: '--c:' + PRIO[x.prio].color },
-      el('input', { type: 'text', class: 'title', value: x.title, oninput: ev => { x.title = ev.target.value; save(); } }),
+      el('input', { type: 'text', class: 'title', value: x.title, oninput: ev => { x.title = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
       el('div', { class: 'row' },
-        sel(PRIO, x.prio, v => { x.prio = v; save(); renderProblems(); }),
-        sel(PSTAT, x.status, v => { x.status = v; addJournal('Problem „' + x.title + '“: ' + PSTAT[v], true); save(); renderProblems(); renderCounts(); }),
-        el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); } })),
-      el('textarea', { rows: '2', placeholder: 'Einzelheiten, Maßnahmen', oninput: ev => { x.text = ev.target.value; save(); } }),
+        sel(PRIO, x.prio, v => { x.prio = v; save('Priorität geändert: ' + x.title); renderProblems(); }),
+        sel(PSTAT, x.status, v => { x.status = v; addJournal('Problem „' + x.title + '“: ' + PSTAT[v], true); save('Problemstatus: ' + x.title + ' ' + PSTAT[v]); renderProblems(); renderCounts(); }),
+        el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); }, onchange: () => save('Zuständig geändert: ' + x.title) })),
+      el('textarea', { rows: '2', placeholder: 'Einzelheiten, Maßnahmen', oninput: ev => { x.text = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
       el('div', { class: 'row' },
         el('span', { class: 'hint', text: fmtTime(x.time) + (x.poiName ? ' · ' + x.poiName : '') + (x.lat == null ? ' · ohne Ort' : '') }),
         x.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([x.lat, x.lng], Math.max(map.getZoom(), 16)) }) : null,
         el('button', { class: 'btn small', text: 'Ort setzen', onclick: () => { stopDraw(); runtime.mode = { type: 'probloc', id: x.id }; map.getContainer().style.cursor = 'crosshair'; say('Ort für das Problem anklicken. Esc bricht ab.'); } }),
-        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => { state.problems = state.problems.filter(y => y !== x); renderProblems(); renderCounts(); save(); } })));
+        el('button', { class: 'btn small danger', text: 'Löschen', onclick: () => { state.problems = state.problems.filter(y => y !== x); renderProblems(); renderCounts(); save('Problem gelöscht: ' + x.title); } })));
     card.querySelector('textarea').value = x.text || '';
     box.append(card);
   });
@@ -1308,12 +1428,12 @@ map.on('click', e => {
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode && runtime.mode.type === 'probloc') {
     const pr = state.problems.find(x => x.id === runtime.mode.id); stopDraw();
-    if (pr) { pr.lat = e.latlng.lat; pr.lng = e.latlng.lng; renderProblems(); save(); }
+    if (pr) { pr.lat = e.latlng.lat; pr.lng = e.latlng.lng; renderProblems(); save('Problemort gesetzt: ' + pr.title); }
   }
   else if (runtime.placing) {
     const s = runtime.placing;
     state.symbols.push({ id: uid(), name: s.name, title: s.title, lat: e.latlng.lat, lng: e.latlng.lng, label: '', time: new Date().toISOString() });
-    renderSymbols(); save();                    // Zeichen bleibt aktiv für mehrfaches Setzen
+    renderSymbols(); save('Zeichen gesetzt: ' + s.title);                    // Zeichen bleibt aktiv für mehrfaches Setzen
   }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') stopDraw(); });
@@ -1387,6 +1507,26 @@ $('#btnJ').onclick = () => { const t = $('#jText').value.trim(); if (t) { addJou
 $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ').click(); });
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
 $('#btnPrint').onclick = () => window.print();
+$('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
+const typing = t => !!t && (t.tagName === 'TEXTAREA' || t.isContentEditable || (t.tagName === 'INPUT' && !/^(checkbox|radio|range|color|button|file)$/.test(t.type)));
+document.addEventListener('keydown', e => {
+  if (typing(e.target)) return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if ((e.ctrlKey || e.metaKey) && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+  else if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && k === 'p') { e.preventDefault(); togglePanel(); }
+});
+/* Seitenleiste einklappen */
+function setPanel(open, remember) {
+  const app = $('#app'); app.classList.toggle('collapsed', !open);
+  const t = $('#panelToggle'); t.setAttribute('aria-expanded', String(open));
+  t.innerHTML = open ? '&lsaquo;' : '&rsaquo;';
+  if (remember !== false) { try { localStorage.setItem('kritis-panel', open ? '1' : '0'); } catch (e) { /* egal */ } }
+  setTimeout(() => map.invalidateSize(), 260);
+}
+function togglePanel() { setPanel($('#app').classList.contains('collapsed')); }
+$('#panelToggle').onclick = togglePanel; $('#btnPanel').onclick = togglePanel;
+try { if (localStorage.getItem('kritis-panel') === '0') { $('#app').classList.add('collapsed'); $('#panelToggle').innerHTML = '&rsaquo;'; $('#panelToggle').setAttribute('aria-expanded', 'false'); setTimeout(() => map.invalidateSize(), 0); } } catch (e) { /* egal */ }
 
 /* Speichern, Laden, Export */
 const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
@@ -1427,7 +1567,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); save();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -1442,11 +1582,12 @@ try {
 state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
 initNewUi();
 state.areas.forEach(prepArea);
+histInit();
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems();
 if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
 tick(); setInterval(tick, 20000);
-window.__lage = { get state() { return state; }, map, setArea, addArea, loadObjects, migrate };   // für Tests
+window.__lage = { get state() { return state; }, map, setArea, addArea, loadObjects, migrate, undo, redo, commit, get hist() { return hist; } };   // für Tests
 })();
 </script>
 </body>
