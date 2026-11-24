@@ -847,6 +847,25 @@ body.beamer header h1 { font-size: 20px; }
 #liveBadge::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #16a34a; display: inline-block; }
 #liveBadge.off::before { background: #dc2626; }
 .sector .state { font-size: 12px; color: var(--muted); }
+#unitOv { --ovs: 1; position: absolute; inset: 0; z-index: 1500; background: rgba(248,250,252,.985); overflow: auto; padding: 14px 16px; font-size: calc(14px * var(--ovs)); }
+#unitOv[hidden] { display: none; }
+#unitOv .ovhead { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 12px; position: sticky; top: -14px; background: rgba(248,250,252,.985); padding: 6px 0; z-index: 2; }
+#unitOv h2 { margin: 0; font-size: calc(16px * var(--ovs)); text-transform: none; letter-spacing: 0; color: var(--ink); }
+#ovSum { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+#ovSum .chip { font-size: calc(13px * var(--ovs)); padding: 3px 11px; }
+.ovtools { display: flex; gap: 6px; align-items: center; }
+#ovCols { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(300px * var(--ovs)), 1fr)); gap: 14px; align-items: start; }
+.ovcol { background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.ovcol > header { all: unset; display: block; padding: 8px 12px; background: #e8eef7; border-bottom: 1px solid var(--line); }
+.ovcol > header b { font-size: calc(15px * var(--ovs)); display: block; }
+.ovcol > header span { font-size: calc(12px * var(--ovs)); color: var(--muted); }
+.ovunit { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid #edf1f6; border-left: 6px solid var(--c); }
+.ovunit img { width: calc(58px * var(--ovs)); height: calc(46px * var(--ovs)); object-fit: contain; flex: none; }
+.ovunit .nm { font-weight: 700; }
+.ovunit .meta { color: var(--muted); font-size: calc(12px * var(--ovs)); }
+.ovunit .st { margin-left: auto; text-align: right; white-space: nowrap; font-weight: 700; font-size: calc(12.5px * var(--ovs)); }
+.ovunit .st i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: 5px; }
+body.beamer #btnUnits { display: inline-block; }
 .licpre { white-space: pre-wrap; font: 11px/1.35 Inter, system-ui, sans-serif; color: var(--muted); background: #f8fafc; border: 1px solid var(--line); padding: 8px; max-height: 220px; overflow: auto; }
 #placeSearch { position: absolute; top: 10px; left: 56px; z-index: 1000; width: min(380px, 52vw); display: flex; flex-wrap: wrap; gap: 4px; }
 #placeSearch input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid #94a3b8; border-radius: 5px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
@@ -1036,6 +1055,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
     <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
+    <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
@@ -1146,6 +1166,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 
     <section class="tabpane" id="tab-kraefte">
       <div id="uSummary"></div>
+      <div class="row"><button class="btn primary" id="uOverview">Alle Einheiten auf einen Blick</button></div>
       <div class="editonly">
         <h2>Einheit anlegen</h2>
         <div class="row"><input type="text" id="uName" placeholder="Bezeichnung, z. B. LF 20 Nord"><input type="text" id="uCall" placeholder="Funkrufname"></div>
@@ -1443,6 +1464,11 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     <div id="map"></div>
     <form id="placeSearch" role="search" autocomplete="off"><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
+    <section id="unitOv" aria-label="Alle Einheiten auf einen Blick" hidden>
+      <div class="ovhead"><h2>Einheiten auf einen Blick</h2><div id="ovSum"></div>
+        <div class="ovtools"><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
+      <div id="ovCols"></div>
+    </section>
     <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
     <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
     <div id="msg" role="status"></div>
@@ -3512,6 +3538,7 @@ function fillUnitSelects() {
 }
 function renderUnits() {
   if (!$('#uList')) return;
+  renderUnitOverview();
   fillUnitSelects(); renderUnitSummary(); renderUnitMarkers(); renderUnitStatList();
   const box = $('#uList'); box.replaceChildren();
   const fs = $('#uFltStatus').value, fa = $('#uFltSect').value, q = $('#uFltText').value.trim().toLowerCase();
@@ -3545,6 +3572,7 @@ function renderUnits() {
 function refreshUnitsLight(u, card) {            // ohne Neuaufbau der Felder, damit der Fokus beim Tabben erhalten bleibt
   renderUnitSummary(); renderUnitMarkers(); renderAbschnitte();
   if (card) { const b = card.querySelector('b'); if (b) b.textContent = String(uTotal(u)); }
+  renderUnitOverview();
 }
 function setUnitStatus(u, id) {
   if (u.status === id) return; const was = ustat(u.status).label; u.status = id; u.time = nowIso();
@@ -3588,9 +3616,46 @@ function initKraefte() {
     ['#uName', '#uCall', '#uF', '#uU', '#uH'].forEach(i => { $(i).value = ''; }); upd(); uDraft.sym = null; $('#uSymPrev').textContent = 'kein Zeichen gewählt';
     if (place) { stopDraw(); runtime.mode = { type: 'unitloc', id: u.id }; map.getContainer().style.cursor = 'crosshair'; say('Ort der Einheit anklicken. Esc bricht ab.'); }
   };
-  $('#uAdd').onclick = () => make(false); $('#uPlace').onclick = () => make(true);
+  $('#uOverview').onclick = openUnitOverview; $('#uAdd').onclick = () => make(false); $('#uPlace').onclick = () => make(true);
   ['#uFltStatus', '#uFltSect'].forEach(i => $(i).addEventListener('change', renderUnits)); $('#uFltText').addEventListener('input', renderUnits);
   $('#uStatAdd').onclick = () => { state.unitStatus.push({ id: 's' + uid(), label: 'neuer Status', color: '#7c3aed' }); renderUnits(); save('Status hinzugefügt'); };
+}
+
+/* Gesamtübersicht der Einheiten (Lagevortrag) */
+function renderUnitOverview() {
+  const ov = $('#unitOv'); if (!ov || ov.hidden) return;
+  const fs = $('#ovStat').value, secs = state.sections.filter(x => x.kind !== 'line');
+  const sel = $('#ovStat'), cur = sel.value; sel.replaceChildren(el('option', { value: '', text: 'alle Status' }), ...state.unitStatus.map(x => el('option', { value: x.id, text: x.label }))); sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+  const units = state.units.filter(u => !sel.value || u.status === sel.value);
+  const tot = units.reduce((a, u) => ({ f: a.f + (u.f || 0), u: a.u + (u.u || 0), h: a.h + (u.h || 0) }), { f: 0, u: 0, h: 0 });
+  $('#ovSum').replaceChildren(el('span', { class: 'chip', text: units.length + ' Einheiten' }), el('span', { class: 'chip', title: 'Führer / Unterführer / Helfer / gesamt', text: 'Stärke ' + tot.f + '/' + tot.u + '/' + tot.h + '/' + (tot.f + tot.u + tot.h) }),
+    ...state.unitStatus.map(st => { const l = units.filter(u => u.status === st.id); return l.length ? el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + safeColor(st.color) }), l.length + ' ' + st.label) : null; }).filter(Boolean));
+  const cols = $('#ovCols'); cols.replaceChildren();
+  const groups = secs.map(x => ({ sx: x, list: units.filter(u => u.sectionId === x.id) })).concat([{ sx: null, list: units.filter(u => !u.sectionId || !secs.some(x => x.id === u.sectionId)) }]).filter(g => g.list.length || (g.sx && !sel.value));
+  if (!groups.length) cols.append(el('div', { class: 'hint', text: 'Noch keine Einheit angelegt.' }));
+  groups.forEach(g => {
+    const t = g.list.reduce((a, u) => a + uTotal(u), 0);
+    const col = el('div', { class: 'ovcol' }, el('header', {}, el('b', { text: g.sx ? g.sx.name : 'ohne Abschnitt' }),
+      el('span', { text: (g.sx && g.sx.leader ? 'Leiter: ' + g.sx.leader + ' · ' : '') + (g.sx && g.sx.radio ? 'Funk: ' + g.sx.radio + ' · ' : '') + g.list.length + ' Einheiten, Stärke ' + t }),
+      g.sx && g.sx.task ? el('div', { text: g.sx.task, style: 'font-size:.9em;margin-top:2px' }) : null));
+    g.list.slice().sort((a, b) => state.unitStatus.findIndex(x => x.id === a.status) - state.unitStatus.findIndex(x => x.id === b.status) || (a.name || '').localeCompare(b.name || '', 'de')).forEach(u => {
+      const st = ustat(u.status);
+      col.append(el('div', { class: 'ovunit', style: '--c:' + safeColor(st.color) }, el('img', { src: unitSym(u).url, alt: '' }),
+        el('div', {}, el('div', { class: 'nm', text: u.name || 'Einheit' }), el('div', { class: 'meta', text: [u.call, 'Stärke ' + fmtStr(u)].filter(Boolean).join(' · ') }), u.task ? el('div', { class: 'meta', text: u.task }) : null),
+        el('div', { class: 'st' }, el('i'), st.label)));
+    });
+    cols.append(col);
+  });
+}
+function openUnitOverview() { $('#unitOv').hidden = false; renderUnitOverview(); $('#ovClose').focus(); }
+function closeUnitOverview() { $('#unitOv').hidden = true; }
+function initUnitOverview() {
+  $('#btnUnits').onclick = () => ($('#unitOv').hidden ? openUnitOverview() : closeUnitOverview());
+  $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview);
+  const sz = d => { const ov = $('#unitOv'), v = Math.min(2.2, Math.max(0.7, (parseFloat(ov.style.getPropertyValue('--ovs')) || 1) + d)); ov.style.setProperty('--ovs', v.toFixed(2)); };
+  $('#ovBig').onclick = () => sz(0.15); $('#ovSmall').onclick = () => sz(-0.15);
+  $('#ovMap').onclick = () => { const pts = state.units.filter(u => u.lat != null).map(u => [u.lat, u.lng]); closeUnitOverview(); if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 17 }); else say('Keine Einheit hat einen Ort auf der Karte.', 4000); };
+  $('#unitOv').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeUnitOverview(); } });
 }
 
 /* Abschnitte-Reiter */
@@ -3977,7 +4042,7 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
