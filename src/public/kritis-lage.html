@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lagekarte KRITIS</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" integrity="sha384-NZLkVuBRMEeB4VeZz27WwTRvlhec30biQ8Xx7zG7JJnkvEKRg5qi6BNbEXo9ydwv" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" integrity="sha384-pmjIAcz2bAn0xukfxADbZIb3t8oRT9Sv0rvO+BR5Csr6Dhqq+nZs59P0pPKQJkEV" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" integrity="sha384-wgw+aLYNQ7dlhK47ZPK7FRACiq7ROZwgFNg0m04avm4CaXS+Z9Y7nMu8yNjBKYC+" crossorigin="anonymous">
+
+<style>
+:root {
+  --bg: #f4f5f7; --panel: #ffffff; --ink: #1b2430; --muted: #5d6b7a; --line: #d5dae1;
+  --accent: #14477d; --accent-ink: #ffffff; --warn: #8a4b00; --warn-bg: #fff4e0;
+  --st-unbekannt: #94a3b8; --st-intakt: #16a34a; --st-eingeschraenkt: #f59e0b; --st-ausgefallen: #dc2626;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+#app { display: grid; grid-template-columns: 400px 1fr; grid-template-rows: 46px 1fr; height: 100%; }
+header { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 0 14px; background: #0f2a47; color: #fff; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; white-space: nowrap; }
+header .sp { flex: 1; }
+#hdrArea { opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32vw; }
+#hdrCounts { display: flex; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 11px; background: rgba(255,255,255,.14); font-size: 12px; white-space: nowrap; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+#clock { font-variant-numeric: tabular-nums; opacity: .9; }
+header button { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); color: #fff; border-radius: 4px; padding: 3px 10px; }
+
+#panel { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+#tabs { display: flex; border-bottom: 1px solid var(--line); }
+#tabs button { flex: 1; padding: 9px 4px; border: 0; background: none; border-bottom: 3px solid transparent; color: var(--muted); }
+#tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tabpane { display: none; padding: 12px; overflow: auto; flex: 1; min-height: 0; }
+.tabpane.active { display: block; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; }
+h2:first-child { margin-top: 0; }
+
+.btn { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 4px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.active { outline: 2px solid var(--accent); }
+.btn.danger { color: #a11; }
+.btn.small { padding: 2px 7px; font-size: 12px; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+.row > input[type=text], .row > input[type=search], .row > select { flex: 1; min-width: 0; }
+input[type=text], input[type=search], input[type=number], input[type=datetime-local], select, textarea { border: 1px solid var(--line); border-radius: 4px; padding: 5px 7px; background: #fff; }
+textarea { width: 100%; resize: vertical; }
+.hint { color: var(--muted); font-size: 12px; }
+.notice { background: var(--warn-bg); color: var(--warn); border: 1px solid #f0d2a0; border-radius: 4px; padding: 7px 9px; font-size: 12px; margin: 8px 0; }
+.err { color: #a11; }
+
+#areaInfo { border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; margin-top: 8px; background: #fafbfc; }
+#nomResults button { display: block; width: 100%; text-align: left; margin: 3px 0; }
+
+.sector { border: 1px solid var(--line); border-radius: 4px; margin-bottom: 8px; }
+.sector > .head { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f3f5f8; }
+.sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.sector .state { font-size: 12px; color: var(--muted); }
+.sector .state.error { color: #a11; }
+.layer { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 14px; }
+.layer label { flex: 1; display: flex; gap: 6px; align-items: center; }
+.layer .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+table.list { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.list th { text-align: left; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line); padding: 4px; position: sticky; top: 0; background: #fff; }
+table.list td { padding: 4px; border-bottom: 1px solid #edf0f3; vertical-align: top; }
+table.list tr.clickable { cursor: pointer; }
+table.list tr.clickable:hover { background: #f1f5fa; }
+
+#symGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; }
+#symGrid button { min-width: 0; overflow: hidden; border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 4px 2px; font-size: 10px; line-height: 1.1; color: var(--muted); }
+#symGrid button img { width: 42px; height: 42px; display: block; margin: 0 auto 2px; }
+#symGrid button.sel { outline: 2px solid var(--accent); }
+.entry { border-bottom: 1px solid #edf0f3; padding: 5px 0; }
+.entry time { color: var(--muted); font-size: 12px; margin-right: 6px; }
+
+#mapWrap { position: relative; min-height: 0; }
+#map { position: absolute; inset: 0; }
+#msg { position: absolute; left: 50%; transform: translateX(-50%); bottom: 14px; z-index: 1000; background: rgba(15,42,71,.92); color: #fff; padding: 6px 12px; border-radius: 4px; display: none; max-width: 80%; }
+
+.poi { width: 26px; height: 26px; border-radius: 50%; background: var(--c); border: 4px solid var(--s); color: #fff; font: 700 10px/18px system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 1px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.4); text-shadow: 0 0 2px rgba(0,0,0,.6); }
+.poi.affected { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #dc2626; animation: pulse 1.4s infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 3px #fff, 0 0 0 8px rgba(220,38,38,.35); } }
+.pp { min-width: 230px; }
+.pp h3 { margin: 0 0 2px; font-size: 15px; }
+.pp .sub { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.pp label { display: block; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.pp input, .pp select, .pp textarea { width: 100%; }
+.pp .row { margin: 8px 0 0; }
+.stbtns { display: flex; gap: 4px; }
+.stbtns button { flex: 1; border: 2px solid var(--c); background: #fff; border-radius: 4px; padding: 3px 0; font-size: 12px; }
+.stbtns button.sel { background: var(--c); color: #fff; }
+.symlabel { background: rgba(255,255,255,.9); border: 1px solid #555; border-radius: 2px; padding: 0 4px; font-size: 11px; }
+.leaflet-tooltip.seclabel { background: transparent; border: 0; box-shadow: none; font-weight: 700; font-size: 13px; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+.leaflet-tooltip.seclabel::before { display: none; }
+
+@media (max-width: 860px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; }
+  #panel { order: 3; border-right: 0; border-top: 1px solid var(--line); }
+  #hdrCounts, #hdrArea { display: none; }
+}
+@media print {
+  header button, #panel, .leaflet-control-container, #msg { display: none !important; }
+  #app { display: block; height: auto; }
+  header { background: none; color: #000; }
+  #mapWrap { position: static; height: 90vh; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Lagekarte KRITIS</h1>
+    <span id="hdrArea"></span>
+    <span class="sp"></span>
+    <div id="hdrCounts"></div>
+    <span id="clock"></span>
+    <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
+  </header>
+
+  <aside id="panel">
+    <div id="tabs" role="tablist">
+      <button role="tab" data-tab="gebiet" aria-selected="true">Gebiet</button>
+      <button role="tab" data-tab="ebenen" aria-selected="false">Ebenen</button>
+      <button role="tab" data-tab="objekte" aria-selected="false">Objekte</button>
+      <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
+      <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
+    </div>
+
+    <section class="tabpane active" id="tab-gebiet">
+      <h2>Gebiet eingrenzen</h2>
+      <div class="row">
+        <button class="btn" id="btnPoly">Polygon</button>
+        <button class="btn" id="btnRect">Rechteck</button>
+        <button class="btn" id="btnCircle">Kreis um Punkt</button>
+      </div>
+      <div class="row">
+        <label for="radius">Radius (km)</label>
+        <input type="number" id="radius" value="5" min="0.1" max="100" step="0.5" style="width:80px">
+        <span class="hint">Kreis: Punkt auf der Karte anklicken. Eine Radiusänderung wirkt sofort.</span>
+      </div>
+
+      <h2>Verwaltungsgrenze</h2>
+      <form class="row" id="nomForm">
+        <input type="search" id="nomQ" placeholder="Ort, Gemeinde oder Kreis, z. B. Kreis Soest">
+        <button class="btn" type="submit">Suchen</button>
+      </form>
+      <div id="nomResults"></div>
+
+      <h2>Gebietsdatei</h2>
+      <div class="row"><input type="file" id="areaFile" accept=".geojson,.json,.kml"></div>
+      <div class="hint">GeoJSON oder KML mit Polygon, z. B. eine Evakuierungszone.</div>
+
+      <div id="areaInfo">Noch kein Gebiet gewählt.</div>
+      <div class="row">
+        <button class="btn primary" id="btnLoad" disabled>Objekte laden</button>
+        <button class="btn danger" id="btnClearArea" disabled>Gebiet entfernen</button>
+      </div>
+      <div class="notice">Die Objekte stammen aus OpenStreetMap und sind keine amtliche KRITIS-Liste. Die Vollständigkeit schwankt je Sektor, am schwächsten bei Rechenzentren, Funkmasten und Finanzwesen. Betreiberdaten des Krisenstabs sind Voraussetzung für eine belastbare Lage.</div>
+    </section>
+
+    <section class="tabpane" id="tab-ebenen">
+      <div id="sectors"></div>
+      <div class="hint">Eine Ebene wird erst abgefragt, wenn sie eingeschaltet ist. Große Ebenen (Funkmasten, Supermärkte, Behörden) sind zunächst aus.</div>
+    </section>
+
+    <section class="tabpane" id="tab-objekte">
+      <div class="row">
+        <input type="search" id="fltText" placeholder="Name filtern">
+        <select id="fltStatus">
+          <option value="">alle Status</option>
+          <option value="ausgefallen">ausgefallen</option>
+          <option value="eingeschraenkt">eingeschränkt</option>
+          <option value="intakt">intakt</option>
+          <option value="unbekannt">unbekannt</option>
+          <option value="affected">möglicherweise betroffen</option>
+        </select>
+      </div>
+      <div class="hint" id="listInfo"></div>
+      <table class="list"><thead><tr><th>Objekt</th><th>Art</th><th>Status</th></tr></thead><tbody id="listBody"></tbody></table>
+    </section>
+
+    <section class="tabpane" id="tab-lage">
+      <h2>Taktische Zeichen</h2>
+      <div class="row">
+        <select id="symCat"></select>
+        <input type="search" id="symQ" placeholder="Suchen">
+      </div>
+      <div class="hint" id="symHint">Zeichen wählen, dann auf die Karte klicken. Esc bricht ab.</div>
+      <div id="symGrid"></div>
+
+      <h2>Einsatzabschnitte und Linien</h2>
+      <div class="row">
+        <input type="text" id="secName" placeholder="Bezeichnung, z. B. Abschnitt Nord">
+        <input type="color" id="secColor" value="#e11d48" title="Farbe">
+      </div>
+      <div class="row">
+        <button class="btn" id="btnSecPoly">Fläche zeichnen</button>
+        <button class="btn" id="btnSecLine">Linie zeichnen</button>
+      </div>
+
+      <h2>Abhängigkeiten</h2>
+      <div class="hint">Anlegen im Objekt-Popup: „Versorgt…“ und danach das abhängige Objekt anklicken. Fällt ein Objekt aus, werden die abhängigen Objekte markiert. Die Verknüpfungen sind manuell erfasst, nicht berechnet.</div>
+      <div id="depList"></div>
+
+      <h2>Lagejournal</h2>
+      <div class="row">
+        <input type="text" id="jText" placeholder="Eintrag">
+        <button class="btn" id="btnJ">Eintragen</button>
+      </div>
+      <div id="journal"></div>
+    </section>
+
+    <section class="tabpane" id="tab-daten">
+      <h2>Lagestand</h2>
+      <div class="row">
+        <button class="btn primary" id="btnSave">Lage speichern (JSON)</button>
+        <label class="btn">Lage laden<input type="file" id="loadFile" accept=".json" hidden></label>
+      </div>
+      <div class="hint">Der Stand wird zusätzlich automatisch im Browser gesichert. Auf einem anderen Rechner hilft nur die Datei.</div>
+      <h2>Export</h2>
+      <div class="row">
+        <button class="btn" id="btnCsv">Objektliste (CSV)</button>
+        <button class="btn" id="btnGeo">GeoJSON</button>
+      </div>
+      <div class="hint">Tabelle mit Semikolon als Trennzeichen und Zeichensatz für Excel. Karte als PDF: Drucken, dann „Als PDF speichern“.</div>
+      <h2>Zurücksetzen</h2>
+      <div class="row"><button class="btn danger" id="btnReset">Gesamte Lage löschen</button></div>
+      <h2>Quellen</h2>
+      <div class="hint">Objektdaten: OpenStreetMap-Mitwirkende (ODbL), abgefragt über die Overpass API. Gebietssuche: Nominatim. Kartengrundlagen: OpenStreetMap, Geobasis NRW (dl-de/by-2-0). Taktische Zeichen aus dem Repository LAGEskizze.</div>
+    </section>
+  </aside>
+
+  <div id="mapWrap">
+    <div id="map"></div>
+    <div id="msg" role="status"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha384-JP5UPxIO2Tm2o79Fb0tGYMa44jkWar53aBoCbd8ah0+LcCDoohTIYr+zIXyfGIJN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js" integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js" integrity="sha384-Pf8wWv2U7DX+774Kza+7w2RiYwz6YWNTckaDjwxZbjFj7Bsnh5XPFH465NiVHU8y" crossorigin="anonymous"></script>
+<!-- Taktische Zeichen aus dem Repository. Datei muss in src/public liegen, sonst fehlt nur die Zeichenpalette. -->
+<script src="images/symbols/symbols.js" onerror="window.symbolsMissing=true"></script>
+
+<script>
+(function () {
+'use strict';
+
+/* ------------------------------------------------------------------ */
+/* Konfiguration                                                       */
+/* ------------------------------------------------------------------ */
+const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
+const STORE_KEY = 'kritis-lage-v1';
+const AUTO_LOAD_MAX_KM2 = 5000;
+const WARN_KM2 = 1500;
+
+const STATUS = {
+  unbekannt:      { label: 'unbekannt',      color: '#94a3b8' },
+  intakt:         { label: 'intakt',         color: '#16a34a' },
+  eingeschraenkt: { label: 'eingeschränkt',  color: '#f59e0b' },
+  ausgefallen:    { label: 'ausgefallen',    color: '#dc2626' }
+};
+
+// Sektoren in Anlehnung an die BSI-KritisV; Staat und Medien sind KRITIS-Sektoren nach BMI-Gliederung.
+const SECTORS = {
+  energie:    { name: 'Energie',                    color: '#b45309' },
+  wasser:     { name: 'Wasser und Abwasser',        color: '#0369a1' },
+  gesundheit: { name: 'Gesundheit',                 color: '#b91c1c' },
+  bos:        { name: 'Notfall und Gefahrenabwehr', color: '#1d4ed8' },
+  verkehr:    { name: 'Transport und Verkehr',      color: '#6d28d9' },
+  it:         { name: 'IT und Telekommunikation',   color: '#0f766e' },
+  ernaehrung: { name: 'Ernährung',                  color: '#4d7c0f' },
+  finanzen:   { name: 'Finanzwesen',                color: '#475569' },
+  staat:      { name: 'Staat und Verwaltung',       color: '#7e22ce' },
+  medien:     { name: 'Medien',                     color: '#be185d' }
+};
+
+// match: Liste von Alternativen; jede Alternative ist eine Liste von [Schlüssel, Wert]-Paaren, die alle zutreffen müssen.
+const LAYERS = [
+  { id: 'umspannwerk',   sector: 'energie',    name: 'Umspannwerke',   glyph: 'U',  on: true,  match: [[['power', 'substation']]] },
+  { id: 'kraftwerk',     sector: 'energie',    name: 'Kraftwerke',     glyph: 'K',  on: true,  match: [[['power', 'plant']]] },
+  { id: 'wasserwerk',    sector: 'wasser',     name: 'Wasserwerke',    glyph: 'W',  on: true,  match: [[['man_made', 'water_works']]] },
+  { id: 'klaeranlage',   sector: 'wasser',     name: 'Kläranlagen',    glyph: 'A',  on: true,  match: [[['man_made', 'wastewater_plant']]] },
+  { id: 'wasserturm',    sector: 'wasser',     name: 'Wassertürme',    glyph: 'T',  on: false, match: [[['man_made', 'water_tower']]] },
+  { id: 'krankenhaus',   sector: 'gesundheit', name: 'Krankenhäuser',  glyph: 'KH', on: true,  match: [[['amenity', 'hospital']]] },
+  { id: 'pflege',        sector: 'gesundheit', name: 'Pflegeheime',    glyph: 'P',  on: false, match: [[['amenity', 'nursing_home']]] },
+  { id: 'apotheke',      sector: 'gesundheit', name: 'Apotheken',      glyph: 'Ap', on: false, match: [[['amenity', 'pharmacy']]] },
+  { id: 'feuerwehr',     sector: 'bos',        name: 'Feuerwehr',      glyph: 'FW', on: true,  match: [[['amenity', 'fire_station']]] },
+  { id: 'polizei',       sector: 'bos',        name: 'Polizei',        glyph: 'Po', on: true,  match: [[['amenity', 'police']]] },
+  { id: 'rettungswache', sector: 'bos',        name: 'Rettungswachen', glyph: 'RW', on: true,  match: [[['emergency', 'ambulance_station']]] },
+  { id: 'bahnhof',       sector: 'verkehr',    name: 'Bahnhöfe',       glyph: 'B',  on: true,  match: [[['railway', 'station']]] },
+  { id: 'flughafen',     sector: 'verkehr',    name: 'Flugplätze',     glyph: 'F',  on: true,  match: [[['aeroway', 'aerodrome']]] },
+  { id: 'hafen',         sector: 'verkehr',    name: 'Häfen',          glyph: 'H',  on: true,  match: [[['industrial', 'port']]] },
+  { id: 'rechenzentrum', sector: 'it',         name: 'Rechenzentren',  glyph: 'RZ', on: true,  match: [[['telecom', 'data_center']]] },
+  { id: 'vermittlung',   sector: 'it',         name: 'Vermittlungsstellen', glyph: 'VS', on: false, match: [[['telecom', 'exchange']]] },
+  { id: 'funkmast',      sector: 'it',         name: 'Funkmasten und Sendetürme', glyph: 'M', on: false,
+    match: [[['man_made', 'mast'], ['tower:type', 'communication']], [['man_made', 'tower'], ['tower:type', 'communication']]] },
+  { id: 'grosshandel',   sector: 'ernaehrung', name: 'Großhandel',     glyph: 'G',  on: false, match: [[['shop', 'wholesale']]] },
+  { id: 'supermarkt',    sector: 'ernaehrung', name: 'Supermärkte',    glyph: 'S',  on: false, match: [[['shop', 'supermarket']]] },
+  { id: 'bank',          sector: 'finanzen',   name: 'Banken',         glyph: 'Bk', on: false, match: [[['amenity', 'bank']]] },
+  { id: 'rathaus',       sector: 'staat',      name: 'Rathäuser',      glyph: 'R',  on: true,  match: [[['amenity', 'townhall']]] },
+  { id: 'behoerde',      sector: 'staat',      name: 'Behörden',       glyph: 'Bh', on: false, match: [[['office', 'government']]] },
+  { id: 'gericht',       sector: 'staat',      name: 'Gerichte',       glyph: 'Ge', on: false, match: [[['amenity', 'courthouse']]] },
+  { id: 'zeitung',       sector: 'medien',     name: 'Zeitungsredaktionen', glyph: 'Z', on: false, match: [[['office', 'newspaper']]] },
+  { id: 'studio',        sector: 'medien',     name: 'Rundfunkstudios', glyph: 'St', on: false, match: [[['amenity', 'studio']]] }
+];
+const LAYER_BY_ID = Object.fromEntries(LAYERS.map(l => [l.id, l]));
+
+/* ------------------------------------------------------------------ */
+/* Zustand                                                             */
+/* ------------------------------------------------------------------ */
+function freshState() {
+  return {
+    version: 1,
+    area: null,          // { kind, label, rings:[[ [lat,lng] ]], areaId?, circle?:{lat,lng,km}, km2 }
+    pois: {},            // id -> { id, osm, lat, lng, layer, name, addr }
+    layerOn: Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
+    layerLoaded: {},     // layerId -> true
+    objects: {},         // id -> { status, statusTime, contact, note }
+    deps: [],            // { from, to, fromName, toName }
+    symbols: [],         // { id, name, lat, lng, label, time }
+    sections: [],        // { id, kind:'poly'|'line', name, color, pts:[[lat,lng]] }
+    journal: []          // { id, time, text, auto }
+  };
+}
+let state = freshState();
+const runtime = { sector: {}, mode: null, placing: null, drawPurpose: null, drawHandler: null };
+
+/* ------------------------------------------------------------------ */
+/* Hilfsfunktionen                                                     */
+/* ------------------------------------------------------------------ */
+const $ = (s, r) => (r || document).querySelector(s);
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k === 'value') e.value = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => { if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c)); });
+  return e;
+}
+const uid = () => Math.random().toString(36).slice(2, 10);
+const fmtTime = iso => iso ? new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+function say(text, ms) {
+  const m = $('#msg'); m.textContent = text; m.style.display = text ? 'block' : 'none';
+  clearTimeout(say.t); if (text && ms) say.t = setTimeout(() => { m.style.display = 'none'; }, ms);
+}
+function download(name, text, type) {
+  const a = el('a', { href: URL.createObjectURL(new Blob([text], { type })), download: name });
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+const obj = id => state.objects[id] || (state.objects[id] = { status: 'unbekannt' });
+
+let saveTimer;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+    catch (e) { try { const s = Object.assign({}, state, { pois: {}, layerLoaded: {} }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e2) { /* Speicher nicht verfügbar */ } }
+  }, 300);
+}
+
+/* Geometrie */
+const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+function circleRing(lat, lng, km, n) {
+  n = n || 72; const d = km / 6371, p1 = rad(lat), l1 = rad(lng), out = [];
+  for (let i = 0; i < n; i++) {
+    const b = 2 * Math.PI * i / n;
+    const p2 = Math.asin(Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(b));
+    const l2 = l1 + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
+    out.push([deg(p2), deg(l2)]);
+  }
+  return out;
+}
+function ringKm2(ring) {
+  if (ring.length < 3) return 0;
+  const lat0 = ring.reduce((s, p) => s + p[0], 0) / ring.length, kx = 111.32 * Math.cos(rad(lat0)), ky = 110.57;
+  let a = 0;
+  for (let i = 0; i < ring.length; i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; a += (p[1] * kx) * (q[0] * ky) - (q[1] * kx) * (p[0] * ky); }
+  return Math.abs(a) / 2;
+}
+function simplifyRing(ring, maxPts) {
+  if (ring.length <= maxPts) return ring;
+  let tol = 1e-5, pts = ring;
+  while (pts.length > maxPts && tol < 1) { pts = rdp(ring, tol); tol *= 1.6; }
+  return pts;
+}
+function rdp(pts, tol) {
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop(); let dmax = 0, idx = -1;
+    for (let i = a + 1; i < b; i++) { const d = segDist(pts[i], pts[a], pts[b]); if (d > dmax) { dmax = d; idx = i; } }
+    if (dmax > tol && idx > 0) { keep[idx] = 1; stack.push([a, idx], [idx, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+function segDist(p, a, b) {
+  const dx = b[1] - a[1], dy = b[0] - a[0];
+  const t = dx || dy ? Math.max(0, Math.min(1, ((p[1] - a[1]) * dx + (p[0] - a[0]) * dy) / (dx * dx + dy * dy))) : 0;
+  return Math.hypot(p[1] - (a[1] + t * dx), p[0] - (a[0] + t * dy));
+}
+function geomRings(g) {            // GeoJSON-Geometrie -> Außenringe als [lat,lng]
+  const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+  return polys.map(p => p[0].map(c => [c[1], c[0]]));
+}
+
+/* ------------------------------------------------------------------ */
+/* Karte                                                               */
+/* ------------------------------------------------------------------ */
+const map = L.map('map', { zoomControl: true, preferCanvas: false }).setView([51.5, 8.1], 9);
+const baseLayers = {
+  'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap-Mitwirkende' }),
+  'NRW Topografie (DTK)': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
+  'NRW Luftbild': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dop', { layers: 'nw_dop_rgb', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' })
+};
+baseLayers['OpenStreetMap'].addTo(map);
+L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+L.control.scale({ imperial: false }).addTo(map);
+
+const groups = {};                 // layerId -> markerClusterGroup
+LAYERS.forEach(l => { groups[l.id] = L.markerClusterGroup({ maxClusterRadius: 45, showCoverageOnHover: false, disableClusteringAtZoom: 16 }); });
+const markers = {};                // poiId -> L.Marker
+const depLayer = L.layerGroup().addTo(map);
+const symLayer = L.layerGroup().addTo(map);
+const secLayer = L.layerGroup().addTo(map);
+let areaLayer = null;
+
+/* ------------------------------------------------------------------ */
+/* Gebiet                                                              */
+/* ------------------------------------------------------------------ */
+function setArea(area, opts) {
+  opts = opts || {};
+  const first = !opts.restore;
+  area.km2 = area.rings.reduce((s, r) => s + ringKm2(r), 0);
+  area.rings = area.rings.map(r => simplifyRing(r, 500));
+  state.area = area;
+  if (first) clearPois();
+  drawArea(opts.fit !== false);
+  renderAreaInfo();
+  renderAll();
+  save();
+  if (first && area.km2 <= AUTO_LOAD_MAX_KM2) loadObjects();
+  else if (first) say('Das Gebiet ist sehr groß (' + Math.round(area.km2) + ' km²). Ebenen bitte gezielt laden.', 7000);
+}
+function drawArea(fit) {
+  if (areaLayer) { map.removeLayer(areaLayer); areaLayer = null; }
+  const a = state.area; if (!a) return;
+  const style = { color: '#0f2a47', weight: 3, dashArray: '8 6', fillColor: '#14477d', fillOpacity: 0.06, interactive: false };
+  if (a.kind === 'circle') areaLayer = L.circle([a.circle.lat, a.circle.lng], Object.assign({ radius: a.circle.km * 1000 }, style));
+  else areaLayer = L.polygon(a.rings, style);
+  areaLayer.addTo(map);
+  if (fit) map.fitBounds(areaLayer.getBounds().pad(0.08));
+}
+function clearArea() {
+  state.area = null; clearPois(); drawArea(false); renderAreaInfo(); renderAll(); save();
+}
+function renderAreaInfo() {
+  const a = state.area, box = $('#areaInfo');
+  $('#btnLoad').disabled = $('#btnClearArea').disabled = !a;
+  $('#hdrArea').textContent = a ? a.label : '';
+  box.replaceChildren();
+  if (!a) { box.textContent = 'Noch kein Gebiet gewählt.'; return; }
+  box.append(el('strong', { text: a.label }), el('br'),
+    el('span', { text: 'Fläche etwa ' + (a.km2 >= 10 ? Math.round(a.km2) : a.km2.toFixed(1)).toString().replace('.', ',') + ' km², ' + a.rings.length + ' Teilfläche' + (a.rings.length > 1 ? 'n' : '') + ', Abfrage über ' + (a.areaId ? 'Verwaltungsgrenze' : 'Polygon') }));
+  if (a.km2 > WARN_KM2) box.append(el('div', { class: 'notice', text: 'Großes Gebiet: Abfragen können überlaufen oder von Overpass abgelehnt werden. Dann Ebenen einzeln laden oder das Gebiet verkleinern.' }));
+}
+
+/* Zeichnen */
+function stopDraw() {
+  if (runtime.drawHandler) { try { runtime.drawHandler.disable(); } catch (e) { /* bereits aus */ } }
+  runtime.drawHandler = null; runtime.drawPurpose = null;
+  runtime.mode = null; runtime.placing = null;
+  document.querySelectorAll('.btn.active').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#symGrid .sel').forEach(b => b.classList.remove('sel'));
+  map.getContainer().style.cursor = '';
+  say('');
+}
+function startDraw(kind, purpose, btn) {
+  stopDraw();
+  const shape = { color: purpose === 'area' ? '#0f2a47' : $('#secColor').value, weight: 3 };
+  runtime.drawHandler = kind === 'rectangle' ? new L.Draw.Rectangle(map, { shapeOptions: shape, showArea: false })
+    : kind === 'polyline' ? new L.Draw.Polyline(map, { shapeOptions: shape })
+    : new L.Draw.Polygon(map, { shapeOptions: shape, showArea: false, allowIntersection: false });
+  runtime.drawPurpose = purpose; runtime.drawHandler.enable();
+  if (btn) btn.classList.add('active');
+}
+map.on(L.Draw.Event.CREATED, e => {
+  const purpose = runtime.drawPurpose; stopDraw();
+  if (purpose === 'area') {
+    const ring = e.layer.getLatLngs()[0].map(p => [p.lat, p.lng]);
+    setArea({ kind: e.layerType === 'rectangle' ? 'rect' : 'polygon', label: e.layerType === 'rectangle' ? 'Rechteck' : 'Eigenes Polygon', rings: [ring] });
+  } else if (purpose === 'section') {
+    const isLine = e.layerType === 'polyline';
+    const ll = isLine ? e.layer.getLatLngs() : e.layer.getLatLngs()[0];
+    state.sections.push({ id: uid(), kind: isLine ? 'line' : 'poly', name: $('#secName').value.trim() || (isLine ? 'Linie' : 'Abschnitt'), color: $('#secColor').value, pts: ll.map(p => [p.lat, p.lng]) });
+    renderSections(); save();
+  }
+});
+map.on('draw:drawstop', () => { if (runtime.drawPurpose) stopDraw(); });
+
+function startCircleMode() {
+  stopDraw(); runtime.mode = 'circle'; $('#btnCircle').classList.add('active');
+  map.getContainer().style.cursor = 'crosshair'; say('Mittelpunkt des Kreises auf der Karte anklicken. Esc bricht ab.');
+}
+function applyCircle(lat, lng) {
+  const km = Math.max(0.1, parseFloat($('#radius').value) || 5);
+  const ll = L.latLng(lat, lng);
+  setArea({ kind: 'circle', label: 'Kreis ' + km.toString().replace('.', ',') + ' km um ' + lat.toFixed(4) + ', ' + lng.toFixed(4), rings: [circleRing(lat, lng, km)], circle: { lat: ll.lat, lng: ll.lng, km } }, { fit: true });
+}
+$('#radius').addEventListener('change', () => {
+  if (state.area && state.area.kind === 'circle') applyCircle(state.area.circle.lat, state.area.circle.lng);
+});
+
+/* Verwaltungsgrenze */
+$('#nomForm').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const q = $('#nomQ').value.trim(), box = $('#nomResults'); if (!q) return;
+  box.replaceChildren(el('div', { class: 'hint', text: 'Suche läuft…' }));
+  try {
+    const url = NOMINATIM + '?format=jsonv2&polygon_geojson=1&polygon_threshold=0.0005&limit=8&countrycodes=de&accept-language=de&q=' + encodeURIComponent(q);
+    const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status);
+    const list = (await r.json()).filter(x => x.geojson && /Polygon/.test(x.geojson.type));
+    box.replaceChildren();
+    if (!list.length) { box.append(el('div', { class: 'hint', text: 'Keine Fläche gefunden. Anderen Suchbegriff probieren.' })); return; }
+    list.forEach(x => box.append(el('button', { class: 'btn', onclick: () => applyAdmin(x) }, x.display_name, el('br'), el('span', { class: 'hint', text: x.type + (x.osm_type ? ' · ' + x.osm_type + ' ' + x.osm_id : '') }))));
+  } catch (e) { box.replaceChildren(el('div', { class: 'err', text: 'Suche fehlgeschlagen: ' + e.message })); }
+});
+function applyAdmin(x) {
+  $('#nomResults').replaceChildren();
+  const areaId = x.osm_type === 'relation' ? 3600000000 + Number(x.osm_id) : null;
+  setArea({ kind: 'admin', label: x.display_name.split(',').slice(0, 2).join(','), rings: geomRings(x.geojson), areaId });
+}
+
+/* Datei */
+$('#areaFile').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
+  try {
+    const text = await f.text();
+    let gj = /\.kml$/i.test(f.name) ? toGeoJSON.kml(new DOMParser().parseFromString(text, 'text/xml')) : JSON.parse(text);
+    const feats = gj.type === 'FeatureCollection' ? gj.features : gj.type === 'Feature' ? [gj] : [{ geometry: gj }];
+    const rings = feats.flatMap(ft => ft.geometry ? geomRings(ft.geometry) : []);
+    if (!rings.length) throw new Error('keine Polygonfläche in der Datei');
+    setArea({ kind: 'file', label: 'Datei ' + f.name, rings });
+  } catch (e) { say('Datei nicht lesbar: ' + e.message, 6000); }
+});
+
+/* ------------------------------------------------------------------ */
+/* Objekte laden (Overpass)                                            */
+/* ------------------------------------------------------------------ */
+const queue = []; let running = false;
+
+function polyStr(ring) { return ring.map(p => p[0].toFixed(5) + ' ' + p[1].toFixed(5)).join(' '); }
+function buildQuery(layers, area, forcePoly) {
+  const filters = layers.flatMap(l => l.match.map(alt => alt.map(([k, v]) => '["' + k + '"="' + v + '"]').join('')));
+  if (area.areaId && !forcePoly) {
+    return '[out:json][timeout:90];area(' + area.areaId + ')->.a;(' + filters.map(f => 'nwr' + f + '(area.a);').join('') + ');out center tags;';
+  }
+  const parts = area.rings.flatMap(r => filters.map(f => 'nwr' + f + '(poly:"' + polyStr(r) + '");'));
+  return '[out:json][timeout:90];(' + parts.join('') + ');out center tags;';
+}
+async function overpass(q) {
+  let last;
+  for (const ep of ENDPOINTS) {
+    try {
+      const r = await fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(q) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      if (j.remark && /error|timed out|out of memory/i.test(j.remark) && !(j.elements && j.elements.length)) throw new Error(j.remark);
+      return j;
+    } catch (e) { last = e; }
+  }
+  throw last;
+}
+function classify(tags, layers) {
+  return layers.find(l => l.match.some(alt => alt.every(([k, v]) => tags[k] === v)));
+}
+function addrOf(t) {
+  const s = [t['addr:street'] && (t['addr:street'] + (t['addr:housenumber'] ? ' ' + t['addr:housenumber'] : '')), [t['addr:postcode'], t['addr:city']].filter(Boolean).join(' ')].filter(Boolean);
+  return s.join(', ');
+}
+function ingest(elements, layers) {
+  let n = 0;
+  for (const e of elements) {
+    const lat = e.lat != null ? e.lat : e.center && e.center.lat, lng = e.lon != null ? e.lon : e.center && e.center.lon;
+    if (lat == null || lng == null) continue;
+    const tags = e.tags || {}, l = classify(tags, layers); if (!l) continue;
+    const id = e.type[0] + e.id; if (state.pois[id]) continue;
+    state.pois[id] = { id, osm: e.type + '/' + e.id, lat, lng, layer: l.id, name: tags.name || tags.operator || '', addr: addrOf(tags) };
+    n++;
+  }
+  return n;
+}
+
+function loadObjects() {
+  if (!state.area) return;
+  const need = LAYERS.filter(l => state.layerOn[l.id] && !state.layerLoaded[l.id]);
+  const bySector = {};
+  need.forEach(l => (bySector[l.sector] = bySector[l.sector] || []).push(l));
+  Object.entries(bySector).forEach(([sec, layers]) => {
+    if (queue.some(j => j.sector === sec && layers.every(l => j.layers.includes(l)))) return;
+    queue.push({ sector: sec, layers }); setSectorState(sec, 'queued');
+  });
+  pump();
+}
+async function pump() {
+  if (running) return; running = true;
+  while (queue.length) {
+    const job = queue.shift(), area = state.area; if (!area) break;
+    setSectorState(job.sector, 'loading');
+    try {
+      let data;
+      try { data = await overpass(buildQuery(job.layers, area)); }
+      catch (e) { if (area.areaId) data = await overpass(buildQuery(job.layers, area, true)); else throw e; }
+      if (state.area !== area) continue;           // Gebiet wurde währenddessen gewechselt
+      ingest(data.elements || [], job.layers);
+      job.layers.forEach(l => { state.layerLoaded[l.id] = true; });
+      setSectorState(job.sector, 'ok');
+      renderMarkers(); renderAll(); save();
+    } catch (e) {
+      setSectorState(job.sector, 'error', e.message);
+    }
+    await new Promise(r => setTimeout(r, 1200));    // Overpass schonen
+  }
+  running = false;
+}
+function setSectorState(sec, s, msg) { runtime.sector[sec] = { s, msg }; renderSectors(); }
+
+function clearPois() {
+  queue.length = 0;
+  state.pois = {}; state.layerLoaded = {}; runtime.sector = {};
+  Object.values(groups).forEach(g => g.clearLayers());
+  Object.keys(markers).forEach(k => delete markers[k]);
+  depLayer.clearLayers();
+}
+
+/* ------------------------------------------------------------------ */
+/* Marker                                                              */
+/* ------------------------------------------------------------------ */
+function computeAffected() {
+  const out = new Set(), seen = new Set(), q = [];
+  Object.keys(state.objects).forEach(id => { if (state.objects[id].status === 'ausgefallen') { q.push(id); seen.add(id); } });
+  while (q.length) {
+    const c = q.shift();
+    state.deps.forEach(d => { if (d.from === c && !seen.has(d.to)) { seen.add(d.to); out.add(d.to); q.push(d.to); } });
+  }
+  return out;
+}
+let affected = new Set();
+function poiIcon(p) {
+  const l = LAYER_BY_ID[p.layer], st = STATUS[(state.objects[p.id] || {}).status || 'unbekannt'];
+  return L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -13],
+    html: '<div class="poi' + (affected.has(p.id) ? ' affected' : '') + '" style="--c:' + SECTORS[l.sector].color + ';--s:' + st.color + '">' + l.glyph + '</div>' });
+}
+const poiTitle = p => p.name || ('(ohne Name) ' + LAYER_BY_ID[p.layer].name.replace(/e?n$/, ''));
+
+function renderMarkers() {
+  affected = computeAffected();
+  Object.values(state.pois).forEach(p => {
+    if (markers[p.id]) return;
+    const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p) });
+    m.bindPopup(() => poiPopup(p), { maxWidth: 300 });
+    m.on('click', () => {
+      if (runtime.mode && runtime.mode.type === 'link') { m.closePopup(); finishLink(p); }
+    });
+    markers[p.id] = m; groups[p.layer].addLayer(m);
+  });
+  LAYERS.forEach(l => {
+    const on = state.layerOn[l.id], has = map.hasLayer(groups[l.id]);
+    if (on && !has) map.addLayer(groups[l.id]); else if (!on && has) map.removeLayer(groups[l.id]);
+  });
+  refreshIcons(); renderDeps();
+}
+function refreshIcons() {
+  affected = computeAffected();
+  Object.values(state.pois).forEach(p => { if (markers[p.id]) markers[p.id].setIcon(poiIcon(p)); });
+}
+
+function poiPopup(p) {
+  const o = obj(p.id), l = LAYER_BY_ID[p.layer];
+  const wrap = el('div', { class: 'pp' });
+  const stBox = el('div', { class: 'stbtns' });
+  const timeEl = el('div', { class: 'hint' });
+  const setTime = () => { timeEl.textContent = o.statusTime ? 'Status seit ' + fmtTime(o.statusTime) : ''; };
+  const draw = () => stBox.querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.s === (o.status || 'unbekannt')));
+  Object.entries(STATUS).forEach(([k, v]) => stBox.append(el('button', { 'data-s': k, style: '--c:' + v.color, text: v.label, onclick: () => {
+    if ((o.status || 'unbekannt') === k) return;
+    const was = o.status || 'unbekannt'; o.status = k; o.statusTime = new Date().toISOString();
+    addJournal(poiTitle(p) + ': Status ' + STATUS[was].label + ' zu ' + v.label, true);
+    draw(); setTime(); refreshIcons(); renderList(); renderCounts(); renderDeps(); save();
+  } })));
+  draw(); setTime();
+  const contact = el('input', { type: 'text', value: o.contact || '', placeholder: 'Name, Telefon', oninput: ev => { o.contact = ev.target.value; save(); } });
+  const note = el('textarea', { rows: '3', oninput: ev => { o.note = ev.target.value; save(); } }); note.value = o.note || '';
+
+  const outgoing = state.deps.filter(d => d.from === p.id), incoming = state.deps.filter(d => d.to === p.id);
+  wrap.append(
+    el('h3', { text: poiTitle(p) }),
+    el('div', { class: 'sub' }, SECTORS[l.sector].name + ' · ' + l.name, p.addr ? el('br') : null, p.addr || null),
+    stBox, timeEl,
+    affected.has(p.id) ? el('div', { class: 'notice', text: 'Hängt laut manueller Verknüpfung von einem ausgefallenen Objekt ab.' }) : null,
+    el('label', { text: 'Ansprechpartner' }), contact,
+    el('label', { text: 'Notiz' }), note,
+    outgoing.length ? el('div', { class: 'hint', text: 'Versorgt: ' + outgoing.map(d => d.toName).join(', ') }) : null,
+    incoming.length ? el('div', { class: 'hint', text: 'Versorgt durch: ' + incoming.map(d => d.fromName).join(', ') }) : null,
+    el('div', { class: 'row' },
+      el('button', { class: 'btn small', text: 'Versorgt…', onclick: () => startLink(p) }),
+      el('a', { href: 'https://www.openstreetmap.org/' + p.osm, target: '_blank', rel: 'noopener', text: 'OSM-Objekt' })));
+  return wrap;
+}
+
+/* Abhängigkeiten */
+function startLink(p) {
+  stopDraw(); map.closePopup();
+  runtime.mode = { type: 'link', from: p }; say('Abhängiges Objekt anklicken (versorgt wird von „' + poiTitle(p) + '“). Esc bricht ab.');
+}
+function finishLink(to) {
+  const from = runtime.mode.from; stopDraw();
+  if (from.id === to.id) return;
+  if (!state.deps.some(d => d.from === from.id && d.to === to.id)) {
+    state.deps.push({ from: from.id, to: to.id, fromName: poiTitle(from), toName: poiTitle(to) });
+    refreshIcons(); renderDeps(); save();
+  }
+}
+function renderDeps() {
+  depLayer.clearLayers();
+  state.deps.forEach(d => {
+    const a = state.pois[d.from], b = state.pois[d.to];
+    if (a && b && state.layerOn[a.layer] && state.layerOn[b.layer]) L.polyline([[a.lat, a.lng], [b.lat, b.lng]], { color: '#111', weight: 2, dashArray: '2 6', opacity: .8, interactive: false }).addTo(depLayer);
+  });
+  const box = $('#depList'); box.replaceChildren();
+  if (!state.deps.length) box.append(el('div', { class: 'hint', text: 'Keine Verknüpfungen erfasst.' }));
+  state.deps.forEach((d, i) => box.append(el('div', { class: 'entry' }, d.fromName + ' versorgt ' + d.toName + ' ',
+    el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.deps.splice(i, 1); refreshIcons(); renderDeps(); save(); } }))));
+}
+
+/* ------------------------------------------------------------------ */
+/* Taktische Zeichen, Abschnitte, Journal                              */
+/* ------------------------------------------------------------------ */
+function symIcon(name) {
+  return L.icon({ iconUrl: 'images/symbols/' + encodeURI(name) + '.svg', iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -22] });
+}
+function renderSymbols() {
+  symLayer.clearLayers();
+  state.symbols.forEach(s => {
+    const m = L.marker([s.lat, s.lng], { icon: symIcon(s.name), draggable: true });
+    if (s.label) m.bindTooltip(s.label, { permanent: true, direction: 'bottom', className: 'symlabel', offset: [0, 18] });
+    m.on('dragend', () => { const ll = m.getLatLng(); s.lat = ll.lat; s.lng = ll.lng; save(); });
+    m.bindPopup(() => {
+      const inp = el('input', { type: 'text', value: s.label || '', placeholder: 'Beschriftung', onchange: ev => { s.label = ev.target.value; save(); renderSymbols(); } });
+      return el('div', { class: 'pp' }, el('h3', { text: s.title || s.name }), el('div', { class: 'sub', text: 'Gesetzt ' + fmtTime(s.time) }), inp,
+        el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.symbols = state.symbols.filter(x => x !== s); renderSymbols(); save(); } })));
+    });
+    m.addTo(symLayer);
+  });
+}
+function renderSections() {
+  secLayer.clearLayers();
+  state.sections.forEach(s => {
+    const lyr = s.kind === 'line' ? L.polyline(s.pts, { color: s.color, weight: 5 }) : L.polygon(s.pts, { color: s.color, weight: 3, fillOpacity: .12 });
+    lyr.bindTooltip(s.name, { permanent: true, direction: 'center', className: 'seclabel' });
+    lyr.bindPopup(() => el('div', { class: 'pp' }, el('h3', { text: s.name }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.sections = state.sections.filter(x => x !== s); renderSections(); save(); } }))));
+    lyr.addTo(secLayer);
+  });
+}
+function buildPalette() {
+  const sel = $('#symCat');
+  if (window.symbolsMissing || typeof symbolProperties === 'undefined') {
+    $('#symHint').textContent = 'Zeichenvorrat nicht gefunden. Die Datei muss im Ordner src/public liegen (images/symbols).'; sel.hidden = $('#symQ').hidden = true; return;
+  }
+  sel.append(el('option', { value: '', text: 'alle Kategorien' }));
+  symbolProperties.categories.forEach(c => sel.append(el('option', { value: c.id, text: c.name })));
+  const draw = () => {
+    const q = $('#symQ').value.trim().toLowerCase(), cat = sel.value, grid = $('#symGrid'); grid.replaceChildren();
+    symbolProperties.symbols.filter(s => (!cat || String(s.category) === cat) && (!q || (s.title + ' ' + s.name).toLowerCase().includes(q))).forEach(s => {
+      const b = el('button', { title: s.title, onclick: () => { stopDraw(); runtime.placing = s; b.classList.add('sel'); map.getContainer().style.cursor = 'crosshair'; say('Zeichen „' + s.title + '“: Ort auf der Karte anklicken. Esc bricht ab.'); } },
+        el('img', { src: 'images/symbols/' + encodeURI(s.name) + '.svg', alt: '', loading: 'lazy' }), s.title);
+      grid.append(b);
+    });
+  };
+  sel.addEventListener('change', draw); $('#symQ').addEventListener('input', draw); draw();
+}
+function addJournal(text, auto) {
+  state.journal.unshift({ id: uid(), time: new Date().toISOString(), text, auto: !!auto }); renderJournal(); save();
+}
+function renderJournal() {
+  const box = $('#journal'); box.replaceChildren();
+  if (!state.journal.length) box.append(el('div', { class: 'hint', text: 'Noch keine Einträge. Statuswechsel werden automatisch vermerkt.' }));
+  state.journal.slice(0, 300).forEach(j => box.append(el('div', { class: 'entry' }, el('time', { text: fmtTime(j.time) }), j.text, ' ',
+    el('button', { class: 'btn small', text: 'x', title: 'Eintrag löschen', onclick: () => { state.journal = state.journal.filter(x => x !== j); renderJournal(); save(); } }))));
+}
+
+/* Karte anklicken */
+map.on('click', e => {
+  if (runtime.mode === 'circle') { stopDraw(); applyCircle(e.latlng.lat, e.latlng.lng); }
+  else if (runtime.placing) {
+    const s = runtime.placing;
+    state.symbols.push({ id: uid(), name: s.name, title: s.title, lat: e.latlng.lat, lng: e.latlng.lng, label: '', time: new Date().toISOString() });
+    renderSymbols(); save();                    // Zeichen bleibt aktiv für mehrfaches Setzen
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') stopDraw(); });
+
+/* ------------------------------------------------------------------ */
+/* Oberfläche                                                          */
+/* ------------------------------------------------------------------ */
+function renderSectors() {
+  const box = $('#sectors'); box.replaceChildren();
+  Object.entries(SECTORS).forEach(([sid, sec]) => {
+    const layers = LAYERS.filter(l => l.sector === sid), rs = runtime.sector[sid] || {};
+    const allOn = layers.every(l => state.layerOn[l.id]), someOn = layers.some(l => state.layerOn[l.id]);
+    const cb = el('input', { type: 'checkbox', onchange: ev => { layers.forEach(l => { state.layerOn[l.id] = ev.target.checked; }); layersChanged(); } });
+    cb.checked = allOn; cb.indeterminate = !allOn && someOn;
+    const txt = { loading: 'lädt…', queued: 'wartet…', ok: '', error: 'Fehler: ' + (rs.msg || '') }[rs.s] || '';
+    const head = el('div', { class: 'head' }, el('label', {}, cb, el('span', { class: 'dot', style: 'background:' + sec.color }), sec.name),
+      el('span', { class: 'state' + (rs.s === 'error' ? ' error' : ''), text: txt }),
+      rs.s === 'error' ? el('button', { class: 'btn small', text: 'Erneut', onclick: () => { layers.forEach(l => { delete state.layerLoaded[l.id]; }); loadObjects(); } }) : null);
+    const wrap = el('div', { class: 'sector' }, head);
+    layers.forEach(l => {
+      const n = Object.values(state.pois).filter(p => p.layer === l.id).length;
+      const c = el('input', { type: 'checkbox', onchange: ev => { state.layerOn[l.id] = ev.target.checked; layersChanged(); } }); c.checked = !!state.layerOn[l.id];
+      wrap.append(el('div', { class: 'layer' }, el('label', {}, c, l.name), el('span', { class: 'n', text: state.layerLoaded[l.id] ? String(n) : '' })));
+    });
+    box.append(wrap);
+  });
+}
+function layersChanged() { renderMarkers(); renderAll(); save(); if (state.area) loadObjects(); }
+
+function renderCounts() {
+  const c = { ausgefallen: 0, eingeschraenkt: 0, intakt: 0, unbekannt: 0 };
+  Object.values(state.pois).forEach(p => { if (state.layerOn[p.layer]) c[(state.objects[p.id] || {}).status || 'unbekannt']++; });
+  const total = c.ausgefallen + c.eingeschraenkt + c.intakt + c.unbekannt, box = $('#hdrCounts'); box.replaceChildren();
+  box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
+  ['ausgefallen', 'eingeschraenkt', 'intakt'].forEach(k => { if (c[k]) box.append(el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + STATUS[k].color }), c[k] + ' ' + STATUS[k].label)); });
+}
+function renderList() {
+  const q = $('#fltText').value.trim().toLowerCase(), fs = $('#fltStatus').value, body = $('#listBody'); body.replaceChildren();
+  const rows = Object.values(state.pois).filter(p => state.layerOn[p.layer]).filter(p => {
+    const st = (state.objects[p.id] || {}).status || 'unbekannt';
+    if (fs === 'affected') { if (!affected.has(p.id)) return false; } else if (fs && st !== fs) return false;
+    return !q || poiTitle(p).toLowerCase().includes(q);
+  }).sort((a, b) => poiTitle(a).localeCompare(poiTitle(b), 'de'));
+  $('#listInfo').textContent = state.area ? rows.length + ' Objekte' + (rows.length > 400 ? ' (die ersten 400 angezeigt)' : '') : 'Zuerst ein Gebiet wählen.';
+  rows.slice(0, 400).forEach(p => {
+    const o = state.objects[p.id] || {}, st = STATUS[o.status || 'unbekannt'];
+    const tr = el('tr', { class: 'clickable', onclick: () => { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 16)); const m = markers[p.id]; if (m) { groups[p.layer].zoomToShowLayer(m, () => m.openPopup()); } } },
+      el('td', { text: poiTitle(p) }), el('td', { text: LAYER_BY_ID[p.layer].name }),
+      el('td', {}, el('span', { class: 'dot', style: 'background:' + st.color }), ' ' + st.label + (affected.has(p.id) ? ' (betroffen?)' : '')));
+    body.append(tr);
+  });
+}
+function renderAll() { affected = computeAffected(); renderSectors(); renderCounts(); renderList(); }
+
+document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  document.querySelectorAll('.tabpane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + b.dataset.tab));
+}));
+$('#btnPoly').onclick = e => startDraw('polygon', 'area', e.currentTarget);
+$('#btnRect').onclick = e => startDraw('rectangle', 'area', e.currentTarget);
+$('#btnCircle').onclick = startCircleMode;
+$('#btnLoad').onclick = () => { Object.keys(runtime.sector).forEach(k => { if (runtime.sector[k].s === 'error') LAYERS.filter(l => l.sector === k).forEach(l => delete state.layerLoaded[l.id]); }); loadObjects(); };
+$('#btnClearArea').onclick = clearArea;
+$('#btnSecPoly').onclick = e => startDraw('polygon', 'section', e.currentTarget);
+$('#btnSecLine').onclick = e => startDraw('polyline', 'section', e.currentTarget);
+$('#btnJ').onclick = () => { const t = $('#jText').value.trim(); if (t) { addJournal(t); $('#jText').value = ''; } };
+$('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ').click(); });
+$('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
+$('#btnPrint').onclick = () => window.print();
+
+/* Speichern, Laden, Export */
+const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+$('#btnSave').onclick = () => download('lage-' + stamp() + '.json', JSON.stringify(state), 'application/json');
+$('#loadFile').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
+  try {
+    const s = JSON.parse(await f.text()); if (!s || s.version !== 1) throw new Error('unbekanntes Format');
+    if (!confirm('Aktuelle Lage durch die Datei ersetzen?')) return;
+    applyState(Object.assign(freshState(), s), true);
+  } catch (e) { say('Lage nicht lesbar: ' + e.message, 6000); }
+});
+$('#btnReset').onclick = () => { if (confirm('Gesamte Lage unwiderruflich löschen?')) { try { localStorage.removeItem(STORE_KEY); } catch (e) { /* egal */ } applyState(freshState(), true); } };
+
+function csvCell(v) { v = v == null ? '' : String(v); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+$('#btnCsv').onclick = () => {
+  const head = ['OSM-ID', 'Sektor', 'Art', 'Name', 'Adresse', 'Status', 'Status seit', 'Möglicherweise betroffen', 'Ansprechpartner', 'Notiz', 'Breite', 'Länge', 'Link'];
+  const rows = Object.values(state.pois).map(p => {
+    const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
+    return [p.osm, SECTORS[l.sector].name, l.name, poiTitle(p), p.addr, STATUS[o.status || 'unbekannt'].label, o.statusTime || '', affected.has(p.id) ? 'ja' : '', o.contact, o.note, p.lat, p.lng, 'https://www.openstreetmap.org/' + p.osm];
+  });
+  download('objekte-' + stamp() + '.csv', '﻿' + [head, ...rows].map(r => r.map(csvCell).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
+};
+$('#btnGeo').onclick = () => {
+  const f = [];
+  if (state.area) f.push({ type: 'Feature', properties: { art: 'gebiet', name: state.area.label }, geometry: { type: 'MultiPolygon', coordinates: state.area.rings.map(r => [r.concat([r[0]]).map(p => [p[1], p[0]])]) } });
+  Object.values(state.pois).forEach(p => { const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
+    f.push({ type: 'Feature', properties: { art: 'objekt', osm: p.osm, sektor: SECTORS[l.sector].name, typ: l.name, name: poiTitle(p), status: o.status || 'unbekannt', ansprechpartner: o.contact || '', notiz: o.note || '' }, geometry: { type: 'Point', coordinates: [p.lng, p.lat] } }); });
+  state.symbols.forEach(s => f.push({ type: 'Feature', properties: { art: 'taktisches_zeichen', zeichen: s.name, label: s.label }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] } }));
+  state.sections.forEach(s => f.push({ type: 'Feature', properties: { art: s.kind === 'line' ? 'linie' : 'abschnitt', name: s.name, farbe: s.color },
+    geometry: s.kind === 'line' ? { type: 'LineString', coordinates: s.pts.map(p => [p[1], p[0]]) } : { type: 'Polygon', coordinates: [s.pts.concat([s.pts[0]]).map(p => [p[1], p[0]])] } }));
+  download('lage-' + stamp() + '.geojson', JSON.stringify({ type: 'FeatureCollection', features: f }), 'application/geo+json');
+};
+
+function applyState(s, fit) {
+  stopDraw(); queue.length = 0;
+  Object.values(groups).forEach(g => { g.clearLayers(); if (map.hasLayer(g)) map.removeLayer(g); });
+  Object.keys(markers).forEach(k => delete markers[k]);
+  state = s; runtime.sector = {};
+  drawArea(!!fit); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); save();
+}
+
+/* ------------------------------------------------------------------ */
+/* Start                                                               */
+/* ------------------------------------------------------------------ */
+buildPalette();
+try {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (raw) { const s = JSON.parse(raw); if (s && s.version === 1) state = Object.assign(freshState(), s); }
+} catch (e) { /* kein Speicher: leerer Start */ }
+state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
+drawArea(true); renderAreaInfo(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll();
+const tick = () => { $('#clock').textContent = new Date().toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
+tick(); setInterval(tick, 20000);
+window.__lage = { get state() { return state; }, map, setArea, loadObjects };   // für Tests
+})();
+</script>
+</body>
+</html>
