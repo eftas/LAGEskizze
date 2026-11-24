@@ -53,6 +53,10 @@ header .qb button:disabled { opacity: .35; }
 header button:disabled { opacity: .4; cursor: default; }
 .dlg { position: fixed; inset: 0; background: rgba(15,42,71,.35); z-index: 3000; display: flex; align-items: center; justify-content: center; }
 .dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(460px, 92vw); max-height: 92vh; overflow: auto; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+.ctx, #mtPop, #placeRes:not(:empty) { animation: menuIn .4s ease both; transform-origin: top left; }
+.ctx.dlgout, #mtPop.dlgout { animation: menuIn .4s ease reverse both; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .ctx, #mtPop, #placeRes:not(:empty), .ctx.dlgout, #mtPop.dlgout { animation: none; } }
 @keyframes dlgIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dlgCardIn { from { opacity: 0; transform: translateY(18px) scale(.96); } to { opacity: 1; transform: none; } }
 .dlg:not(.rolelay) { animation: dlgIn .4s ease both; }
@@ -4520,7 +4524,7 @@ $('#btnPrint').onclick = () => printLagekarte();
 
 /* Dialoge blenden aus, bevor sie entfernt werden */
 (function () { const orig = Element.prototype.remove; Element.prototype.remove = function () {
-  if (this.classList && this.classList.contains('dlg') && !this.classList.contains('rolelay') && !this._leaving && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { this._leaving = true; this.classList.add('dlgout'); setTimeout(() => orig.call(this), 400); } else orig.call(this); }; })();
+  if (this.classList && (this.classList.contains('dlg') && !this.classList.contains('rolelay') || this.id === 'mtPop' || (this.classList.contains('ctx') && this.dataset.level === '0')) && !this._leaving && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { this._leaving = true; this.classList.add('dlgout'); setTimeout(() => orig.call(this), 400); } else orig.call(this); }; })();
 /* ---- Menü im Kopf ---- */
 (function () {
   const wrap = $('#hdrMore'), btn = $('#btnMore'), menu = $('#hdrMenu');
