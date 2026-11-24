@@ -1299,38 +1299,54 @@ div.fbox { cursor: default; }
 [data-theme="dark"] .rolecard { background: #152036; } [data-theme="dark"] .btn.sel { background: #22314d; color: #fff; } [data-theme="dark"] #bottomBar { background: rgba(17, 26, 43, .97); }
 [data-theme="dark"] .uxtile, [data-theme="dark"] .uxbtn { background: #152036; } [data-theme="dark"] .uxtile.p, [data-theme="dark"] .uxbtn.p { background: #2f5fc4; } [data-theme="dark"] .steps i { background: #2a3850; }
 @media (max-width: 860px) { .uxgrid { grid-template-columns: 1fr; } .vgrid { grid-template-columns: 1fr 1fr; } }
+
+/* ===== Kopfzeile: oben alle Schaltflächen in einer Reihe, darunter die Kennzahlen ===== */
+header { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 6px; }
+#hdrTop { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 0 0 auto; flex-wrap: nowrap; overflow: hidden; min-height: 34px; }
+#hdrTop > * { flex: none; }
+#hdrTop #mtLine { flex: 0 1 auto; min-width: 0; margin-left: 4px; }
+#hdrTop .sp { flex: 1 1 0; min-width: 0; }
+#hdrTop button { padding: 4px 10px; font-size: 13px; }
+#hdrTop #exTag { margin-left: -2px; }
+#hdrTop #roleChip { padding: 4px 12px; }
+@media (max-width: 1300px) { #hdrTop { gap: 7px; } #hdrTop button { padding: 4px 8px; } #clock { font-size: 14px; } #tacTime { font-size: 13.5px; } }
+header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
+#hdrSub { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 28px; }
+#hdrSub #mtLine { order: -1; flex: 0 0 auto; margin: 0; max-width: 100%; }
+@media (max-width: 1150px) { #hdrTop { gap: 5px; } #hdrTop button { padding: 3px 6px; font-size: 12px; } #clock { font-size: 12.5px; } #tacTime { font-size: 12.5px; } #hdrTop .chip { padding: 2px 8px; } }
+@media (max-width: 860px) { #hdrTop { overflow-x: auto; } }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
+    <div id="hdrTop">
     <div id="qat" role="toolbar" aria-label="Schnellzugriff">
       <span class="qb"><button id="btnUndo" disabled aria-label="Rückgängig"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button><button id="btnUndoMenu" class="caret" disabled aria-label="Rückgängig-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
       <span class="qb"><button id="btnRedo" disabled aria-label="Wiederholen"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button><button id="btnRedoMenu" class="caret" disabled aria-label="Wiederholen-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
     </div>
     <h1>LAGEkarte</h1>
+    <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
     <span id="hdrArea"></span>
-    <div id="mtLine" hidden></div>
     <span class="sp"></span>
-    <div id="hdrCounts"></div>
     <span id="clock" role="button" tabindex="0" title="Klicken: nächste Lagebesprechung festlegen"></span>
     <span id="tacTime" class="chip" role="button" tabindex="0" title="Taktische Zeit (TTHHMM). Klicken: nächste Lagebesprechung festlegen" aria-label="Taktische Zeit"></span>
-    <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
     <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="roleChip" class="chip" title="Funktion wechseln" hidden></button>
-    <button id="btnExport" title="Ihre Daten als JSON-Datei speichern" hidden>Meine Daten (JSON)</button>
+    <button id="btnExport" title="Ihre Daten als JSON-Datei speichern" hidden>Export</button>
     <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
     <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
     <button id="btnFue" title="Führungsstruktur nach FwDV 100 mit Kommunikationsplan">Führungsstruktur</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
+    </div>
+    <div id="hdrSub"><div id="mtLine" hidden></div><div id="hdrCounts"></div></div>
   </header>
 
   <aside id="panel">
     <div id="tabs" role="tablist">
-      <button role="tab" data-tab="start" aria-selected="false">Start</button>
       <button role="tab" data-tab="einsatz" aria-selected="true">Einsatz</button>
       <button role="tab" data-tab="gebiet" aria-selected="false">Gebiete</button>
       <button role="tab" data-tab="ebenen" aria-selected="false">Ebenen</button>
@@ -1347,8 +1363,6 @@ div.fbox { cursor: default; }
       <button role="tab" data-tab="staende" aria-selected="false">Stände</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
     </div>
-
-    <section class="tabpane" id="tab-start"><div id="startBox"></div></section>
 
     <section class="tabpane active" id="tab-einsatz">
       <h2>Übung oder Einsatz</h2>
@@ -4506,7 +4520,7 @@ function renderUnitOverview() {
     const body = el('div', { class: 'ovbody' });
     g.list.slice().sort((a, b) => state.unitStatus.findIndex(x => x.id === a.status) - state.unitStatus.findIndex(x => x.id === b.status) || (a.name || '').localeCompare(b.name || '', 'de')).forEach(u => body.append(ovTile(u, mode)));
     if (!g.list.length) body.append(el('div', { class: 'ovempty', text: vw ? 'leer' : 'Leer. Einheit hierher ziehen.' }));
-    if (!vw) head.append(el('button', { class: 'ovplus', title: 'Einheit in diese Spalte einfügen', 'aria-label': 'Einheit hinzufügen', text: '+', onclick: () => addUnitDialog(g.st ? { status: g.st.id } : { sectionId: g.sx ? g.sx.id : null }) }));
+    if (!vw) head.append(el('button', { class: 'ovplus', title: 'Einheit in diese Spalte einfügen', 'aria-label': 'Einheit hinzufügen', text: '+', onclick: () => openUnitWizard(g.st ? { status: g.st.id } : { sectionId: g.sx ? g.sx.id : null }) }));
     cols.append(el('div', { class: 'ovcol', 'data-drop': g.key }, head, body));
   });
 }
@@ -4549,7 +4563,7 @@ function openUnitOverview() { closeFue(); $('#unitOv').hidden = false; renderUni
 function closeUnitOverview() { $('#unitOv').hidden = true; }
 function initUnitOverview() {
   $('#btnUnits').onclick = () => ($('#unitOv').hidden ? openUnitOverview() : closeUnitOverview());
-  $('#ovAdd').onclick = () => addUnitDialog({}); $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview); $('#ovGroup').addEventListener('change', renderUnitOverview); initOvDrag();
+  $('#ovAdd').onclick = () => openUnitWizard({}); $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview); $('#ovGroup').addEventListener('change', renderUnitOverview); initOvDrag();
   const sz = d => { const ov = $('#unitOv'), v = Math.min(2.2, Math.max(0.7, (parseFloat(ov.style.getPropertyValue('--ovs')) || 1) + d)); ov.style.setProperty('--ovs', v.toFixed(2)); };
   $('#ovBig').onclick = () => sz(0.15); $('#ovSmall').onclick = () => sz(-0.15);
   $('#ovMap').onclick = () => { const pts = state.units.filter(u => u.lat != null).map(u => [u.lat, u.lng]); closeUnitOverview(); if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 17 }); else say('Keine Einheit hat einen Ort auf der Karte.', 4000); };
@@ -4685,8 +4699,8 @@ const ROLLEN = [
   { id: 'S4', name: 'S4 Versorgung', d: 'Ablösung, Atemschutz, Nachforderung, Ausfälle' }, { id: 'S5', name: 'S5 Presse', d: 'Meldungen' }, { id: 'S6', name: 'S6 Kommunikation', d: 'Kommunikationsplan' }];
 const ROLE_DOM = { EL: ['people', 'fb'], S1: ['casualties'], S2: ['areas', 'objects', 'deps', 'symbols', 'manualPois', 'wind', 'weather', 'plumes', 'chem', 'problems', 'exercise', 'meeting'], S3: ['units', 'sections'], S4: ['logi'], S5: [], S6: ['funk'] };
 const DOM_PATH = { people: ['fue', 'people'], fb: ['fue', 'fb'], funk: ['fue', 'funk'] };
-const ROLE_TABS = { EL: ['start', 'probleme', 'tagebuch', 'meldungen', 'staende', 'daten'], S1: ['start', 'zahlen', 'meldungen', 'tagebuch', 'daten'], S3: ['start', 'kraefte', 'abschnitte', 'meldungen', 'tagebuch', 'daten'],
-  S4: ['start', 'probleme', 'meldungen', 'daten'], S5: ['start', 'meldungen', 'tagebuch', 'daten'], S6: ['start', 'meldungen', 'daten'] };
+const ROLE_TABS = { EL: ['probleme', 'tagebuch', 'meldungen', 'staende', 'daten'], S1: ['zahlen', 'meldungen', 'tagebuch', 'daten'], S3: ['kraefte', 'abschnitte', 'meldungen', 'tagebuch', 'daten'],
+  S4: ['probleme', 'meldungen', 'daten'], S5: ['meldungen', 'tagebuch', 'daten'], S6: ['meldungen', 'daten'] };
 const roleId = () => runtime.role || 'S2';
 const can = d => roleId() === 'S2' || (ROLE_DOM[roleId()] || []).includes(d);
 const ro = d => runtime.viewer || !can(d);
@@ -4708,12 +4722,12 @@ function applyRole() {
   $('#btnAddPoi').hidden = r !== 'S2' || runtime.viewer;
   const chip = $('#roleChip'); chip.hidden = runtime.viewer; chip.textContent = roleName();
   $('#btnExport').hidden = runtime.viewer; $('#btnExport').title = r === 'S2' ? 'Eigene Daten und Gesamtstand als JSON-Datei' : 'Nur Ihre Daten als JSON-Datei speichern';
-  const sel = document.querySelector('#tabs button[aria-selected="true"]'); if (!sel || sel.hidden) openTab('start');
-  renderStart(); renderBottomBar(); renderUnitOverview(); renderFue();
+  const sel = document.querySelector('#tabs button[aria-selected="true"]'); if (!sel || sel.hidden) openTab((tabs && tabs[0]) || 'einsatz');
+  renderBottomBar(); renderUnitOverview(); renderFue();
 }
 function chooseRole(forceAsk) {
   return new Promise(resolve => {
-    const done = id => { runtime.role = id; try { localStorage.setItem('kritis-role', id); } catch (e) { /* egal */ } dlg.remove(); applyRole(); openTab('start'); resolve(); };
+    const done = id => { runtime.role = id; try { localStorage.setItem('kritis-role', id); } catch (e) { /* egal */ } dlg.remove(); applyRole();  resolve(); };
     const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true', style: 'z-index:5000' }, el('div', { class: 'rolecard' }, el('h2', { text: 'Wer sind Sie?' }),
       el('p', { class: 'hint', text: 'Sie sehen danach nur die Aufgaben Ihrer Funktion. S2 kann alles bearbeiten. Ihre Eingaben bleiben auf diesem Gerät, bis Sie sie exportieren.' }),
       el('div', { class: 'rolegrid' }, ...ROLLEN.map(r => el('button', { class: 'btn rolebtn' + (r.id === 'S2' ? ' primary' : ''), onclick: () => done(r.id) }, el('b', { text: r.name }), el('small', { text: r.d }))))));
@@ -4740,12 +4754,6 @@ function startAct(a) {
   const tab = n => { setPanel(true); openTab(n); };
   ({ unitAdd: openUnitWizard, units: openUnitOverview, sections: () => tab('abschnitte'), persons: () => tab('zahlen'), chem: () => tab('chem'), msg: () => tab('meldungen'), komm: () => openFue(), org: () => openFue(), meeting: openGuidedMeeting,
     import: importDlg, probleme: () => tab('probleme'), lagevortrag: () => { closeUnitOverview(); closeFue(); setPanel(false); state.chemBand = true; renderChemBand(); say('Lagevortrag: Karte groß. Mit dem Pfeil am Rand kommt die Leiste zurück.', 4000); } })[a]();
-}
-function renderStart() {
-  const box = $('#startBox'); if (!box) return; const tiles = START_TILES[roleId()] || START_TILES.S2;
-  box.replaceChildren(el('h2', { text: roleName() }), el('p', { class: 'hint', text: 'Das ist Ihr Bereich. Ein Tipp genügt.' }),
-    el('div', { class: 'uxgrid' }, ...tiles.map(t => { const b = el('button', { class: 'uxtile ' + (t[4] || ''), onclick: () => startAct(t[0]) }, uxIcon(t[3]), el('span', {}, el('b', { text: t[1] }), el('small', { text: t[2] }))); return b; })),
-    roleId() === 'S2' ? el('div', { class: 'hint', text: 'Als S2 sehen Sie alle Reiter links und dürfen alles bearbeiten.' }) : '');
 }
 function renderBottomBar() {
   const b = $('#bottomBar'); if (!b) return; const open = !$('#app').classList.contains('collapsed');
@@ -4815,9 +4823,10 @@ function openUnitCard(u0, more0) {
 }
 /* ---- Einheit melden: Assistent (Entwurf 3) ---- */
 const UX_VEH = [['LF 20', 'Löschfahrzeug LF 20', 'FW_LF20'], ['HLF 20', 'Hilfeleistungs-LF', 'FW_HLF20'], ['DLK 23', 'Drehleiter', 'FW_DLK'], ['ELW 1', 'Einsatzleitwagen', 'FW_ELW1'], ['GW', 'Gerätewagen', 'FW_GW-G'], ['RW', 'Rüstwagen', 'FW_RW']];
-function openUnitWizard() {
+function openUnitWizard(pre) {
   if (ro('units')) { say('Einheiten melden darf der S3.', 3500); return; }
-  let step = 1, v = null, sec = '', st = state.unitStatus.find(x => x.id === 'einsatz') ? 'einsatz' : state.unitStatus[0].id, nm = '', call = '', symSel = null;
+  pre = pre || {};
+  let step = 1, v = null, sec = pre.sectionId || '', st = pre.status || (state.unitStatus.find(x => x.id === 'einsatz') ? 'einsatz' : state.unitStatus[0].id), nm = '', call = '', symSel = null;
   const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }), card = el('div', { class: 'rolecard wiz' }); dlg.append(card);
   const render = () => {
     const steps = el('div', { class: 'steps' }, ...[1, 2, 3].map(i => el('i', { class: i <= step ? 'on' : '' }))); let body, ft;
@@ -4874,9 +4883,9 @@ function initRoles() {
   $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
   const q = qs.get('rolle'), saved = (() => { try { return localStorage.getItem('kritis-role'); } catch (e) { return null; } })();
   if (runtime.viewer) { runtime.role = 'S2'; applyRole(); return; }
-  if (q && ROLLEN.some(r => r.id === q)) { runtime.role = q; try { localStorage.setItem('kritis-role', q); } catch (e) { /* egal */ } applyRole(); openTab('start'); return; }
+  if (q && ROLLEN.some(r => r.id === q)) { runtime.role = q; try { localStorage.setItem('kritis-role', q); } catch (e) { /* egal */ } applyRole();  return; }
   if (navigator.webdriver && q !== 'fragen') { runtime.role = saved || 'S2'; applyRole(); openTab('einsatz'); return; }   // automatische Tests starten ohne Frage
-  if (saved && ROLLEN.some(r => r.id === saved) && q !== 'fragen') { runtime.role = saved; applyRole(); openTab('start'); return; }
+  if (saved && ROLLEN.some(r => r.id === saved) && q !== 'fragen') { runtime.role = saved; applyRole();  return; }
   runtime.role = 'S2'; applyRole(); chooseRole(false);
 }
 /* Abschnitte-Reiter */
