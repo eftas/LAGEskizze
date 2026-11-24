@@ -1114,6 +1114,31 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 .clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; cursor: help; }
 .notice.clamp { -webkit-line-clamp: 2; }
 .clamp.open { display: block; -webkit-line-clamp: unset; cursor: pointer; }
+#panelToggle { z-index: 1700; }
+#unitOv { padding-left: 28px; }
+.ovunit { touch-action: pan-y; position: relative; }
+.ovunit .grip { cursor: grab; touch-action: none; user-select: none; color: #94a3b8; font-weight: 700; letter-spacing: -2px; padding: 8px 2px; margin: -8px 0 -8px -6px; align-self: stretch; display: flex; align-items: center; }
+.ovunit.ovdrag { opacity: .3; }
+.ovghost { position: fixed !important; z-index: 3200; pointer-events: none; background: #fff; border: 1px solid var(--accent) !important; border-radius: 6px; box-shadow: 0 10px 28px rgba(0,0,0,.35); opacity: .96; }
+#unitOv.dragging, #unitOv.dragging * { cursor: grabbing !important; user-select: none; }
+.ovcol.over { outline: 3px dashed var(--accent); outline-offset: -3px; background: #eef4ff; }
+.ovbody { min-height: 70px; }
+.ovempty { margin: 10px; padding: 18px 10px; border: 2px dashed var(--line); border-radius: 6px; color: var(--muted); font-size: calc(12.5px * var(--ovs)); text-align: center; }
+.ovst, .ovmore { border: 0; background: none; font: inherit; font-weight: 700; color: inherit; cursor: pointer; border-radius: 4px; padding: 2px 6px; }
+.ovst:hover, .ovmore:hover { background: rgba(30, 64, 175, .1); }
+.ovmore { font-size: 1.2em; line-height: 1; }
+.ovunit .st { display: flex; align-items: center; gap: 2px; }
+#ovGroup, #ovStat { max-width: 200px; }
+[data-theme="dark"] .ovghost { background: #152036; color: var(--ink); }
+[data-theme="dark"] .ovcol.over { background: #1b2a42; }
+[data-theme="dark"] .ovunit { border-bottom-color: #2a3850; }
+[data-theme="dark"] .ovst:hover, [data-theme="dark"] .ovmore:hover { background: rgba(138, 180, 255, .16); }
+.tile { position: relative; }
+.tile .casico { position: absolute; right: 6px; top: 6px; background: #fff; border-radius: 3px; padding: 1px; }
+.ctx-item img.casico, .entry .casico, .chip .casico { background: #fff; border-radius: 3px; padding: 1px; vertical-align: middle; }
+.ctx-item img { background: #fff; border-radius: 3px; padding: 1px; }
+.ctx-item img.casico { width: 36px; height: 30px; object-fit: contain; }
+.cas { min-width: 30px; width: auto; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -1556,7 +1581,7 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
     <section id="unitOv" aria-label="Alle Einheiten auf einen Blick" hidden>
       <div class="ovhead"><h2>Einheiten auf einen Blick</h2><div id="ovSum"></div>
-        <div class="ovtools"><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
+        <div class="ovtools"><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
       <div id="ovCols"></div>
     </section>
     <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
@@ -2704,14 +2729,16 @@ function renderJournal() {
 /* Eigene Objekte, Personenzahlen, Problemliste                        */
 /* ------------------------------------------------------------------ */
 const CAS = {
-  betroffen: { label: 'Betroffene',      short: 'B',  color: '#475569' },
-  verletzt:  { label: 'Verletzte',       short: 'V',  color: '#d97706' },
-  schwer:    { label: 'Schwerverletzte', short: 'SV', color: '#c2410c' },
-  tot:       { label: 'Tote',            short: 'T',  color: '#111827' },
-  vermisst:  { label: 'Vermisste',       short: 'Vm', color: '#7c3aed' },
-  evakuiert: { label: 'Evakuierte',      short: 'E',  color: '#0369a1' },
-  gerettet:  { label: 'Gerettete',       short: 'G',  color: '#15803d' }
+  betroffen: { label: 'Betroffene',      short: 'B',  color: '#475569', sym: 'betroffene_Person' },
+  verletzt:  { label: 'Verletzte',       short: 'V',  color: '#d97706', sym: 'verletzte_Person' },
+  schwer:    { label: 'Schwerverletzte', short: 'SV', color: '#c2410c', sym: 'verletzte_Person' },   // kein eigenes Zeichen im Vorrat: Zeichen Verletzte, Kürzel SV
+  tot:       { label: 'Tote',            short: 'T',  color: '#111827', sym: 'tote_Person' },
+  vermisst:  { label: 'Vermisste',       short: 'Vm', color: '#7c3aed', sym: 'vermisste_Person' },
+  evakuiert: { label: 'Evakuierte',      short: 'E',  color: '#0369a1' },                       // im Zeichenvorrat gibt es kein Zeichen für Evakuierte
+  gerettet:  { label: 'Gerettete',       short: 'G',  color: '#15803d', sym: 'gerettete_Person' }
 };
+const casIcon = k => CAS[k] && CAS[k].sym ? symUrl(CAS[k].sym) : null;
+const casMark = (k, h) => casIcon(k) ? el('img', { src: casIcon(k), alt: '', class: 'casico', style: 'height:' + (h || 22) + 'px' }) : el('span', { class: 'dot', style: 'background:' + CAS[k].color });
 const PRIO_COL = ['#dc2626', '#ea580c', '#f59e0b', '#84cc16', '#64748b'];
 const prioNum = v => { const n = Math.round(parseFloat(v)); return n >= 1 ? n : 1; };
 const prioColor = n => PRIO_COL[Math.min(prioNum(n), PRIO_COL.length) - 1];
@@ -2791,14 +2818,14 @@ function pushCas(cat, n, note, lat, lng) {
 }
 function renderCas() {
   const { t, outside, ot } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
-  Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, el('b', { text: String(t[k]) }), el('span', { text: v.label + (ot[k] ? ' (davon ' + ot[k] + ' an Objekten)' : '') }))));
+  Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, casIcon(k) ? casMark(k, 28) : null, el('b', { text: String(t[k]) }), el('span', { text: v.label + (ot[k] ? ' (davon ' + ot[k] + ' an Objekten)' : '') }))));
   $('#casHint').textContent = (state.areas.length ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb der Abfragegebiete.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '') + ' Zahlen an Objekten (Objekt-Popup) werden zu den Einträgen addiert: denselben Fall nicht an beiden Stellen erfassen.';
   const list = $('#casList'); list.replaceChildren();
   if (!state.casualties.length) list.append(el('div', { class: 'hint', text: 'Noch keine Einträge.' }));
   state.casualties.slice().reverse().forEach(c => {
     const out = c.lat != null && !inArea(c.lat, c.lng);
     const nIn = el('input', { type: 'number', min: '0', value: c.n, style: 'width:70px', onchange: ev => { c.n = Math.max(0, Math.round(+ev.target.value || 0)); renderCas(); save('Zahl geändert: ' + CAS[c.cat].label); } });
-    list.append(el('div', { class: 'entry' }, el('span', { class: 'dot', style: 'background:' + CAS[c.cat].color }), ' ', CAS[c.cat].label + ' ', nIn, ' ',
+    list.append(el('div', { class: 'entry' }, casMark(c.cat, 20), ' ', CAS[c.cat].label + ' ', nIn, ' ',
       c.note ? c.note + ' ' : '', el('time', { text: fmtTime(c.time) }), out ? ' (außerhalb, nicht gezählt) ' : ' ',
       c.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
       el('button', { class: 'btn small', text: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save('Zahl gelöscht: ' + CAS[c.cat].label); } })));
@@ -2806,7 +2833,7 @@ function renderCas() {
   if (runtime.viewer) lockViewer(list);
   casLayer.clearLayers();
   state.casualties.filter(c => c.lat != null).forEach(c => {
-    const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: [34, 24], iconAnchor: [17, 12], html: '<div class="cas" style="--c:' + CAS[c.cat].color + '">' + CAS[c.cat].short + ' ' + c.n + '</div>' }), draggable: true });
+    const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: casIcon(c.cat) ? [64, 26] : [34, 24], iconAnchor: casIcon(c.cat) ? [32, 13] : [17, 12], html: el('div', { class: 'cas', style: '--c:' + CAS[c.cat].color }, casIcon(c.cat) ? el('img', { src: casIcon(c.cat), alt: '', style: 'height:18px;vertical-align:-4px;margin-right:3px;background:#fff;border-radius:2px' }) : null, CAS[c.cat].short + ' ' + c.n) }), draggable: true });
     m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save('Zahl verschoben'); });
     m.bindTooltip(el('span', { text: CAS[c.cat].label + ': ' + c.n + (c.note ? ', ' + c.note : '') }));
     m.on('contextmenu', e => ctxOpen(e, casItems(c), null, CAS[c.cat].label + ': ' + c.n));
@@ -2988,7 +3015,8 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Enter' || e.key === ' ') { stop(); const r = rows[act]; if (r) r.click(); }
   else if (e.key === 'Tab') stop();
 }, true);
-map.getContainer().addEventListener('contextmenu', ev => { if (!ev.target.closest('.leaflet-popup, input, textarea')) ev.preventDefault(); });
+// Das Browsermenü erscheint nirgends in der Anwendung, nur in Eingabefeldern (Kopieren, Einfügen)
+document.addEventListener('contextmenu', ev => { if (!(ev.target.closest && ev.target.closest('input, textarea, [contenteditable="true"]'))) ev.preventDefault(); }, true);
 map.on('contextmenu', e => {
   if (e.originalEvent._ctx || e.originalEvent.target.closest('.leaflet-popup, .leaflet-control')) return;
   e.originalEvent._ctx = true; showMenu(e.originalEvent.clientX, e.originalEvent.clientY, mapItems(e.latlng));
@@ -3062,7 +3090,7 @@ function mapItems(ll) {
     { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
     { label: 'Einheit hier einsetzen…', onclick: async () => { const v = await askText('Bezeichnung der Einheit', ''); if (v == null || !v.trim()) return; addUnit({ name: v.trim(), lat: ll.lat, lng: ll.lng }); } },
     { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
-    { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: () => askNumberCas(k, ll) })) },
+    { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: () => askNumberCas(k, ll) })) },
     { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
     { sep: true },
     { label: 'Entfernung messen ab hier', onclick: () => startMeasure(ll) },
@@ -3112,7 +3140,7 @@ function poiItems(p) {
     { label: 'Status setzen', swatch: STATUS[cur].color, sub: Object.entries(STATUS).map(([k, v]) => ({ label: v.label, swatch: v.color, check: k === cur, onclick: () => setPoiStatus(p, k) })) },
     { label: 'Problem melden', onclick: () => reportProblemFor(p) },
     { label: 'Versorgt…', onclick: () => startLink(p) },
-    { label: 'Personen erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: async () => {
+    { label: 'Personen erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: async () => {
       const t = await askText(v.label + ' am Objekt (aktuell ' + ((o.persons || {})[k] || 0) + ')', String((o.persons || {})[k] || '')); if (t == null) return;
       const n = Math.max(0, Math.round(parseFloat(t) || 0)); const ob = obj(p.id); ob.persons = ob.persons || {}; if (n) ob.persons[k] = n; else delete ob.persons[k];
       renderCas(); renderList(); save('Personen am Objekt: ' + poiTitle(p)); } })) },
@@ -3907,6 +3935,51 @@ function assignUnit(u, secId) {
   if ((u.sectionId || null) === (secId || null)) return; u.sectionId = secId; addJournal('Einheit ' + (u.name || '–') + ' zugeteilt: ' + sectionName(secId), true);
   renderUnits(); renderAbschnitte(); save('Einheit zugeteilt: ' + u.name);
 }
+function splitDialog(u) {
+  return new Promise(resolve => {
+    const nm = el('input', { type: 'text', placeholder: 'Bezeichnung, z. B. HLF 20' }), call = el('input', { type: 'text', placeholder: 'Funkrufname' });
+    const num = k => el('input', { type: 'number', min: '0', max: String(u[k] || 0), step: '1', value: '0', style: 'width:68px', 'aria-label': { f: 'Führer', u: 'Unterführer', h: 'Helfer' }[k] });
+    const nf = num('f'), nu = num('u'), nh = num('h'); let sym = u.sym || null;
+    const prev = el('span', { class: 'hint' }); const showSym = () => { const r = sym ? symOf(sym) : null; prev.replaceChildren(sym && r ? el('img', { src: r.url, alt: '', style: 'height:30px;vertical-align:middle' }) : 'kein Zeichen'); }; showSym();
+    const sSec = el('select', {}, el('option', { value: '', text: 'ohne Abschnitt' }), ...state.sections.filter(x => x.kind !== 'line').map(x => el('option', { value: x.id, text: x.name }))); sSec.value = u.sectionId || '';
+    const sSt = el('select', {}, ...state.unitStatus.map(x => el('option', { value: x.id, text: x.label }))); sSt.value = u.status;
+    const info = el('div', { class: 'hint' }), err = el('div', { class: 'notice', hidden: 'hidden' });
+    const val = () => ({ f: Math.max(0, Math.round(+nf.value || 0)), u: Math.max(0, Math.round(+nu.value || 0)), h: Math.max(0, Math.round(+nh.value || 0)) });
+    const upd = () => { const v = val(); info.textContent = 'Abgesetzt ' + (v.f + v.u + v.h) + ' (' + v.f + '/' + v.u + '/' + v.h + '). Es bleiben bei ' + (u.name || 'der Einheit') + ' ' + ((u.f || 0) - v.f) + '/' + ((u.u || 0) - v.u) + '/' + ((u.h || 0) - v.h) + ' = ' + (uTotal(u) - v.f - v.u - v.h) + '.'; };
+    [nf, nu, nh].forEach(i => i.addEventListener('input', upd)); upd();
+    const done = v => { dlg.remove(); resolve(v); };
+    const ok = () => {
+      const v = val(), name = nm.value.trim(); err.hidden = true;
+      const bad = !name ? 'Bitte eine Bezeichnung eintragen.' : (v.f + v.u + v.h) < 1 ? 'Bitte mindestens eine Person absetzen.' : (v.f > (u.f || 0) || v.u > (u.u || 0) || v.h > (u.h || 0)) ? 'So viele Kräfte hat ' + (u.name || 'die Einheit') + ' nicht: ' + fmtStr(u) + '.' : '';
+      if (bad) { err.textContent = bad; err.hidden = false; return; }
+      done({ name, call: call.value.trim(), sym, f: v.f, u: v.u, h: v.h, sectionId: sSec.value || null, status: sSt.value });
+    };
+    const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, el('div', {}, el('h3', { text: 'Teil aus „' + (u.name || 'Einheit') + '“ herauslösen' }),
+      el('div', { class: 'hint', text: 'Bestand jetzt: Führer/Unterführer/Helfer/gesamt = ' + fmtStr(u) }),
+      el('div', { class: 'row' }, nm), el('div', { class: 'row' }, call),
+      el('div', { class: 'row' }, el('span', { text: 'Stärke' }), nf, '/', nu, '/', nh), info,
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Zeichen wählen', onclick: async () => { const v = await pickSymbol(sym); if (v === undefined) return; sym = v; showSym(); } }), prev),
+      el('div', { class: 'row' }, sSec, sSt), err,
+      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Herauslösen', onclick: ok }), el('button', { class: 'btn', text: 'Abbrechen', onclick: () => done(null) }))));
+    dlg.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); ok(); } else if (e.key === 'Escape') { e.stopPropagation(); done(null); } });
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) done(null); });
+    document.body.append(dlg); nm.focus();
+  });
+}
+function splitUnit(p, d) {
+  p.f = (p.f || 0) - d.f; p.u = (p.u || 0) - d.u; p.h = (p.h || 0) - d.h;
+  const c = { id: uid(), name: d.name, call: d.call, sym: d.sym, f: d.f, u: d.u, h: d.h, status: d.status, sectionId: d.sectionId, task: '', note: '', parentId: p.id, lat: p.lat != null ? p.lat + 0.0003 : null, lng: p.lng != null ? p.lng + 0.0003 : null, time: nowIso() };
+  state.units.push(c); p.time = nowIso();
+  addJournal('Einheit ' + (p.name || '–') + ': ' + c.name + ' (Stärke ' + fmtStr(c) + ') herausgelöst, Rest ' + fmtStr(p), true);
+  renderUnits(); renderAbschnitte(); save('Einheit aufgeteilt: ' + (p.name || '–') + ' / ' + c.name); return c;
+}
+function mergeUnit(c) {
+  const p = state.units.find(x => x.id === c.parentId); if (!p) return;
+  p.f = (p.f || 0) + (c.f || 0); p.u = (p.u || 0) + (c.u || 0); p.h = (p.h || 0) + (c.h || 0); state.units = state.units.filter(x => x !== c);
+  state.units.forEach(x => { if (x.parentId === c.id) x.parentId = p.id; });
+  addJournal('Einheit ' + (c.name || '–') + ' zurückgeführt zu ' + (p.name || '–') + ', Stärke ' + fmtStr(p), true);
+  renderUnits(); renderAbschnitte(); save('Einheit zurückgeführt: ' + (c.name || '–'));
+}
 function removeUnit(u) { state.units = state.units.filter(x => x !== u); renderUnits(); renderAbschnitte(); save('Einheit gelöscht: ' + u.name); }
 function addUnit(data) {
   const u = Object.assign({ id: uid(), name: '', call: '', sym: null, f: 0, u: 0, h: 0, status: state.unitStatus[0].id, sectionId: null, task: '', note: '', lat: null, lng: null, time: nowIso() }, data);
@@ -3916,13 +3989,15 @@ function unitItems(u) {
   return [
     { label: 'Status setzen', swatch: ustat(u.status).color, sub: state.unitStatus.map(x => ({ label: x.label, swatch: x.color, check: x.id === u.status, onclick: () => setUnitStatus(u, x.id) })) },
     { label: 'Abschnitt zuteilen', sub: [{ label: 'ohne Abschnitt', check: !u.sectionId, onclick: () => assignUnit(u, null) }].concat(state.sections.filter(x => x.kind !== 'line').map(x => ({ label: x.name, check: x.id === u.sectionId, onclick: () => assignUnit(u, x.id) }))) },
+    { label: 'Teil herauslösen…', disabled: uTotal(u) < 2, onclick: async () => { const d = await splitDialog(u); if (d) splitUnit(u, d); } },
+    state.units.some(x => x.id === u.parentId) ? { label: 'Zurückführen zu ' + (state.units.find(x => x.id === u.parentId).name || 'Einheit'), onclick: () => mergeUnit(u) } : null,
     { label: 'Stärke ändern…', onclick: async () => { const v = await askText('Stärke Führer/Unterführer/Helfer', (u.f || 0) + '/' + (u.u || 0) + '/' + (u.h || 0)); if (v == null) return; const m = v.split(/[\/ ,;]+/).map(x => Math.max(0, Math.round(+x || 0))); u.f = m[0] || 0; u.u = m[1] || 0; u.h = m[2] || 0; renderUnits(); renderAbschnitte(); save('Stärke geändert: ' + u.name); } },
     { label: 'Auftrag ändern…', onclick: async () => { const v = await askText('Auftrag', u.task || ''); if (v == null) return; u.task = v; renderUnits(); save('Auftrag geändert: ' + u.name); } },
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Bezeichnung', u.name || ''); if (v == null) return; u.name = v.trim(); renderUnits(); renderAbschnitte(); save('Einheit umbenannt: ' + u.name); } },
-    { label: 'Zoom', onclick: () => map.setView([u.lat, u.lng], Math.max(map.getZoom(), 17)) },
+    { label: 'Zoom', disabled: u.lat == null, onclick: () => map.setView([u.lat, u.lng], Math.max(map.getZoom(), 17)) },
     { label: 'Duplizieren', onclick: () => addUnit(Object.assign({}, JSON.parse(JSON.stringify(u)), { id: uid(), name: (u.name || '') + ' (Kopie)', lat: u.lat + 0.0004, lng: u.lng + 0.0004, time: nowIso() })) },
     { sep: true }, { label: 'Löschen', onclick: () => removeUnit(u) }
-  ];
+  ].filter(Boolean);
 }
 function renderUnitStatList() {
   const box = $('#uStatList'); if (!box) return; box.replaceChildren();
@@ -3947,36 +4022,86 @@ function initKraefte() {
 }
 
 /* Gesamtübersicht der Einheiten (Lagevortrag) */
+function ovTile(u, mode) {
+  const st = ustat(u.status), kids = state.units.filter(x => x.parentId === u.id), par = u.parentId ? state.units.find(x => x.id === u.parentId) : null, vw = runtime.viewer;
+  const stBtn = vw ? el('span', {}, el('i'), st.label) : el('button', { class: 'ovst', title: 'Status ändern', onclick: ev => { const r = ev.currentTarget.getBoundingClientRect(); showMenu(r.left, r.bottom + 2, state.unitStatus.map(x => ({ label: x.label, swatch: x.color, check: x.id === u.status, onclick: () => setUnitStatus(u, x.id) }))); } }, el('i'), st.label);
+  const t = el('div', { class: 'ovunit', style: '--c:' + safeColor(st.color), 'data-uid': u.id, tabindex: vw ? null : '0' },
+    vw ? null : el('span', { class: 'grip', title: 'Ziehen, um die Einheit zu verschieben', 'aria-hidden': 'true', text: '⋮⋮' }),
+    el('img', { src: unitSym(u).url, alt: '' }),
+    el('div', {}, el('div', { class: 'nm', text: u.name || 'Einheit' }), el('div', { class: 'meta', text: [u.call, 'Stärke ' + fmtStr(u)].filter(Boolean).join(' · ') }),
+      par ? el('div', { class: 'meta', text: 'Teil von ' + (par.name || 'Einheit') }) : null,
+      kids.length ? el('div', { class: 'meta', text: 'abgesetzt: ' + kids.map(k => (k.name || 'Einheit') + ' (' + fmtStr(k) + ')').join(', ') }) : null,
+      u.task ? el('div', { class: 'meta', text: u.task }) : null),
+    el('div', { class: 'st' }, stBtn, vw ? null : el('button', { class: 'ovmore', title: 'Weitere Aktionen: verschieben, aufteilen, Stärke', 'aria-label': 'Weitere Aktionen', text: '⋯', onclick: ev => { const r = ev.currentTarget.getBoundingClientRect(); showMenu(r.left, r.bottom + 2, unitItems(u)); } })));
+  if (!vw) t.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === 'ContextMenu') && e.target === t) { e.preventDefault(); const r = t.getBoundingClientRect(); showMenu(r.left + 30, r.top + 20, unitItems(u)); } });
+  return t;
+}
 function renderUnitOverview() {
   const ov = $('#unitOv'); if (!ov || ov.hidden) return;
-  const fs = $('#ovStat').value, secs = state.sections.filter(x => x.kind !== 'line');
+  if (ovDrag && ovDrag.on) return;                     // während des Ziehens nicht neu aufbauen
+  const mode = $('#ovGroup').value || 'sec', secs = state.sections.filter(x => x.kind !== 'line');
   const sel = $('#ovStat'), cur = sel.value; sel.replaceChildren(el('option', { value: '', text: 'alle Status' }), ...state.unitStatus.map(x => el('option', { value: x.id, text: x.label }))); sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
   const units = state.units.filter(u => !sel.value || u.status === sel.value);
   const tot = units.reduce((a, u) => ({ f: a.f + (u.f || 0), u: a.u + (u.u || 0), h: a.h + (u.h || 0) }), { f: 0, u: 0, h: 0 });
   $('#ovSum').replaceChildren(el('span', { class: 'chip', text: units.length + ' Einheiten' }), el('span', { class: 'chip', title: 'Führer / Unterführer / Helfer / gesamt', text: 'Stärke ' + tot.f + '/' + tot.u + '/' + tot.h + '/' + (tot.f + tot.u + tot.h) }),
     ...state.unitStatus.map(st => { const l = units.filter(u => u.status === st.id); return l.length ? el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + safeColor(st.color) }), l.length + ' ' + st.label) : null; }).filter(Boolean));
   const cols = $('#ovCols'); cols.replaceChildren();
-  const groups = secs.map(x => ({ sx: x, list: units.filter(u => u.sectionId === x.id) })).concat([{ sx: null, list: units.filter(u => !u.sectionId || !secs.some(x => x.id === u.sectionId)) }]).filter(g => g.list.length || (g.sx && !sel.value));
-  if (!groups.length) cols.append(el('div', { class: 'hint', text: 'Noch keine Einheit angelegt.' }));
+  let groups;
+  if (mode === 'stat') groups = state.unitStatus.filter(st => !sel.value || st.id === sel.value).map(st => ({ key: 'st:' + st.id, st, list: units.filter(u => u.status === st.id) }));
+  else groups = secs.map(x => ({ key: 'sec:' + x.id, sx: x, list: units.filter(u => u.sectionId === x.id) })).concat([{ key: 'sec:', sx: null, list: units.filter(u => !u.sectionId || !secs.some(x => x.id === u.sectionId)) }]);
+  if (!state.units.length) cols.append(el('div', { class: 'hint', text: 'Noch keine Einheit angelegt.' }));
   groups.forEach(g => {
-    const t = g.list.reduce((a, u) => a + uTotal(u), 0);
-    const col = el('div', { class: 'ovcol' }, el('header', {}, el('b', { text: g.sx ? g.sx.name : 'ohne Abschnitt' }),
-      el('span', { text: (g.sx && g.sx.leader ? 'Leiter: ' + g.sx.leader + ' · ' : '') + (g.sx && g.sx.radio ? 'Funk: ' + g.sx.radio + ' · ' : '') + g.list.length + ' Einheiten, Stärke ' + t }),
-      g.sx && g.sx.task ? el('div', { text: g.sx.task, style: 'font-size:.9em;margin-top:2px' }) : null));
-    g.list.slice().sort((a, b) => state.unitStatus.findIndex(x => x.id === a.status) - state.unitStatus.findIndex(x => x.id === b.status) || (a.name || '').localeCompare(b.name || '', 'de')).forEach(u => {
-      const st = ustat(u.status);
-      col.append(el('div', { class: 'ovunit', style: '--c:' + safeColor(st.color) }, el('img', { src: unitSym(u).url, alt: '' }),
-        el('div', {}, el('div', { class: 'nm', text: u.name || 'Einheit' }), el('div', { class: 'meta', text: [u.call, 'Stärke ' + fmtStr(u)].filter(Boolean).join(' · ') }), u.task ? el('div', { class: 'meta', text: u.task }) : null),
-        el('div', { class: 'st' }, el('i'), st.label)));
-    });
-    cols.append(col);
+    const t = g.list.reduce((a, u) => a + uTotal(u), 0), vw = runtime.viewer;
+    const head = g.st ? el('header', {}, el('b', {}, el('span', { class: 'dot', style: 'background:' + safeColor(g.st.color) }), ' ' + g.st.label), el('span', { text: g.list.length + ' Einheiten, Stärke ' + t }))
+      : el('header', {}, el('b', { text: g.sx ? g.sx.name : 'ohne Abschnitt' }),
+        el('span', { text: (g.sx && g.sx.leader ? 'Leiter: ' + g.sx.leader + ' · ' : '') + (g.sx && g.sx.radio ? 'Funk: ' + g.sx.radio + ' · ' : '') + g.list.length + ' Einheiten, Stärke ' + t }),
+        g.sx && g.sx.task ? el('div', { text: g.sx.task, style: 'font-size:.9em;margin-top:2px' }) : null);
+    const body = el('div', { class: 'ovbody' });
+    g.list.slice().sort((a, b) => state.unitStatus.findIndex(x => x.id === a.status) - state.unitStatus.findIndex(x => x.id === b.status) || (a.name || '').localeCompare(b.name || '', 'de')).forEach(u => body.append(ovTile(u, mode)));
+    if (!g.list.length) body.append(el('div', { class: 'ovempty', text: vw ? 'leer' : 'Leer. Einheit hierher ziehen.' }));
+    cols.append(el('div', { class: 'ovcol', 'data-drop': g.key }, head, body));
   });
+}
+/* Ziehen mit Zeigerereignissen (Maus, Stift, Touch am Griff). Alternative ohne Ziehen: Menü an jeder Kachel. */
+let ovDrag = null;
+function ovDragEnd(apply) {
+  const d = ovDrag; ovDrag = null; if (!d) return;
+  if (d.ghost) d.ghost.remove(); d.tile.classList.remove('ovdrag'); $('#unitOv').classList.remove('dragging');
+  document.querySelectorAll('#ovCols .ovcol.over').forEach(c => c.classList.remove('over'));
+  if (d.on && apply && d.target) {
+    const u = state.units.find(x => x.id === d.id), key = d.target.dataset.drop; if (!u) return;
+    if (key.startsWith('sec:')) assignUnit(u, key.slice(4) || null); else setUnitStatus(u, key.slice(3));
+  } else if (d.on) renderUnitOverview();
+}
+function initOvDrag() {
+  const cols = $('#ovCols');
+  cols.addEventListener('pointerdown', e => {
+    if (runtime.viewer || e.button > 0) return; const tile = e.target.closest('.ovunit'); if (!tile || e.target.closest('button')) return;
+    if (e.pointerType === 'touch' && !e.target.closest('.grip')) return;
+    ovDrag = { id: tile.dataset.uid, tile, x0: e.clientX, y0: e.clientY, on: false, pid: e.pointerId, ghost: null, target: null, dx: 0, dy: 0 };
+  });
+  window.addEventListener('pointermove', e => {
+    const d = ovDrag; if (!d || e.pointerId !== d.pid) return;
+    if (!d.on) {
+      if (Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 6) return;
+      d.on = true; const r = d.tile.getBoundingClientRect(); d.dx = d.x0 - r.left; d.dy = d.y0 - r.top;
+      d.ghost = d.tile.cloneNode(true); d.ghost.classList.add('ovghost'); d.ghost.style.width = r.width + 'px'; $('#unitOv').append(d.ghost);
+      d.tile.classList.add('ovdrag'); $('#unitOv').classList.add('dragging'); try { d.tile.setPointerCapture(e.pointerId); } catch (x) { /* nicht nötig */ }
+    }
+    d.ghost.style.left = (e.clientX - d.dx) + 'px'; d.ghost.style.top = (e.clientY - d.dy) + 'px';
+    const hit = document.elementFromPoint(e.clientX, e.clientY), col = hit && hit.closest ? hit.closest('#ovCols .ovcol') : null;
+    if (col !== d.target) { if (d.target) d.target.classList.remove('over'); d.target = col; if (col) col.classList.add('over'); }
+    const ov = $('#unitOv'), rc = ov.getBoundingClientRect(); if (e.clientY < rc.top + 70) ov.scrollTop -= 16; else if (e.clientY > rc.bottom - 70) ov.scrollTop += 16;
+  });
+  window.addEventListener('pointerup', e => { if (ovDrag && e.pointerId === ovDrag.pid) ovDragEnd(true); });
+  window.addEventListener('pointercancel', () => ovDragEnd(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && ovDrag && ovDrag.on) { e.stopPropagation(); ovDragEnd(false); } }, true);
 }
 function openUnitOverview() { $('#unitOv').hidden = false; renderUnitOverview(); $('#ovClose').focus(); }
 function closeUnitOverview() { $('#unitOv').hidden = true; }
 function initUnitOverview() {
   $('#btnUnits').onclick = () => ($('#unitOv').hidden ? openUnitOverview() : closeUnitOverview());
-  $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview);
+  $('#ovClose').onclick = closeUnitOverview; $('#ovStat').addEventListener('change', renderUnitOverview); $('#ovGroup').addEventListener('change', renderUnitOverview); initOvDrag();
   const sz = d => { const ov = $('#unitOv'), v = Math.min(2.2, Math.max(0.7, (parseFloat(ov.style.getPropertyValue('--ovs')) || 1) + d)); ov.style.setProperty('--ovs', v.toFixed(2)); };
   $('#ovBig').onclick = () => sz(0.15); $('#ovSmall').onclick = () => sz(-0.15);
   $('#ovMap').onclick = () => { const pts = state.units.filter(u => u.lat != null).map(u => [u.lat, u.lng]); closeUnitOverview(); if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 17 }); else say('Keine Einheit hat einen Ort auf der Karte.', 4000); };
@@ -4262,7 +4387,7 @@ function renderCounts() {
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
   if (openP) box.append(el('span', { class: 'chip', text: openP + ' Probleme offen' }));
   const ct = casTotals().t;
-  Object.entries(CAS).forEach(([k, v]) => { if (ct[k]) box.append(el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + v.color }), ct[k] + ' ' + v.label)); });
+  Object.entries(CAS).forEach(([k, v]) => { if (ct[k]) box.append(el('span', { class: 'chip' }, casMark(k, 18), ct[k] + ' ' + v.label)); });
   ['ausgefallen', 'eingeschraenkt', 'intakt'].forEach(k => { if (c[k]) box.append(el('span', { class: 'chip' }, el('span', { class: 'dot', style: 'background:' + STATUS[k].color }), c[k] + ' ' + STATUS[k].label)); });
 }
 function renderList() {
