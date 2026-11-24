@@ -27,6 +27,19 @@ button { cursor: pointer; }
 #app.collapsed #panel { visibility: hidden; border-right: 0; overflow: hidden; }
 #panelToggle { position: absolute; left: 0; top: 50%; z-index: 1000; width: 18px; height: 56px; margin-top: -28px; border: 1px solid var(--line); border-left: 0; border-radius: 0 6px 6px 0; background: #fff; color: var(--ink); font-size: 18px; line-height: 1; padding: 0; box-shadow: 1px 1px 4px rgba(0,0,0,.25); }
 #panelToggle:hover { background: #eef3f9; }
+#editBar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: #0f2a47; color: #fff; padding: 6px 10px; border-radius: 6px; display: none; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+#editBar.on { display: flex; }
+#editBar button { border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.15); color: #fff; border-radius: 4px; padding: 3px 10px; }
+.ctx { position: fixed; z-index: 4000; min-width: 210px; max-width: 360px; background: #fff; border: 1px solid #b8c0cc; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.3); padding: 4px; overflow: auto; font-size: 13px; outline: none; }
+.ctx-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+.ctx-item:hover, .ctx-item:focus { background: #e3edf8; outline: none; }
+.ctx-item.dis { color: #98a2b0; cursor: default; }
+.ctx-item.dis:hover { background: none; }
+.ctx-sep { height: 1px; background: #e1e5eb; margin: 4px 2px; }
+.ctx-sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.4); flex: none; }
+.ctx-item img { width: 22px; height: 22px; flex: none; }
+.ctx-lb { flex: 1; }
+.ctx-ar, .ctx-ck { color: #5d6b7a; }
 header button:disabled { opacity: .4; cursor: default; }
 .dlg { position: fixed; inset: 0; background: rgba(15,42,71,.35); z-index: 3000; display: flex; align-items: center; justify-content: center; }
 .dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(380px, 92vw); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
@@ -346,6 +359,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 
   <div id="mapWrap">
     <div id="map"></div>
+    <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
     <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
     <div id="msg" role="status"></div>
   </div>
@@ -550,8 +564,6 @@ function restore(snap) {
   renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems();
   hist.cur = snapshot(); persist();
 }
-function cancelEdit() { /* Eckpunkt-Bearbeitung: siehe unten */ }
-function closeMenu() { /* Kontextmenü: siehe unten */ }
 
 /* Kleiner Eingabedialog statt window.prompt */
 function askText(title, value) {
@@ -666,6 +678,7 @@ const symLayer = L.layerGroup().addTo(map);
 const secLayer = L.layerGroup().addTo(map);
 const casLayer = L.layerGroup().addTo(map);
 const probLayer = L.layerGroup().addTo(map);
+const secLayers = {};
 
 
 /* ------------------------------------------------------------------ */
@@ -793,6 +806,7 @@ function makeAreaLayer(a) {
     : L.polygon(a.rings.length > 1 ? a.rings.map(r => [r]) : a.rings, st);
   lyr.bindTooltip(el('span', { text: a.name, style: 'color:' + safeColor(a.color) }), { permanent: true, direction: 'center', className: 'arealabel' });
   lyr._areaId = a.id;
+  lyr.on('contextmenu', e => ctxOpen(e, areaItems(a), e.latlng));
   return lyr;
 }
 function renderAreas() {
@@ -850,6 +864,7 @@ function stopDraw() {
   if (runtime.drawHandler) { try { runtime.drawHandler.disable(); } catch (e) { /* bereits aus */ } }
   runtime.drawHandler = null; runtime.drawPurpose = null;
   runtime.mode = null; runtime.placing = null;
+  if (runtime.measure) { map.removeLayer(runtime.measure.line); runtime.measure = null; }
   document.querySelectorAll('.btn.active').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('#symGrid .sel').forEach(b => b.classList.remove('sel'));
   map.getContainer().style.cursor = '';
@@ -1070,6 +1085,7 @@ function renderMarkers() {
     const m = L.marker([p.lat, p.lng], { icon: poiIcon(p), title: poiTitle(p), draggable: !!p.manual });
     if (p.manual) m.on('dragend', () => { const ll = m.getLatLng(); p.lat = ll.lat; p.lng = ll.lng; save('Objekt verschoben: ' + poiTitle(p)); renderDeps(); });
     m.bindPopup(() => poiPopup(p), { maxWidth: 300 });
+    m.on('contextmenu', e => ctxOpen(e, poiItems(p), null));
     m.on('click', () => {
       if (runtime.mode && runtime.mode.type === 'link') { m.closePopup(); finishLink(p); }
     });
@@ -1183,16 +1199,18 @@ function renderSymbols() {
       return el('div', { class: 'pp' }, el('h3', { text: s.title || s.name }), el('div', { class: 'sub', text: 'Gesetzt ' + fmtTime(s.time) }), inp,
         el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.symbols = state.symbols.filter(x => x !== s); renderSymbols(); save('Zeichen entfernt'); } })));
     });
+    m.on('contextmenu', e => ctxOpen(e, symbolItemsOf(s), null));
     m.addTo(symLayer);
   });
 }
 function renderSections() {
-  secLayer.clearLayers();
+  secLayer.clearLayers(); Object.keys(secLayers).forEach(k => delete secLayers[k]);
   state.sections.forEach(sx => {
     const c = safeColor(sx.color, '#e11d48');
     const lyr = sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5 }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: .12 });
     lyr.bindTooltip(el('span', { text: sx.name }), { permanent: true, direction: 'center', className: 'seclabel' });
-    lyr._secId = sx.id;
+    lyr._secId = sx.id; secLayers[sx.id] = lyr;
+    lyr.on('contextmenu', e => ctxOpen(e, sectionItems(sx), e.latlng));
     lyr.bindPopup(() => {
       const nm = el('input', { type: 'text', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) });
       const col = el('input', { type: 'color', value: c, onchange: ev => { sx.color = ev.target.value; renderSections(); renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
@@ -1246,13 +1264,13 @@ function buildPalette() {
   };
   sel.addEventListener('change', draw); $('#symQ').addEventListener('input', draw); draw();
 }
-function addJournal(text, auto) {
-  state.journal.unshift({ id: uid(), time: new Date().toISOString(), text, auto: !!auto }); renderJournal(); save();
+function addJournal(text, auto, loc) {
+  state.journal.unshift({ id: uid(), time: new Date().toISOString(), text, auto: !!auto, lat: loc ? loc.lat : undefined, lng: loc ? loc.lng : undefined }); renderJournal(); save();
 }
 function renderJournal() {
   const box = $('#journal'); box.replaceChildren();
   if (!state.journal.length) box.append(el('div', { class: 'hint', text: 'Noch keine Einträge. Statuswechsel werden automatisch vermerkt.' }));
-  state.journal.slice(0, 300).forEach(j => box.append(el('div', { class: 'entry' }, el('time', { text: fmtTime(j.time) }), j.text, ' ',
+  state.journal.slice(0, 300).forEach(j => box.append(el('div', { class: 'entry' }, el('time', { text: fmtTime(j.time) }), j.text, ' ', j.lat != null ? el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([j.lat, j.lng], Math.max(map.getZoom(), 15)) }) : null, ' ',
     el('button', { class: 'btn small', text: 'x', title: 'Eintrag löschen', onclick: () => { state.journal = state.journal.filter(x => x !== j); renderJournal(); save(); } }))));
 }
 
@@ -1309,12 +1327,14 @@ function startPoiMode() {
   stopDraw(); runtime.mode = 'poi'; $('#btnPoiPlace').classList.add('active');
   map.getContainer().style.cursor = 'crosshair'; say('Ort des Objekts anklicken. Mehrfach möglich, Esc beendet.');
 }
-function addManualPoi(lat, lng) {
-  const lid = $('#poiType').value, id = 'm' + uid();
-  state.pois[id] = { id, osm: '', manual: true, lat, lng, layer: lid, name: $('#poiName').value.trim(), addr: '' };
+function addManualPoi(lat, lng, lidIn, nameIn, openPopup) {
+  const lid = lidIn || $('#poiType').value, id = 'm' + uid(), name = nameIn != null ? nameIn : $('#poiName').value.trim();
+  state.pois[id] = { id, osm: '', manual: true, lat, lng, layer: lid, name, addr: '' };
   state.layerOn[lid] = true;
-  $('#poiName').value = '';
-  renderMarkers(); renderAll(); save('Objekt gesetzt: ' + (state.pois[id].name || SINGULAR[lid]));
+  if (nameIn == null) $('#poiName').value = '';
+  rememberRecent('kritis-recent-poi', lid, 3);
+  renderMarkers(); renderAll(); save('Objekt gesetzt: ' + (name || SINGULAR[lid]));
+  if (openPopup && markers[id]) groups[lid].zoomToShowLayer(markers[id], () => markers[id].openPopup());
 }
 function removeManualPoi(p) {
   if (markers[p.id]) { groups[p.layer].removeLayer(markers[p.id]); delete markers[p.id]; }
@@ -1346,9 +1366,11 @@ function casTotals() {
 function addCas(lat, lng) {
   const cat = $('#casCat').value, n = Math.max(0, Math.round(parseFloat($('#casN').value) || 0));
   if (!n) { say('Bitte eine Zahl größer 0 eintragen.', 3000); return; }
-  const note = $('#casNote').value.trim();
+  pushCas(cat, n, $('#casNote').value.trim(), lat, lng);
+}
+function pushCas(cat, n, note, lat, lng) {
   state.casualties.push({ id: uid(), cat, n, note, time: new Date().toISOString(), lat, lng });
-  addJournal('Zahlen: ' + n + ' ' + CAS[cat].label + (note ? ' (' + note + ')' : ''), true);
+  addJournal('Zahlen: ' + n + ' ' + CAS[cat].label + (note ? ' (' + note + ')' : ''), true, lat != null ? { lat, lng } : null);
   renderCas(); save('Zahl erfasst: ' + n + ' ' + CAS[cat].label);
 }
 function renderCas() {
@@ -1370,6 +1392,7 @@ function renderCas() {
     const m = L.marker([c.lat, c.lng], { icon: L.divIcon({ className: '', iconSize: [34, 24], iconAnchor: [17, 12], html: '<div class="cas" style="--c:' + CAS[c.cat].color + '">' + CAS[c.cat].short + ' ' + c.n + '</div>' }), draggable: true });
     m.on('dragend', () => { const ll = m.getLatLng(); c.lat = ll.lat; c.lng = ll.lng; renderCas(); save('Zahl verschoben'); });
     m.bindTooltip(el('span', { text: CAS[c.cat].label + ': ' + c.n + (c.note ? ', ' + c.note : '') }));
+    m.on('contextmenu', e => ctxOpen(e, casItems(c), null));
     m.addTo(casLayer);
   });
   renderCounts();
@@ -1377,13 +1400,13 @@ function renderCas() {
 
 /* Problemliste */
 function addProblem(data) {
-  const pr = Object.assign({ id: uid(), title: '', text: '', prio: 'mittel', status: 'offen', owner: '', time: new Date().toISOString() }, data);
+  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 'mittel', status: 'offen', owner: '', time: new Date().toISOString() }, data);
   state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
 }
 function reportProblemFor(p) {
   const pr = addProblem({ title: poiTitle(p) + ': ', poi: p.id, poiName: poiTitle(p), lat: p.lat, lng: p.lng });
   $('#pfStatus').value = 'aktiv'; $('#pfPrio').value = ''; $('#pfText').value = '';
-  openTab('probleme'); renderProblems();
+  setPanel(true); openTab('probleme'); renderProblems();
   const inp = document.querySelector('[data-pid="' + pr.id + '"] input[type=text]');
   if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); inp.scrollIntoView({ block: 'nearest' }); }
 }
@@ -1416,13 +1439,304 @@ function renderProblems() {
   state.problems.filter(x => x.lat != null && x.status !== 'erledigt').forEach(x => {
     const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + PRIO[x.prio].color + '">!</div>' }) });
     m.bindTooltip(el('span', { text: x.title + ' (' + PRIO[x.prio].label + ')' }));
+    m.on('contextmenu', e => ctxOpen(e, problemItems(x), null));
     m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + PRIO[x.prio].color; setTimeout(() => { c.style.outline = ''; }, 1800); } });
     m.addTo(probLayer);
   });
 }
 
+/* ------------------------------------------------------------------ */
+/* Eckpunkte bearbeiten                                                */
+/* ------------------------------------------------------------------ */
+function cancelEdit() { if (runtime.edit) finishEdit(false); }
+function startEdit(kind, item) {
+  stopDraw(); closeMenu(); cancelEdit(); map.closePopup();
+  if (kind === 'area') {
+    if (item.rings.length > 1) { say('Dieses Gebiet besteht aus mehreren Teilflächen und lässt sich nicht an den Eckpunkten bearbeiten.', 6000); return; }
+    if (!item.visible) { item.visible = true; renderAreas(); renderAreaList(); }
+  }
+  const layer = kind === 'area' ? areaLayers[item.id] : secLayers[item.id];
+  if (!layer || !layer.editing) { say('Dieses Objekt lässt sich nicht bearbeiten.', 4000); return; }
+  layer.editing.enable(); runtime.edit = { kind, item, layer };
+  $('#editTxt').textContent = 'Eckpunkte bearbeiten: ' + (item.name || '');
+  $('#editBar').classList.add('on');
+}
+function finishEdit(apply) {
+  const e = runtime.edit; if (!e) return; runtime.edit = null;
+  const { kind, item, layer } = e;
+  if (apply) {
+    if (kind === 'area') {
+      if (item.kind === 'circle' && layer.getRadius) { const c = layer.getLatLng(), km = layer.getRadius() / 1000; item.circle = { lat: c.lat, lng: c.lng, km }; item.rings = [circleRing(c.lat, c.lng, km)]; }
+      else item.rings = [layer.getLatLngs()[0].map(q => [q.lat, q.lng])];
+      item.rings = item.rings.map(r => simplifyRing(r, 500)); prepArea(item); delete state.loaded[item.id];
+    } else {
+      item.pts = (item.kind === 'line' ? layer.getLatLngs() : layer.getLatLngs()[0]).map(q => [q.lat, q.lng]);
+    }
+  }
+  try { layer.editing.disable(); } catch (x) { /* schon aus */ }
+  $('#editBar').classList.remove('on');
+  if (kind === 'area') { renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas(); if (apply) { save('Gebiet bearbeitet: ' + item.name); loadObjects(); } }
+  else { renderSections(); if (apply) save('Abschnitt bearbeitet: ' + item.name); }
+}
+$('#editOk').onclick = () => finishEdit(true); $('#editCancel').onclick = () => finishEdit(false);
+
+/* ------------------------------------------------------------------ */
+/* Kontextmenü                                                         */
+/* ------------------------------------------------------------------ */
+const menuStack = [];
+function closeMenu() { while (menuStack.length) menuStack.pop().remove(); }
+function copyText(text, okMsg) {
+  const done = () => say(okMsg || 'Kopiert', 3000);
+  const fb = () => {
+    const t = el('textarea', { style: 'position:fixed;left:-1000px;top:0' }); t.value = text; document.body.append(t); t.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (x) { ok = false; } t.remove();
+    ok ? done() : say('Kopieren nicht möglich. Text: ' + text, 8000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fb); else fb();
+}
+function rememberRecent(key, val, max) {
+  let a = []; try { a = JSON.parse(localStorage.getItem(key) || '[]'); } catch (x) { a = []; }
+  a = [val].concat(a.filter(x => x !== val)).slice(0, max);
+  try { localStorage.setItem(key, JSON.stringify(a)); } catch (x) { /* egal */ }
+}
+function recent(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (x) { return []; } }
+
+function menuNode(items, level) {
+  const box = el('div', { class: 'ctx', role: 'menu', tabindex: '-1', 'data-level': String(level) });
+  items.forEach(it => {
+    if (it.sep) { box.append(el('div', { class: 'ctx-sep', role: 'separator' })); return; }
+    const row = el('div', { class: 'ctx-item' + (it.disabled ? ' dis' : ''), role: 'menuitem', tabindex: '-1', 'aria-disabled': it.disabled ? 'true' : 'false' },
+      it.swatch ? el('span', { class: 'ctx-sw', style: 'background:' + safeColor(it.swatch) }) : null,
+      it.icon ? el('img', { src: it.icon, alt: '' }) : null,
+      el('span', { class: 'ctx-lb', text: it.label }),
+      it.check ? el('span', { class: 'ctx-ck', text: '✓' }) : null,
+      it.sub ? el('span', { class: 'ctx-ar', text: '›' }) : null);
+    if (it.sub) { row.setAttribute('aria-haspopup', 'menu'); row._sub = it.sub; }
+    row._it = it;
+    row.addEventListener('mouseenter', () => { row.focus(); if (it.sub && !it.disabled) openSub(row, level); else trimTo(level); });
+    row.addEventListener('click', e => {
+      e.stopPropagation(); if (it.disabled) return;
+      if (it.sub) { openSub(row, level); return; }
+      closeMenu(); if (it.onclick) it.onclick();
+    });
+    box.append(row);
+  });
+  return box;
+}
+function trimTo(level) { while (menuStack.length > level + 1) menuStack.pop().remove(); }
+function placeBox(box, x, y, anchorRect) {
+  document.body.append(box);
+  box.style.maxHeight = (window.innerHeight - 8) + 'px';
+  const w = box.offsetWidth, h = box.offsetHeight, W = window.innerWidth, H = window.innerHeight;
+  let left = x, top = y;
+  if (anchorRect) { left = anchorRect.right - 2; if (left + w > W - 4) left = Math.max(4, anchorRect.left - w + 2); top = anchorRect.top - 4; }
+  if (left + w > W - 4) left = Math.max(4, W - w - 4);
+  if (top + h > H - 4) top = Math.max(4, H - h - 4);
+  box.style.left = Math.max(4, left) + 'px'; box.style.top = Math.max(4, top) + 'px';
+}
+function openSub(row, level) {
+  trimTo(level);
+  const items = typeof row._sub === 'function' ? row._sub() : row._sub;
+  const box = menuNode(items, level + 1); menuStack.push(box);
+  placeBox(box, 0, 0, row.getBoundingClientRect());
+  return box;
+}
+function showMenu(x, y, items) {
+  closeMenu();
+  const box = menuNode(items, 0); menuStack.push(box); placeBox(box, x, y); box.focus();
+}
+function ctxOpen(e, items, ll) {
+  e.originalEvent._ctx = true; L.DomEvent.preventDefault(e.originalEvent);
+  showMenu(e.originalEvent.clientX, e.originalEvent.clientY, ll ? items.concat([{ sep: true }], mapItems(ll)) : items);
+}
+document.addEventListener('mousedown', e => { if (menuStack.length && !menuStack.some(m => m.contains(e.target))) closeMenu(); }, true);
+window.addEventListener('wheel', e => { if (menuStack.length && !menuStack.some(m => m.contains(e.target))) closeMenu(); }, { passive: true });
+window.addEventListener('resize', closeMenu); window.addEventListener('blur', closeMenu);
+map.on('movestart zoomstart', closeMenu);
+document.addEventListener('keydown', e => {
+  if (!menuStack.length) return;
+  const cur = document.activeElement && document.activeElement.closest ? document.activeElement.closest('.ctx') : null;
+  const level = cur ? +cur.dataset.level : menuStack.length - 1, box = menuStack[level] || menuStack[menuStack.length - 1];
+  const rows = [...box.querySelectorAll(':scope > .ctx-item')], act = rows.indexOf(document.activeElement);
+  const live = rows.filter(r => r._it && !r._it.disabled);
+  const stop = () => { e.preventDefault(); e.stopPropagation(); };
+  if (e.key === 'Escape') { stop(); closeMenu(); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { stop(); if (!live.length) return; const i = live.indexOf(rows[act]); const n = e.key === 'ArrowDown' ? (i + 1) % live.length : (i <= 0 ? live.length - 1 : i - 1); live[n].focus(); }
+  else if (e.key === 'Home' || e.key === 'End') { stop(); if (live.length) live[e.key === 'Home' ? 0 : live.length - 1].focus(); }
+  else if (e.key === 'ArrowRight') { stop(); const r = rows[act]; if (r && r._it && r._it.sub && !r._it.disabled) { const sb = openSub(r, level); const f = sb.querySelector('.ctx-item:not(.dis)'); if (f) f.focus(); } }
+  else if (e.key === 'ArrowLeft') { stop(); if (level > 0) { const parent = menuStack[level - 1]; trimTo(level - 1); const r = [...parent.querySelectorAll(':scope > .ctx-item')].find(x => x._sub); if (r) r.focus(); } }
+  else if (e.key === 'Enter' || e.key === ' ') { stop(); const r = rows[act]; if (r) r.click(); }
+  else if (e.key === 'Tab') stop();
+}, true);
+map.getContainer().addEventListener('contextmenu', ev => { if (!ev.target.closest('.leaflet-popup, input, textarea')) ev.preventDefault(); });
+map.on('contextmenu', e => {
+  if (e.originalEvent._ctx || e.originalEvent.target.closest('.leaflet-popup, .leaflet-control')) return;
+  e.originalEvent._ctx = true; showMenu(e.originalEvent.clientX, e.originalEvent.clientY, mapItems(e.latlng));
+});
+
+/* ---- Menüinhalte ---- */
+const fmtLL = ll => ll.lat.toFixed(5) + ', ' + ll.lng.toFixed(5);
+const PRESET_NAMES = ['Blau', 'Rot', 'Grün', 'Orange', 'Violett', 'Türkis', 'Pink', 'Grau'];
+function pickColor(initial, cb) {
+  const i = el('input', { type: 'color', value: safeColor(initial), style: 'position:fixed;left:-200px;top:0;opacity:0' });
+  document.body.append(i); i.addEventListener('change', () => { cb(i.value); i.remove(); }); i.addEventListener('blur', () => setTimeout(() => i.remove(), 800)); i.click();
+}
+const colorItems = (cur, apply) => PAL.map((c, i) => ({ label: PRESET_NAMES[i], swatch: c, check: (cur || '').toLowerCase() === c, onclick: () => apply(c) }))
+  .concat([{ sep: true }, { label: 'Eigene Farbe…', onclick: () => pickColor(cur, apply) }]);
+
+function circleArea(ll, km, name) {
+  addArea({ kind: 'circle', name: name || ('Kreis ' + km + ' km ' + (state.areas.filter(a => a.kind === 'circle').length + 1)), rings: [circleRing(ll.lat, ll.lng, km)], circle: { lat: ll.lat, lng: ll.lng, km } });
+}
+function poiTypeItems(ll) {
+  const rec = recent('kritis-recent-poi').filter(id => LAYER_BY_ID[id]);
+  const mk = id => ({ label: SINGULAR[id], swatch: SECTORS[LAYER_BY_ID[id].sector].color, onclick: () => addManualPoi(ll.lat, ll.lng, id, '', true) });
+  const out = rec.map(mk); if (rec.length) out.push({ sep: true });
+  Object.entries(SECTORS).forEach(([sid, sec]) => out.push({ label: sec.name, swatch: sec.color, sub: () => LAYERS.filter(l => l.sector === sid).map(l => mk(l.id)) }));
+  return out;
+}
+function placeSymbolAt(ll, sy) {
+  state.symbols.push({ id: uid(), name: sy.name, title: sy.title, lat: ll.lat, lng: ll.lng, label: '', time: new Date().toISOString() });
+  rememberRecent('kritis-recent-sym', sy.name, 5); renderSymbols(); save('Zeichen gesetzt: ' + sy.title);
+}
+function symbolItems(ll) {
+  if (typeof symbolProperties === 'undefined') return [{ label: 'Zeichenvorrat nicht gefunden', disabled: true }];
+  const byName = Object.fromEntries(symbolProperties.symbols.map(x => [x.name, x]));
+  const mk = sy => ({ label: sy.title, icon: symUrl(sy.name), onclick: () => placeSymbolAt(ll, sy) });
+  const rec = recent('kritis-recent-sym').map(n => byName[n]).filter(Boolean);
+  const out = rec.map(mk); if (rec.length) out.push({ sep: true });
+  symbolProperties.categories.forEach(c => out.push({ label: c.name, sub: () => symbolProperties.symbols.filter(x => x.category === c.id).map(mk) }));
+  return out;
+}
+function reportProblemAt(ll) {
+  const pr = addProblem({ lat: ll.lat, lng: ll.lng });
+  $('#pfStatus').value = 'aktiv'; $('#pfPrio').value = ''; $('#pfText').value = '';
+  setPanel(true); openTab('probleme'); renderProblems();
+  const inp = document.querySelector('[data-pid="' + pr.id + '"] input[type=text]'); if (inp) { inp.focus(); inp.select(); }
+}
+async function askNumberCas(cat, ll) {
+  const v = await askText('Anzahl ' + CAS[cat].label, '1'); if (v == null) return;
+  const n = Math.max(0, Math.round(parseFloat(v) || 0)); if (!n) { say('Bitte eine Zahl größer 0 eintragen.', 3000); return; }
+  pushCas(cat, n, '', ll.lat, ll.lng);
+}
+async function journalAt(ll) {
+  const v = await askText('Journaleintrag mit Ort', ''); if (v == null || !v.trim()) return;
+  addJournal(v.trim(), false, ll);
+}
+function measureAdd(ll) {
+  const m = runtime.measure; m.pts.push(ll); m.line.setLatLngs(m.pts); say('Länge: ' + fmtDist(measureLen(m.pts)) + '. Esc beendet.');
+}
+function measureMove(ll) { const m = runtime.measure; m.line.setLatLngs(m.pts.concat([ll])); say('Länge: ' + fmtDist(measureLen(m.pts.concat([ll]))) + '. Klick setzt einen Punkt, Esc beendet.'); }
+const measureLen = pts => pts.reduce((s, p, i) => i ? s + map.distance(pts[i - 1], p) : 0, 0);
+const fmtDist = m => m >= 1000 ? (m / 1000).toFixed(2).replace('.', ',') + ' km' : Math.round(m) + ' m';
+function startMeasure(ll) {
+  stopDraw(); runtime.mode = 'measure';
+  runtime.measure = { pts: [ll], line: L.polyline([ll], { color: '#111', weight: 3, dashArray: '2 6', interactive: false }).addTo(map) };
+  map.getContainer().style.cursor = 'crosshair'; say('Entfernung messen: weitere Punkte anklicken, Esc beendet.');
+}
+function mapItems(ll) {
+  return [
+    { label: 'KRITIS-Objekt hier setzen', sub: () => poiTypeItems(ll) },
+    { label: 'Taktisches Zeichen hier setzen', sub: () => symbolItems(ll) },
+    { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
+    { sep: true },
+    { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
+    { label: 'Personenzahl hier erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: () => askNumberCas(k, ll) })) },
+    { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
+    { sep: true },
+    { label: 'Entfernung messen ab hier', onclick: () => startMeasure(ll) },
+    { label: 'Hier zentrieren', onclick: () => map.panTo(ll) },
+    { label: 'Koordinaten kopieren (' + fmtLL(ll) + ')', onclick: () => copyText(fmtLL(ll), 'Koordinaten kopiert: ' + fmtLL(ll)) }
+  ];
+}
+function areaItems(a) {
+  const multi = a.rings.length > 1;
+  return [
+    { label: 'Umbenennen…', onclick: async () => { const v = await askText('Gebiet umbenennen', a.name); if (v != null) renameArea(a, v); } },
+    { label: 'Farbe', swatch: a.color, sub: () => colorItems(a.color, c => { a.color = c; restyleArea(a); renderAreaList(); save('Gebiet umgefärbt: ' + a.name); }) },
+    { label: 'Deckkraft', sub: [0.05, 0.12, 0.25, 0.4].map(o => ({ label: Math.round(o * 100) + ' %', check: Math.abs(a.opacity - o) < 0.01, onclick: () => { a.opacity = o; restyleArea(a); renderAreaList(); save('Deckkraft geändert: ' + a.name); } })) },
+    { label: a.query ? 'Abfragegebiet ausschalten' : 'Abfragegebiet einschalten', onclick: () => { a.query = !a.query; renderAreas(); renderAreaList(); renderMarkers(); renderAll(); renderCas(); save((a.query ? 'Abfragegebiet an: ' : 'Abfragegebiet aus: ') + a.name); if (a.query) loadObjects(); } },
+    { label: 'Objekte neu laden', onclick: () => { delete state.loaded[a.id]; if (!a.query) { a.query = true; renderAreas(); renderAreaList(); } loadObjects(); } },
+    { label: 'Zoom auf Gebiet', onclick: () => zoomArea(a) },
+    { label: 'Duplizieren', onclick: () => { const c = JSON.parse(JSON.stringify({ kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })); addArea(Object.assign(c, { name: a.name + ' (Kopie)', color: a.color }), { fit: false }); } },
+    { label: multi ? 'Eckpunkte bearbeiten (nicht bei Teilflächen)' : 'Eckpunkte bearbeiten', disabled: multi, onclick: () => startEdit('area', a) },
+    { label: 'In den Vordergrund', onclick: () => { state.areas = state.areas.filter(x => x !== a).concat([a]); renderAreas(); renderAreaList(); save('Gebiet nach vorn: ' + a.name); } },
+    { label: 'In den Hintergrund', onclick: () => { state.areas = [a].concat(state.areas.filter(x => x !== a)); renderAreas(); renderAreaList(); save('Gebiet nach hinten: ' + a.name); } },
+    { label: 'Fläche anzeigen', onclick: () => say(a.name + ': ' + fmtKm2(a.km2), 6000) },
+    { sep: true },
+    { label: 'Löschen', onclick: () => removeArea(a.id) }
+  ];
+}
+function sectionItems(sx) {
+  return [
+    { label: 'Umbenennen…', onclick: async () => { const v = await askText('Abschnitt umbenennen', sx.name); if (v != null) renameSection(sx, v); } },
+    { label: 'Farbe', swatch: sx.color, sub: () => colorItems(sx.color, c => { sx.color = c; renderSections(); save('Abschnitt umgefärbt: ' + sx.name); }) },
+    { label: 'Eckpunkte bearbeiten', onclick: () => startEdit('section', sx) },
+    { label: 'Duplizieren', onclick: () => { state.sections.push(Object.assign(JSON.parse(JSON.stringify(sx)), { id: uid(), name: sx.name + ' (Kopie)' })); renderSections(); save('Abschnitt dupliziert: ' + sx.name); } },
+    { label: 'Zoom', onclick: () => map.fitBounds(L.latLngBounds(sx.pts).pad(0.2)) },
+    { sep: true },
+    { label: 'Löschen', onclick: () => removeSection(sx) }
+  ];
+}
+function setPoiStatus(p, k) {
+  const o = obj(p.id), was = o.status || 'unbekannt'; if (was === k) return;
+  o.status = k; o.statusTime = new Date().toISOString();
+  addJournal(poiTitle(p) + ': Status ' + STATUS[was].label + ' zu ' + STATUS[k].label, true);
+  refreshIcons(); renderList(); renderCounts(); renderDeps(); save('Status ' + poiTitle(p) + ': ' + STATUS[k].label);
+}
+function poiItems(p) {
+  const o = state.objects[p.id] || {}, cur = o.status || 'unbekannt';
+  const items = [
+    { label: 'Status setzen', swatch: STATUS[cur].color, sub: Object.entries(STATUS).map(([k, v]) => ({ label: v.label, swatch: v.color, check: k === cur, onclick: () => setPoiStatus(p, k) })) },
+    { label: 'Problem melden', onclick: () => reportProblemFor(p) },
+    { label: 'Versorgt…', onclick: () => startLink(p) },
+    { label: 'Personen erfassen', sub: Object.entries(CAS).map(([k, v]) => ({ label: v.label, swatch: v.color, onclick: async () => {
+      const t = await askText(v.label + ' am Objekt (aktuell ' + ((o.persons || {})[k] || 0) + ')', String((o.persons || {})[k] || '')); if (t == null) return;
+      const n = Math.max(0, Math.round(parseFloat(t) || 0)); const ob = obj(p.id); ob.persons = ob.persons || {}; if (n) ob.persons[k] = n; else delete ob.persons[k];
+      renderCas(); renderList(); save('Personen am Objekt: ' + poiTitle(p)); } })) },
+    { label: 'Umkreis als Gebiet', sub: [1, 2, 5].map(km => ({ label: km + ' km', onclick: () => circleArea({ lat: p.lat, lng: p.lng }, km, 'Umkreis ' + km + ' km: ' + poiTitle(p)) })) },
+    { sep: true },
+    { label: 'Zoom auf Objekt', onclick: () => { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 17)); } },
+    { label: 'Koordinaten kopieren', onclick: () => copyText(fmtLL(p), 'Koordinaten kopiert: ' + fmtLL(p)) }
+  ];
+  if (!p.manual) items.push({ label: 'OSM-Objekt öffnen', onclick: () => window.open('https://www.openstreetmap.org/' + p.osm, '_blank', 'noopener') });
+  else items.push({ sep: true },
+    { label: 'Umbenennen…', onclick: async () => { const v = await askText('Objekt umbenennen', p.name || ''); if (v == null) return; p.name = v.trim(); if (markers[p.id]) markers[p.id].options.title = poiTitle(p); renderList(); save('Objekt umbenannt: ' + poiTitle(p)); } },
+    { label: 'Entfernen', onclick: () => removeManualPoi(p) });
+  return items;
+}
+function symbolItemsOf(sy) {
+  return [
+    { label: 'Beschriften…', onclick: async () => { const v = await askText('Beschriftung', sy.label || ''); if (v == null) return; sy.label = v.trim(); renderSymbols(); save('Zeichen beschriftet'); } },
+    { label: 'Duplizieren', onclick: () => { state.symbols.push(Object.assign({}, sy, { id: uid(), lat: sy.lat + 0.0004, lng: sy.lng + 0.0004, time: new Date().toISOString() })); renderSymbols(); save('Zeichen dupliziert'); } },
+    { label: 'Zoom', onclick: () => map.setView([sy.lat, sy.lng], Math.max(map.getZoom(), 17)) },
+    { sep: true },
+    { label: 'Löschen', onclick: () => { state.symbols = state.symbols.filter(x => x !== sy); renderSymbols(); save('Zeichen entfernt'); } }
+  ];
+}
+function casItems(c) {
+  return [
+    { label: 'Anzahl ändern…', onclick: async () => { const v = await askText('Anzahl ' + CAS[c.cat].label, String(c.n)); if (v == null) return; c.n = Math.max(0, Math.round(parseFloat(v) || 0)); renderCas(); save('Zahl geändert: ' + CAS[c.cat].label); } },
+    { label: 'Bemerkung ändern…', onclick: async () => { const v = await askText('Bemerkung', c.note || ''); if (v == null) return; c.note = v.trim(); renderCas(); save('Zahl bemerkt: ' + CAS[c.cat].label); } },
+    { label: 'Zoom', onclick: () => map.setView([c.lat, c.lng], Math.max(map.getZoom(), 16)) },
+    { sep: true },
+    { label: 'Löschen', onclick: () => { state.casualties = state.casualties.filter(x => x !== c); renderCas(); save('Zahl gelöscht: ' + CAS[c.cat].label); } }
+  ];
+}
+function problemItems(x) {
+  return [
+    { label: 'Titel ändern…', onclick: async () => { const v = await askText('Titel', x.title); if (v == null || !v.trim()) return; x.title = v.trim(); renderProblems(); save('Problem bearbeitet: ' + x.title); } },
+    { label: 'Status setzen', sub: Object.entries(PSTAT).map(([k, v]) => ({ label: v, check: x.status === k, onclick: () => { x.status = k; addJournal('Problem „' + x.title + '“: ' + v, true); renderProblems(); renderCounts(); save('Problemstatus: ' + x.title + ' ' + v); } })) },
+    { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('probleme'); $('#pfStatus').value = ''; renderProblems(); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) c.scrollIntoView({ block: 'center' }); } },
+    { label: 'Zoom', onclick: () => map.setView([x.lat, x.lng], Math.max(map.getZoom(), 16)) },
+    { sep: true },
+    { label: 'Löschen', onclick: () => { state.problems = state.problems.filter(y => y !== x); renderProblems(); renderCounts(); save('Problem gelöscht: ' + x.title); } }
+  ];
+}
+
 /* Karte anklicken */
 map.on('click', e => {
+  if (runtime.edit) { const b = runtime.edit.layer.getBounds ? runtime.edit.layer.getBounds().pad(0.03) : null; if (b && !b.contains(e.latlng)) finishEdit(true); return; }
+  if (runtime.mode === 'measure') { measureAdd(e.latlng); return; }
   if (runtime.mode === 'circle') { stopDraw(); applyCircle(e.latlng.lat, e.latlng.lng); }
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
@@ -1436,7 +1750,11 @@ map.on('click', e => {
     renderSymbols(); save('Zeichen gesetzt: ' + s.title);                    // Zeichen bleibt aktiv für mehrfaches Setzen
   }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') stopDraw(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (menuStack.length) return; if (runtime.edit) { finishEdit(false); return; } stopDraw(); }
+  else if (e.key === 'Enter' && runtime.edit && !typing(e.target)) { e.preventDefault(); finishEdit(true); }
+});
+map.on('mousemove', e => { if (runtime.mode === 'measure' && runtime.measure) measureMove(e.latlng); });
 
 /* ------------------------------------------------------------------ */
 /* Oberfläche                                                          */
