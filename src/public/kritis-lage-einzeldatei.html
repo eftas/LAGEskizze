@@ -1330,6 +1330,38 @@ header #hdrCounts { flex: 1 1 auto; order: 0; min-width: 0; }
 #tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
 #tabs button { padding: 10px 2px; font-size: 11.5px; white-space: nowrap; }
 @media (max-width: 860px) { #app { grid-template-columns: minmax(0, 1fr); } #panel { grid-template-columns: none; } }
+
+/* ===== Einheiten: Zustandsring, Ausfall, überfällige Ablösung ===== */
+.umk.ring img { border: 3px solid var(--sc); border-radius: 6px; padding: 2px; background: #fff; box-sizing: border-box; filter: none; }
+[data-theme="dark"] .umk.ring img { border-color: var(--sc); background: #f8fafc; }
+.umk.out img { filter: grayscale(1) opacity(.55); }
+.umk .ustrike { position: absolute; left: 0; right: 0; top: 16px; border-top: 4px solid #b91c1c; transform: rotate(-24deg); border-radius: 2px; }
+.umk.due img { animation: duepulse 2.6s ease-in-out infinite; }
+@keyframes duepulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(234,88,12,.0); } 50% { box-shadow: 0 0 0 7px rgba(234,88,12,.45); } }
+@media (prefers-reduced-motion: reduce) { .umk.due img { animation: none; box-shadow: 0 0 0 5px rgba(234,88,12,.5); } }
+/* ===== Rückblick-Regler ===== */
+#reviewSlider { position: absolute; left: 14px; bottom: 40px; z-index: 1090; background: var(--panel, #fff); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.3); padding: 8px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; max-width: min(520px, calc(100% - 40px)); }
+#reviewSlider[hidden] { display: none; }
+#reviewSlider label { font-weight: 700; font-size: 12.5px; }
+#reviewSlider input[type=range] { flex: 1 1 200px; min-width: 140px; accent-color: var(--accent); }
+#reviewSlider span { flex: 1 0 100%; font-size: 12px; color: var(--muted); }
+.secsum h3 { margin: 0 0 4px; font-size: 15px; } .secsum { border-bottom: 1px solid var(--line); margin-bottom: 8px; padding-bottom: 6px; max-width: 300px; }
+.measpt { min-width: 52px; height: 24px; padding: 0 6px; border-radius: 12px; background: var(--c); color: #fff; font: 700 12px/20px Inter, sans-serif; text-align: center; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.55); white-space: nowrap; }
+/* ===== Drucken als Lagekarte ===== */
+@page { size: A4 landscape; margin: 8mm; }
+#printSheet { display: none; }
+body.printing { background: #fff; overflow: hidden; }
+body.printing header, body.printing #panel, body.printing #panelToggle, body.printing .leaflet-control-container, body.printing #chemBand, body.printing #reviewSlider, body.printing #reviewBar, body.printing #msg, body.printing .ctx, body.printing #qat, body.printing #placeSearch, body.printing .windctl { display: none !important; }
+body.printing #app { display: grid !important; grid-template-columns: 640px 360px; grid-template-rows: 700px; width: 1000px; height: 700px; position: fixed; left: 0; top: 0; z-index: 9000; background: #fff; }
+body.printing #mapWrap { position: relative !important; grid-column: 1; grid-row: 1; width: 640px; height: 700px !important; border-right: 1px solid #94a3b8; }
+body.printing #printSheet { display: block !important; grid-column: 2; grid-row: 1; padding: 6px 10px; overflow: hidden; color: #0f172a; background: #fff; font: 10.5px/1.35 Inter, system-ui, sans-serif; }
+body.printing #printSheet .psh { border-bottom: 2px solid #1e40af; margin-bottom: 4px; padding-bottom: 3px; } body.printing #printSheet .psh b { font-size: 16px; display: block; color: #1e3a8a; }
+body.printing #printSheet .psb { margin: 5px 0; } body.printing #printSheet .psb > b { display: block; font-size: 11px; border-bottom: 1px solid #cbd5e1; margin-bottom: 2px; }
+body.printing #printSheet table { width: 100%; border-collapse: collapse; } body.printing #printSheet td { padding: 1px 3px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+body.printing #printSheet tr.ps td { background: #e8eef7; font-weight: 700; }
+#printSheet .pd { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+body.printing .leaflet-tile-pane .bm-inv, body.printing .leaflet-tile-pane { filter: none !important; }
+body.printing .umk .ulb, body.printing .symlabel { background: #fff !important; color: #0f172a !important; }
 </style>
 </head>
 <body>
@@ -1803,10 +1835,12 @@ SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
         <div class="ovtools"><button class="btn primary" id="ovAdd">+ Einheit</button><select id="ovGroup" aria-label="Spalten bilden nach"><option value="sec">Spalten nach Abschnitt</option><option value="stat">Spalten nach Status</option></select><select id="ovStat" aria-label="Status filtern"></select><button class="btn" id="ovSmall" aria-label="Kleiner">A−</button><button class="btn" id="ovBig" aria-label="Größer">A+</button><button class="btn" id="ovMap">Auf Karte zeigen</button><button class="btn primary" id="ovClose">Schließen</button></div></div>
       <div id="ovCols"></div>
     </section>
+    <div id="reviewSlider" hidden><label for="rvRange">Rückblick</label><input type="range" id="rvRange" min="0" max="0" step="1" value="0" aria-label="Lagestand wählen"><span id="rvLbl"></span></div>
     <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
     <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
     <div id="msg" role="status"></div>
   </div>
+  <div id="printSheet" hidden></div>
 </div>
 
 <script>/* @preserve
@@ -2162,6 +2196,7 @@ function freshState() {
     logi: {},            // je Einheit: Einsatzbeginn, Ablösung, Atemschutz, Stärke, Nachforderung, Bereitstellung, Ausfall (S4)
     sources: {},         // eingelesene Dateien je Funktion (S2)
     fue: { people: {}, fb: [], funk: [] },   // Führungsstruktur: people[EL|LS|S1..|SL] = { name, call }, fb = Fachberater, funk = Funkplan
+    measure: [],         // Messpunkte: { id, sid, lat, lng, time, ppm, note }
     chem: [],            // { id, sid, name, lat, lng, large, fire, Q, H, plumeId }
     chemBand: true,
     popRadius: 300,      // Umkreis in m für die Wohnbevölkerung an Objekten (nicht Teil des Rückgängig-Verlaufs)
@@ -2257,7 +2292,7 @@ function snapshot() {
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
     units: state.units, manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
-    wind: state.wind, plumes: state.plumes, chem: state.chem, fue: state.fue, logi: state.logi
+    wind: state.wind, plumes: state.plumes, chem: state.chem, fue: state.fue, logi: state.logi, measure: state.measure
   });
 }
 function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
@@ -2303,7 +2338,7 @@ function restore(snap) {
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
-  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || []; state.fue = d.fue || freshState().fue; state.logi = d.logi || {};
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || []; state.measure = d.measure || []; state.fue = d.fue || freshState().fue; state.logi = d.logi || {};
   d.manual.forEach(q => { state.pois[q.id] = q; });
   renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
   hist.cur = snapshot(); persist();
@@ -2864,6 +2899,14 @@ function secShape(sx) {
   const c = safeColor(sx.color, '#e11d48');
   return sx.kind === 'line' ? L.polyline(sx.pts, { color: c, weight: 5, opacity: secOp(sx) }) : L.polygon(sx.pts, { color: c, weight: 3, fillOpacity: secOp(sx) });
 }
+function sectionSummary(sx) {
+  const us = state.units.filter(u => u.sectionId === sx.id), kids = state.sections.filter(x => x.parentId === sx.id && x.kind !== 'line'), tot = us.reduce((a, u) => a + uTotal(u), 0);
+  const pop = el('div', { class: 'hint', text: 'Einwohner: wird berechnet…' }); if (sx.pts && sx.pts.length > 2) popFor([sx.pts]).then(r => { pop.textContent = 'Einwohner im Gebiet: ' + popShort(r); pop.title = POP_NOTE; }); else pop.hidden = true;
+  return el('div', { class: 'secsum' }, el('h3', {}, sx.name + ' ', el('span', { class: 'chip', text: sx.parentId ? 'UEA' : 'EA', style: 'font-size:10.5px;padding:0 6px' })),
+    el('div', { class: 'hint', text: [sx.leader ? 'Leiter ' + sx.leader : 'Leiter offen', sx.radio ? 'Funk ' + sx.radio : ''].filter(Boolean).join(' · ') }), sx.task ? el('div', { text: sx.task }) : null,
+    el('div', { class: 'hint', text: us.length + ' Einheiten, Stärke ' + tot + (kids.length ? ', ' + kids.length + ' UEA' : '') }),
+    ...us.map(u => { const st = ustat(u.status), fl = unitFlags(u); return el('div', { class: 'fu', style: '--c:' + safeColor(st.color) }, el('img', { src: unitSym(u).url, alt: '' }), el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) + ' · ' + st.label + (fl.text ? ' · ' + fl.text : '') })); }), pop);
+}
 function renderSections() {
   secLayer.clearLayers(); Object.keys(secLayers).forEach(k => delete secLayers[k]);
   state.sections.forEach(sx => {
@@ -2877,7 +2920,7 @@ function renderSections() {
       const nm = el('input', { type: 'text', value: sx.name, onchange: ev => renameSection(sx, ev.target.value) });
       const col = el('input', { type: 'color', value: c, onchange: ev => { sx.color = ev.target.value; renderSections(); renderSecList(); save('Abschnitt umgefärbt: ' + sx.name); } });
       const pl = el('div', { class: 'hint' }); if (sx.kind !== 'line') popFor([sx.pts]).then(r => { pl.textContent = 'Wohnbevölkerung: ' + popShort(r); pl.title = POP_NOTE; });
-      return el('div', { class: 'pp' }, el('label', { text: 'Bezeichnung' }), nm, el('label', { text: 'Farbe' }), col, pl,
+      return el('div', { class: 'pp' }, sx.kind !== 'line' ? sectionSummary(sx) : null, el('label', { text: 'Bezeichnung' }), nm, el('label', { text: 'Farbe' }), col, sx.kind === 'line' ? pl : null,
         el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => removeSection(sx) })));
     });
     lyr.addTo(secLayer);
@@ -4110,6 +4153,7 @@ function renderChemMap() {
     m.on('contextmenu', e => ctxOpen(e, chemItems(inc), null, 'Gefahrstoff: ' + s.name));
     m.addTo(chemLayer);
   });
+  drawMeasures();
 }
 function addChem(sid, ll) {
   const s = chemSub(sid); if (!s) return;
@@ -4181,7 +4225,7 @@ function renderChemTab() {
         el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => removeChem(inc) })));
     box.append(card);
   });
-  box.append(el('h2', { text: 'Datenblatt: ' + cur.name }), chemSheet(cur));
+  box.append(el('h2', { text: 'Messwerte' }), measureBlock(), el('h2', { text: 'Datenblatt: ' + cur.name }), chemSheet(cur));
   if (runtime.viewer) lockViewer(box);
   fillChemNumbers();
 }
@@ -4221,6 +4265,70 @@ function renderChemBand() {
     el('div', { class: 'cm-leg' }, el('span', { class: 'cm-sw', style: 'background:#ef4444' }), s.erg.isolate + ' m Absperrung', el('br'), inc.large ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#ea580c' }), s.erg.spillDownwind + ' m Windrichtung', el('br')) : null, inc.fire ? el('span', {}, el('span', { class: 'cm-sw', style: 'background:#7c2d12' }), s.erg.fire + ' m Brand') : null),
     runtime.viewer ? null : el('button', { class: 'cm-x', 'aria-label': 'Band ausblenden', title: 'Band ausblenden', text: '×', onclick: () => { state.chemBand = false; renderChemBand(); const c = $('#chemBandOn'); if (c) c.checked = false; persist(); } }));
   b.hidden = false;
+}
+
+/* ------------------------------------------------------------------ */
+/* Drucken als Lagekarte (Querformat: Karte links, Tafel rechts)       */
+/* ------------------------------------------------------------------ */
+function buildPrintSheet() {
+  const sh = $('#printSheet'), u = state.units, t = casTotals().t, ca = chemActive(), cs = ca ? chemSub(ca.sid) : null, ex = state.exercise;
+  const secs = state.sections.filter(x => x.kind !== 'line' && !x.parentId), rows = [];
+  const addSec = (sx, lvl) => { const us = u.filter(x => x.sectionId === sx.id); rows.push(el('tr', { class: 'ps' }, el('td', { colspan: '3', text: sx.name + (lvl ? ' (UEA)' : '') + (sx.leader ? ' · ' + sx.leader : '') + (sx.radio ? ' · ' + sx.radio : '') })));
+    us.forEach(x => { const st = ustat(x.status), fl = unitFlags(x); rows.push(el('tr', {}, el('td', { text: (x.name || 'Einheit') + (x.call ? ' (' + x.call + ')' : '') }), el('td', {}, el('span', { class: 'pd', style: 'background:' + safeColor(st.color) }), ' ' + st.label + (fl.text ? ', ' + fl.text : '')), el('td', { text: fmtStr(x) }))); });
+    state.sections.filter(c => c.parentId === sx.id && c.kind !== 'line').forEach(c => addSec(c, 1)); };
+  secs.forEach(sx => addSec(sx, 0)); const free = u.filter(x => !x.sectionId || !state.sections.some(y => y.id === x.sectionId));
+  if (free.length) { rows.push(el('tr', { class: 'ps' }, el('td', { colspan: '3', text: 'nicht zugeteilt' }))); free.forEach(x => rows.push(el('tr', {}, el('td', { text: x.name || 'Einheit' }), el('td', { text: ustat(x.status).label }), el('td', { text: fmtStr(x) })))); }
+  const probs = state.problems.filter(p => p.status !== 'erledigt').sort((a, b) => a.prio - b.prio).slice(0, 6), meas = (state.measure || []).slice(-5).reverse();
+  const kids = [el('div', { class: 'psh' }, el('b', { text: 'LAGEKARTE' }), el('span', { text: (ex && ex.name ? ex.name + ' · ' : '') + fmtClock(nowMs()) + ' · taktische Zeit ' + fmtTac(nowMs()) })),
+    cs ? el('div', { class: 'psb' }, el('b', { text: 'Gefahrstoff ' + cs.name + ' (UN ' + cs.un + ', Kemler ' + cs.kemler + ')' }), el('div', { text: 'Absperrung ' + cs.erg.isolate + ' m' + (ca.large ? ', Windrichtung ' + cs.erg.spillDownwind + ' m' : '') + (ca.fire ? ', Brand ' + cs.erg.fire + ' m' : '') + '. Wind ' + (state.wind.dir != null ? 'aus ' + state.wind.dir + ' Grad' + (state.wind.speed != null ? ', ' + state.wind.speed + ' m/s' : '') : 'nicht gesetzt') + '.' })) : null,
+    el('div', { class: 'psb' }, el('b', { text: 'Personen' }), el('div', { text: ['sk1', 'sk2', 'sk3', 'tot', 'vermisst', 'betroffen'].map(k => (CAS[k].tag || CAS[k].short) + ' ' + (t[k] || 0)).join(' · ') })),
+    el('div', { class: 'psb' }, el('b', { text: 'Einheiten (' + u.length + ', Stärke ' + u.reduce((a, x) => a + uTotal(x), 0) + ')' }), el('table', {}, el('tbody', {}, ...rows.slice(0, 34))), rows.length > 34 ? el('div', { text: '… weitere Zeilen siehe Karte' }) : null),
+    probs.length ? el('div', { class: 'psb' }, el('b', { text: 'Offene Probleme' }), ...probs.map(p => el('div', { text: p.prio + ' · ' + p.title }))) : null,
+    meas.length ? el('div', { class: 'psb' }, el('b', { text: 'Messwerte' }), ...meas.map(m => el('div', { text: fmtHM2(Date.parse(m.time)) + ' · ' + m.ppm + ' ppm' + (m.note ? ' · ' + m.note : '') }))) : null];
+  sh.replaceChildren(...kids.filter(Boolean));
+}
+let printing = false;
+async function printLagekarte() {
+  if (printing) return; printing = true; closeUnitOverview(); closeFue(); buildPrintSheet(); document.body.classList.add('printing'); map.invalidateSize();
+  await new Promise(r => setTimeout(r, 1300));
+  let finished = false; const done = () => { if (finished) return; finished = true; document.body.classList.remove('printing'); map.invalidateSize(); printing = false; window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done); setTimeout(done, 120000);
+  try { window.print(); } catch (e) { done(); }
+}
+/* ------------------------------------------------------------------ */
+/* Messpunkte (Gefahrstoff): Messwert, Ort, Zeit, Vergleich mit Keule  */
+/* ------------------------------------------------------------------ */
+function measLevel(m) { const s = chemSub(m.sid); if (!s) return 0; return m.ppm >= s.aegl.a2 ? 2 : m.ppm >= s.aegl.a1 ? 1 : 0; }
+const MEAS_COL = ['#16a34a', '#d97706', '#b91c1c'], MEAS_TXT = ['unter AEGL-1', 'AEGL-1 bis AEGL-2', 'AEGL-2 oder mehr'];
+function measExpect(m) {
+  const inc = state.chem.find(c => c.sid === m.sid) || chemActive(); const pl = inc && state.plumes.find(x => x.id === inc.plumeId); if (!pl) return null;
+  const g = plumeCalc(pl), ew = effWind(pl); if (g.error || g.mode !== 'gauss') return null;
+  const inRing = r => r && !r.none && pip(m.lat, m.lng, r.poly.map(q => toLL(pl, ew.dir, q[0], q[1])));
+  return inRing(g.rings[1]) ? 2 : inRing(g.rings[0]) ? 1 : 0;
+}
+function measCompare(m) { const e = measExpect(m); if (e == null) return 'Keule nicht berechnet, kein Vergleich'; const l = measLevel(m); return 'Rechnung: ' + MEAS_TXT[e] + (l === e ? ', passt zur Messung' : l > e ? ', Messung ist höher als berechnet' : ', Messung ist niedriger als berechnet'); }
+function drawMeasures() {
+  (state.measure || []).forEach(m => { const l = measLevel(m);
+    L.marker([m.lat, m.lng], { zIndexOffset: 800, icon: L.divIcon({ className: '', iconSize: [64, 26], iconAnchor: [32, 13], html: el('div', { class: 'measpt', style: '--c:' + MEAS_COL[l] }, m.ppm + ' ppm') }) })
+      .bindTooltip(el('span', { text: fmtHM2(Date.parse(m.time)) + ' Uhr · ' + m.ppm + ' ppm · ' + MEAS_TXT[l] + (m.note ? ' · ' + m.note : '') + '. ' + measCompare(m) })).addTo(chemLayer); });
+}
+function measureBlock() {
+  const ed = !ro('measure'), list = (state.measure || []).slice().sort((a, b) => b.time.localeCompare(a.time));
+  return el('div', { class: 'card', style: '--c:#0e7490' }, el('h3', { text: 'Messwerte', style: 'font-size:15px' }),
+    el('div', { class: 'hint', text: 'Gemessene Konzentration in ppm mit Ort und Uhrzeit. Die Farbe folgt den AEGL-Stufen des Stoffs, der Vergleich nutzt die berechnete Keule.' }),
+    ed ? el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Messpunkt setzen', onclick: addMeasure })) : null,
+    ...(list.length ? list.map(m => el('div', { class: 'cm-zone', style: '--c:' + MEAS_COL[measLevel(m)] }, el('span', {}, el('b', { text: m.ppm + ' ppm · ' + fmtHM2(Date.parse(m.time)) + ' Uhr' }), MEAS_TXT[measLevel(m)] + (m.note ? ' · ' + m.note : ''), el('br'), el('span', { class: 'hint', text: measCompare(m) })),
+      el('span', { style: 'margin-left:auto;display:flex;gap:4px' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([m.lat, m.lng], Math.max(map.getZoom(), 17)) }), ed ? el('button', { class: 'btn small danger', text: '×', 'aria-label': 'Messpunkt entfernen', onclick: () => { state.measure = state.measure.filter(x => x !== m); renderChem(); save('Messpunkt entfernt'); } }) : null))) : [el('div', { class: 'hint', text: 'Noch keine Messwerte.' })]));
+}
+async function addMeasure() {
+  const d = await fieldsDialog('Messwert', [{ k: 'ppm', l: 'Messwert in ppm', v: '', ph: 'z. B. 120' }, { k: 'time', l: 'Uhrzeit (hh:mm)', v: fmtHM2(nowMs()) }, { k: 'note', l: 'Gerät oder Bemerkung', v: '' }], 'Weiter'); if (!d) return;
+  const ppm = parseFloat(String(d.ppm).replace(',', '.')); if (!(ppm >= 0)) { say('Bitte einen Messwert in ppm eintragen.', 3500); return; }
+  const tm = /^(\d\d):(\d\d)$/.test(d.time.trim()) ? new Date(toIsoToday(d.time.trim())).toISOString() : nowIso(); const ca = chemActive();
+  stopDraw(); runtime.mode = { type: 'measloc', data: { ppm, time: tm, note: d.note.trim(), sid: ca ? ca.sid : 'benzol' } }; map.getContainer().style.cursor = 'crosshair'; say('Ort des Messpunkts auf der Karte anklicken. Esc bricht ab.');
+}
+function placeMeasure(ll) {
+  const m = Object.assign({ id: uid(), lat: ll.lat, lng: ll.lng }, runtime.mode.data); stopDraw(); state.measure.push(m);
+  addJournal('Messwert ' + m.ppm + ' ppm (' + MEAS_TXT[measLevel(m)] + ')', true, { lat: m.lat, lng: m.lng }); renderChem(); save('Messpunkt gesetzt: ' + m.ppm + ' ppm');
 }
 function renderChem() { renderChemMap(); renderChemTab(); renderChemBand(); }
 function chemWindChanged() {
@@ -4299,17 +4407,22 @@ function pickSymbol(cur) {
 
 /* Kräfte-Reiter */
 let uDraft = { sym: null };
+function unitFlags(u) {
+  const lg = (state.logi && state.logi[u.id]) || {}, out = !!(lg.ausfall && lg.ausfall.trim()), due = !!lg.relief && Date.parse(lg.relief) < nowMs();
+  return { out, due, text: out ? 'AUSFALL: ' + lg.ausfall : due ? 'Ablösung überfällig' : '' };
+}
 function unitMarkerIcon(u) {
   const r = unitSym(u), st = ustat(u.status), h = 34, w = r.w > 1 ? Math.min(78, Math.round(h * r.w / r.h)) : 40;
   const img = el('img', { src: r.url, alt: '', width: String(w), height: String(h), style: 'object-fit:contain' });
-  const node = el('div', { class: 'umk' }, img, el('span', { class: 'usb', style: 'background:' + safeColor(st.color), text: st.short || (st.label || '?').charAt(0).toUpperCase() }), el('span', { class: 'ulb', text: u.name || 'Einheit' }));
+  const fl = unitFlags(u);
+  const node = el('div', { class: 'umk ring' + (fl.out ? ' out' : fl.due ? ' due' : ''), style: '--sc:' + safeColor(st.color) }, img, fl.out ? el('span', { class: 'ustrike' }) : null, el('span', { class: 'usb', style: 'background:' + safeColor(st.color), text: st.short || (st.label || '?').charAt(0).toUpperCase() }), el('span', { class: 'ulb', text: u.name || 'Einheit' }));
   return L.divIcon({ className: '', html: node, iconSize: [Math.max(w, 60), 52], iconAnchor: [Math.max(w, 60) / 2, 22] });
 }
 function renderUnitMarkers() {
   unitLayer.clearLayers();
   state.units.filter(u => u.lat != null).forEach(u => {
     const m = L.marker([u.lat, u.lng], { icon: unitMarkerIcon(u), draggable: true });
-    m.bindTooltip(el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) + ' · ' + ustat(u.status).label + ' · ' + sectionName(u.sectionId) }));
+    m.bindTooltip(el('span', { text: (u.name || 'Einheit') + ' · ' + fmtStr(u) + ' · ' + ustat(u.status).label + ' · ' + sectionName(u.sectionId) + (unitFlags(u).text ? ' · ' + unitFlags(u).text : '') }));
     m.on('dragend', () => { const ll = m.getLatLng(); u.lat = ll.lat; u.lng = ll.lng; save('Einheit verschoben: ' + u.name); });
     m.on('click', () => openUnitCard(u, can('logi') && !can('units')));
     m.on('contextmenu', e => ctxOpen(e, unitItems(u), null, 'Einheit: ' + (u.name || '')));
@@ -4716,7 +4829,7 @@ const ROLLEN = [
   { id: 'EL', name: 'Einsatzleiter', d: 'Gesamtlage, Führungsstruktur, Entscheidungen' }, { id: 'S1', name: 'S1 Personal', d: 'Personen erfassen (Sichtung, Tote, Vermisste)' },
   { id: 'S2', name: 'S2 Lage', d: 'Lagevortrag, alles bearbeiten, Daten der anderen einlesen' }, { id: 'S3', name: 'S3 Einsatz', d: 'Einheiten und Abschnitte' },
   { id: 'S4', name: 'S4 Versorgung', d: 'Ablösung, Atemschutz, Nachforderung, Ausfälle' }, { id: 'S5', name: 'S5 Presse', d: 'Meldungen' }, { id: 'S6', name: 'S6 Kommunikation', d: 'Kommunikationsplan' }];
-const ROLE_DOM = { EL: ['people', 'fb'], S1: ['casualties'], S2: ['areas', 'objects', 'deps', 'symbols', 'manualPois', 'wind', 'weather', 'plumes', 'chem', 'problems', 'exercise', 'meeting'], S3: ['units', 'sections'], S4: ['logi'], S5: [], S6: ['funk'] };
+const ROLE_DOM = { EL: ['people', 'fb'], S1: ['casualties'], S2: ['areas', 'objects', 'deps', 'symbols', 'manualPois', 'wind', 'weather', 'plumes', 'chem', 'measure', 'problems', 'exercise', 'meeting'], S3: ['units', 'sections'], S4: ['logi'], S5: [], S6: ['funk'] };
 const DOM_PATH = { people: ['fue', 'people'], fb: ['fue', 'fb'], funk: ['fue', 'funk'] };
 const ROLE_TABS = { EL: ['probleme', 'tagebuch', 'meldungen', 'staende', 'daten'], S1: ['zahlen', 'meldungen', 'tagebuch', 'daten'], S3: ['kraefte', 'abschnitte', 'meldungen', 'tagebuch', 'daten'],
   S4: ['probleme', 'meldungen', 'daten'], S5: ['meldungen', 'tagebuch', 'daten'], S6: ['meldungen', 'daten'] };
@@ -5016,6 +5129,7 @@ function takeStand(title, note) {
 }
 function storageInfo() { try { return JSON.stringify(state).length * 2; } catch (e) { return 0; } }
 function renderStands() {
+  renderReviewSlider();
   const box = $('#stList'); if (!box) return; box.replaceChildren();
   const mb = storageInfo() / 1048576; $('#stStore').textContent = 'Speicherbedarf der Lage im Browser: etwa ' + mb.toFixed(1).replace('.', ',') + ' MB von rund 5 MB.' + (mb > 3.5 ? ' Bald voll: Lage als Datei sichern (Reiter Daten).' : '');
   if (!state.stands.length) box.append(el('div', { class: 'hint', text: 'Noch kein Lagestand festgehalten.' }));
@@ -5055,13 +5169,21 @@ function enterReview(st) {
   const r = migrate(Object.assign(freshState(), d)); ['exercise', 'meeting', 'journal', 'messages', 'stands', 'roles', 'msgSeq', 'diarySeq', 'standSeq', 'author'].forEach(k => { r[k] = live[k]; });
   r.pois = d.pois || {}; r.unitStatus = d.unitStatus || live.unitStatus;
   runtime.viewer = true; document.body.classList.add('viewer', 'review'); applyState(r, true);
-  $('#reviewTxt').textContent = 'Rückblick auf Lagestand Nr. ' + st.nr + ' (' + st.title + ', ' + fmtTime(st.time) + '), nur Ansicht'; $('#reviewBar').classList.add('on');
+  $('#reviewTxt').textContent = 'Rückblick auf Lagestand Nr. ' + st.nr + ' (' + st.title + ', ' + fmtTime(st.time) + '), nur Ansicht'; $('#reviewBar').classList.add('on'); renderReviewSlider();
 }
 function leaveReview() {
   const r = runtime.review; if (!r) return; runtime.viewer = r.viewerBefore; runtime.review = null; document.body.classList.remove('review'); if (!runtime.viewerBefore) document.body.classList.remove('viewer');
-  applyState(r.live, false); hist.past = r.hist.past; hist.future = r.hist.future; hist.cur = r.hist.cur; updateUndoButtons(); $('#reviewBar').classList.remove('on');
+  applyState(r.live, false); hist.past = r.hist.past; hist.future = r.hist.future; hist.cur = r.hist.cur; updateUndoButtons(); $('#reviewBar').classList.remove('on'); renderReviewSlider();
+}
+function renderReviewSlider() {
+  const box = $('#reviewSlider'); if (!box) return; const live = runtime.review ? runtime.review.live : state, st = (live.stands || []).slice().sort((a, b) => a.nr - b.nr);
+  box.hidden = !st.length || runtime.beamer; if (box.hidden) return; const r = $('#rvRange'); r.max = String(st.length);
+  if (document.activeElement !== r) r.value = String(runtime.review ? Math.max(0, st.findIndex(x => x.id === runtime.review.id)) : st.length);
+  const pos = +r.value; $('#rvLbl').textContent = pos >= st.length ? 'Jetzt (aktuelle Lage)' : 'Stand Nr. ' + st[pos].nr + ' · ' + fmtTime(st[pos].time) + ' · ' + st[pos].title; box._st = st;
 }
 function initStaende() {
+  $('#rvRange').addEventListener('input', () => { const box = $('#reviewSlider'), st = box._st || [], pos = +$('#rvRange').value; $('#rvLbl').textContent = pos >= st.length ? 'Jetzt (aktuelle Lage)' : 'Stand Nr. ' + st[pos].nr + ' · ' + fmtTime(st[pos].time) + ' · ' + st[pos].title;
+    clearTimeout(initStaende.t); initStaende.t = setTimeout(() => { if (pos >= st.length) leaveReview(); else enterReview(st[pos]); }, 180); });
   $('#reviewBack').onclick = leaveReview;
   $('#stTake').onclick = () => { takeStand($('#stTitle').value.trim(), $('#stNote').value.trim()); $('#stTitle').value = ''; $('#stNote').value = ''; };
   $('#btnMeeting').onclick = () => {
@@ -5122,6 +5244,7 @@ map.on('click', e => {
   else if (runtime.mode === 'plume') { const m = $('#kMode').value; stopDraw(); addPlume(e.latlng, m); }
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
+  else if (runtime.mode && runtime.mode.type === 'measloc') placeMeasure(e.latlng);
   else if (runtime.mode && runtime.mode.type === 'chemloc') { const sid = runtime.mode.sid; stopDraw(); addChem(sid, e.latlng); }
   else if (runtime.mode && runtime.mode.type === 'unitloc') {
     const un = state.units.find(x => x.id === runtime.mode.id); stopDraw();
@@ -5218,7 +5341,7 @@ $('#btnJ').onclick = () => { const t = $('#jText').value.trim(); if (t) { addJou
 $('#jBy').addEventListener('change', e => { state.author = e.target.value; persist(); }); $('#jFlt').addEventListener('input', renderJournal); $('#jAuto').addEventListener('change', renderJournal);
 $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ').click(); });
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
-$('#btnPrint').onclick = () => window.print();
+$('#btnPrint').onclick = () => printLagekarte();
 $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
 $('#btnUndoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.past.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => undoTo(i + 1) }))); };
 $('#btnRedoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.future.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => redoTo(i + 1) }))); };
@@ -5299,7 +5422,9 @@ state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
 initNewUi();
 state.areas.forEach(prepArea);
 histInit();
-initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initChem(); initFue(); initRoles(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
+initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initChem(); initFue(); initRoles();
+setInterval(() => { if (!document.hidden && !runtime.viewer) renderUnitMarkers(); }, 30000);   // überfällige Ablösungen erscheinen von selbst
+initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
