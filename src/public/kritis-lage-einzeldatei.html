@@ -1047,7 +1047,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 .poptbl th:first-child, .poptbl td:first-child { text-align: left; white-space: normal; }
 
 /* ===== Meeting-Zeile, Uhr als Schaltfläche, Auswahlfenster ===== */
-#mtLine { order: 5; flex: 1 0 100%; font-weight: 700; font-size: 13px; color: #b45309; font-variant-numeric: tabular-nums; }
+#mtLine { order: 0; flex: 0 1 auto; min-width: 0; margin-left: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; font-size: 13px; color: #b45309; font-variant-numeric: tabular-nums; }
 #mtLine.soon { color: #c2410c; }
 #mtLine.due { color: #b91c1c; }
 #clock, #tacTime { cursor: pointer; border-radius: 4px; }
@@ -1122,9 +1122,9 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
     </div>
     <h1>LAGEkarte</h1>
     <span id="hdrArea"></span>
+    <div id="mtLine" hidden></div>
     <span class="sp"></span>
     <div id="hdrCounts"></div>
-    <div id="mtLine" hidden></div>
     <span id="clock" role="button" tabindex="0" title="Klicken: nächste Lagebesprechung festlegen"></span>
     <span id="tacTime" class="chip" role="button" tabindex="0" title="Taktische Zeit (TTHHMM). Klicken: nächste Lagebesprechung festlegen" aria-label="Taktische Zeit"></span>
     <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
@@ -1133,7 +1133,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
     <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
     <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
-    <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
+    <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
 
@@ -1149,7 +1149,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <button role="tab" data-tab="tagebuch" aria-selected="false">Tagebuch</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
-      <button role="tab" data-tab="keule" aria-selected="false">Wetter und Keule</button>
+      <button role="tab" data-tab="keule" aria-selected="false" title="Wetter, Wind und Keule">Wetter</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
       <button role="tab" data-tab="staende" aria-selected="false">Stände</button>
       <button role="tab" data-tab="daten" aria-selected="false">Daten</button>
@@ -3518,7 +3518,7 @@ function updateMeetingChip() {
   const c = $('#mtLine'); if (!c) return; const due = meetingDue();
   if (due == null) { c.hidden = true; } else {
     const d = due - nowMs(); c.hidden = false; c.classList.toggle('due', d < 0); c.classList.toggle('soon', d >= 0 && d < 5 * 60000);
-    c.textContent = 'Nächste Lagebesprechung ' + fmtHM(due) + ' Uhr · ' + (d >= 0 ? 'in ' + fmtDur(d) : 'überfällig seit ' + fmtDur(-d));
+    c.textContent = 'Nächste Lagebesprechung ' + fmtHM(due) + (d >= 0 ? ' · in ' + fmtDur(d) : ' · überfällig ' + fmtDur(-d)); c.title = 'Nächste Lagebesprechung um ' + fmtHM(due) + ' Uhr. Klick auf die Uhr ändert den Termin.';
   }
   if (document.activeElement !== $('#mtInt') && $('#tab-einsatz').classList.contains('active')) $('#mtInfo').textContent = meetingText();
 }
