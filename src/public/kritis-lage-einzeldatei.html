@@ -3439,24 +3439,27 @@ function startMeasure(ll) {
   map.getContainer().style.cursor = 'crosshair'; say('Entfernung messen: weitere Punkte anklicken, Esc beendet.');
 }
 function mapItems(ll) {
-  return [
-    { label: 'KRITIS-Objekt hier setzen', sub: () => poiTypeItems(ll) },
-    { label: 'Taktisches Zeichen hier setzen', sub: () => symbolItems(ll) },
-    { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
+  const ok = d => !runtime.viewer && can(d);
+  const items = [
+    ok('manualPois') && { label: 'KRITIS-Objekt hier setzen', sub: () => poiTypeItems(ll) },
+    ok('symbols') && { label: 'Taktisches Zeichen hier setzen', sub: () => symbolItems(ll) },
+    ok('areas') && { label: 'Kreis um diesen Punkt als Gebiet', sub: [1, 2, 5, 10].map(km => ({ label: km + ' km', onclick: () => circleArea(ll, km) })) },
     { sep: true },
-    { label: 'Gefahrstoff hier melden', sub: Object.values(SUBSTANCES).filter(x => x.verified).map(x => ({ label: x.name + ' (UN ' + x.un + ')', onclick: () => addChem(x.id, ll) })) },
-    { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
-    { label: 'Einheit hier einsetzen…', onclick: async () => { const v = await askText('Bezeichnung der Einheit', ''); if (v == null || !v.trim()) return; addUnit({ name: v.trim(), lat: ll.lat, lng: ll.lng }); } },
-    { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
-    { label: 'Personenzahl hier erfassen', sub: casNew().map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: () => askNumberCas(k, ll) })) },
-    { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
+    ok('chem') && { label: 'Gefahrstoff hier melden', sub: Object.values(SUBSTANCES).filter(x => x.verified).map(x => ({ label: x.name + ' (UN ' + x.un + ')', onclick: () => addChem(x.id, ll) })) },
+    ok('plumes') && { label: 'Ausbreitungskeule hier ansetzen', sub: [{ label: 'Gauß-Fahne (Berechnung)', onclick: () => addPlume(ll, 'gauss') }, { label: 'Taktische Keule (Sektor)', onclick: () => addPlume(ll, 'takt') }] },
+    ok('units') && { label: 'Einheit hier einsetzen…', onclick: async () => { const v = await askText('Bezeichnung der Einheit', ''); if (v == null || !v.trim()) return; addUnit({ name: v.trim(), lat: ll.lat, lng: ll.lng }); } },
+    ok('problems') && { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
+    ok('casualties') && { label: 'Personenzahl hier erfassen', sub: casNew().map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: () => askNumberCas(k, ll) })) },
+    !runtime.viewer && { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
     { sep: true },
     { label: 'Entfernung messen ab hier', onclick: () => startMeasure(ll) },
     { label: 'Hier zentrieren', onclick: () => map.panTo(ll) },
     { label: 'Koordinaten kopieren (' + fmtLL(ll) + ')', onclick: () => copyText(fmtLL(ll), 'Koordinaten kopiert: ' + fmtLL(ll)) }
-  ];
+  ].filter(Boolean);
+  return items.filter((it, i, arr) => !it.sep || (i > 0 && i < arr.length - 1 && !arr[i - 1].sep));
 }
 function areaItems(a) {
+  if (runtime.viewer || !can('areas')) return [{ label: 'Keine Berechtigung für Ihre Funktion: Gebiete', disabled: true }];
   const multi = a.rings.length > 1;
   return [
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Gebiet umbenennen', a.name); if (v != null) renameArea(a, v); } },
@@ -3475,6 +3478,7 @@ function areaItems(a) {
   ];
 }
 function sectionItems(sx) {
+  if (runtime.viewer || !can('sections')) return [{ label: 'Keine Berechtigung für Ihre Funktion: Abschnitte', disabled: true }];
   return [
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Abschnitt umbenennen', sx.name); if (v != null) renameSection(sx, v); } },
     { label: 'Farbe', swatch: sx.color, sub: () => colorItems(sx.color, c => { sx.color = c; renderSections(); save('Abschnitt umgefärbt: ' + sx.name); }) },
@@ -3495,8 +3499,8 @@ function setPoiStatus(p, k) {
 function poiItems(p) {
   const o = state.objects[p.id] || {}, cur = o.status || 'unbekannt';
   const items = [
-    { label: 'Status setzen', swatch: STATUS[cur].color, sub: Object.entries(STATUS).map(([k, v]) => ({ label: v.label, swatch: v.color, check: k === cur, onclick: () => setPoiStatus(p, k) })) },
-    { label: 'Problem melden', onclick: () => reportProblemFor(p) },
+    (!runtime.viewer && can('objects')) && { label: 'Status setzen', swatch: STATUS[cur].color, sub: Object.entries(STATUS).map(([k, v]) => ({ label: v.label, swatch: v.color, check: k === cur, onclick: () => setPoiStatus(p, k) })) },
+    (!runtime.viewer && can('problems')) && { label: 'Problem melden', onclick: () => reportProblemFor(p) },
     { label: 'Versorgt…', onclick: () => startLink(p) },
     { label: 'Personen erfassen', sub: casNew().map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: async () => {
       const t = await askText(v.label + ' am Objekt (aktuell ' + ((o.persons || {})[k] || 0) + ')', String((o.persons || {})[k] || '')); if (t == null) return;
@@ -3509,10 +3513,10 @@ function poiItems(p) {
     { label: 'Koordinaten kopieren', onclick: () => copyText(fmtLL(p), 'Koordinaten kopiert: ' + fmtLL(p)) }
   ];
   if (!p.manual) items.push({ label: 'OSM-Objekt öffnen', onclick: () => window.open('https://www.openstreetmap.org/' + p.osm, '_blank', 'noopener') });
-  else items.push({ sep: true },
+  else if (!runtime.viewer && can('manualPois')) items.push({ sep: true },
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Objekt umbenennen', p.name || ''); if (v == null) return; p.name = v.trim(); if (markers[p.id]) markers[p.id].options.title = poiTitle(p); renderList(); save('Objekt umbenannt: ' + poiTitle(p)); } },
     { label: 'Entfernen', onclick: () => removeManualPoi(p) });
-  return items;
+  return items.filter(Boolean);
 }
 function symbolItemsOf(sy) {
   return [
@@ -3670,6 +3674,7 @@ function renderPlumes() {
   });
 }
 function plumeItems(pl) {
+  if (runtime.viewer || !can('plumes')) return [{ label: 'Keine Berechtigung für Ihre Funktion: Keulen', disabled: true }];
   return [
     { label: 'Umbenennen…', onclick: async () => { const v = await askText('Keule umbenennen', pl.name); if (v == null || !v.trim()) return; pl.name = v.trim(); renderKeulen(); save('Keule umbenannt: ' + pl.name); } },
     { label: pl.follow !== false ? 'Eigenen Wind verwenden' : 'Dem Wind der Karte folgen', onclick: () => { togglePlumeFollow(pl); } },
@@ -4470,6 +4475,117 @@ const SUBSTANCES = {
       { t: 'ADR, UN 1017 Chlor (Datenbank GEFAHRGUT, BAM)', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/adr/jl622kyd', f: 'Klasse 2, Gefahrnummer 265' },
       { t: 'Sicherheitsdatenblatt Chlorine (Tata Chemicals)', u: 'https://www.tatachemicals.com/upload/images/chlorine-tcl-sds-ghs-2021.pdf', f: 'H270, H280, H330, H314, H318, H335, H400, Piktogramme' },
       { t: 'Safety Data Sheet Chlorine (Linde)', u: 'https://produkte.linde-gas.at/sdb_konform/000010021781_EU_AT_EN_1.5.pdf', f: 'H270, H315, H319, H330, H400' }
+    ]
+  },
+  methanol: {
+    id: 'methanol', name: 'Methanol', formula: 'CH4O', cas: '67-56-1', un: '1230', kemler: '336', klasse: '3 (6.1)', vg: 'II', molMass: 32.04,
+    erg: { guide: '131', title: 'Entzündbare Flüssigkeiten, giftig', isolate: 50, spillDownwind: null, fire: 800 },
+    ghs: ['GHS02', 'GHS06', 'GHS08'], signal: 'Gefahr',
+    h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H301', 'Giftig bei Verschlucken.'], ['H311', 'Giftig bei Hautkontakt.'], ['H331', 'Giftig bei Einatmen.'], ['H370', 'Schädigt die Organe (Augen, Zentralnervensystem).']],
+    hNote: 'Einstufung laut Sicherheitsdatenblättern (TU Braunschweig, Methanex), je nach Konzentration (bei 3 bis unter 10 % nur H371).',
+    props: { flash: 11, boil: 65, lel: 6, uel: 36.5, vapDens: 1.11 },
+    heavy: true,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Leicht entzündbar. Methanol brennt mit unsichtbarer Flamme: Brand mit Wärmebildkamera oder anderen Hilfsmitteln erkennen (ERG). Dämpfe bilden mit Luft explosionsfähige Gemische und können zur Zündquelle zurückschlagen. Behälter können bei Erwärmung bersten.' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Dampf ist schwerer als Luft (Dichte 1,11) und sammelt sich in Senken, Kellern und Kanälen. Mit Wasser in jedem Verhältnis mischbar, Löschwasser und Abfluss tragen den Stoff weiter.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Giftig beim Einatmen, bei Hautkontakt und Verschlucken (H301, H311, H331). Wirkt auf Augen und Zentralnervensystem, schädigt den Sehnerv, kann tödlich sein. Wird über die Haut aufgenommen (CAMEO).' },
+      { c: '#475569', t: 'Umwelt', x: 'Abfluss in Gewässer, Kanalisation und Keller verhindern. Löschwasser kann die Umwelt belasten (ERG).' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Dampfunterdrückender Schaum kann die Dämpfe verringern.', 'Kleines Leck: mit Erde, Sand oder anderem nicht brennbarem Material aufnehmen, mit funkenfreiem Werkzeug sammeln.', 'Großes Leck: weit vor der Flüssigkeit eindämmen. Sprühwasser kann Dampf mindern, verhindert aber in geschlossenen Räumen keine Zündung.'],
+      brand: ['Vorsicht: Methanol brennt mit unsichtbarer Flamme. Wärmebildkamera oder anderes Hilfsmittel nutzen.', 'Vorsicht: Der Flammpunkt ist sehr niedrig, Wassersprühstrahl kann wirkungslos sein.', 'Kleinbrand: Pulver, CO2, Sprühwasser oder alkoholbeständiger Schaum.', 'Großbrand: Sprühstrahl, Nebel oder alkoholbeständiger Schaum, keinen Vollstrahl direkt aufs Produkt richten. Löschwasser eindeichen.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { kind: 'AEGL', status: 'vorläufig (interim), laut CAMEO Chemicals (NAC/NRC)', t: '60 min', a1: 530, a2: 2100, a3: 7200, edition: 'NAC/NRC', note: 'AEGL-2 und AEGL-3 liegen bei 4 bis 13 % der unteren Explosionsgrenze (55000 ppm). ERPG-1/2/3 liegen bei 200 / 1000 / 5000 ppm (AIHA).' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Methanol', u: 'https://cameochemicals.noaa.gov/chemical/3874', f: 'Flammpunkt, Explosionsgrenzen, Siedepunkt, Dampfdichte, Molmasse, AEGL (interim) 60 min: 530 / 2100 / 7200 ppm, ERPG' },
+      { t: 'ERG Leitfaden 131 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_131.pdf', f: 'Absperrung 50 m, Brand 800 m, unsichtbare Flamme, Maßnahmen. UN 1230 steht nicht in Tabelle 1' },
+      { t: 'ADR 2025, UN 1230 Methanol (Gefahrgut-Manager)', u: 'https://www.gefahrgutmanager.de/adr/un-1230-methanol', f: 'Klasse 3, Gefahrnummer 336' },
+      { t: 'Sicherheitsdatenblatt Methanol (TU Braunschweig)', u: 'https://www.tu-braunschweig.de/fileadmin/Redaktionsgruppen/Stabsstellen/ZLCHEM/zl2113-sdb.pdf', f: 'H225, H301, H311, H331, H370' }
+    ]
+  },
+  natronlauge: {
+    id: 'natronlauge', name: 'Natronlauge (ca. 32 %)', formula: 'NaOH (wässrig)', cas: '1310-73-2', un: '1824', kemler: '80', klasse: '8', vg: 'II', molMass: 40,
+    erg: { guide: '154', title: 'Giftige und/oder ätzende Stoffe (nicht brennbar)', isolate: 50, spillDownwind: null, fire: 800 },
+    ghs: ['GHS05'], signal: 'Gefahr',
+    h: [['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.']],
+    hNote: 'Einstufung laut Sicherheitsdatenblatt Merck für Natronlauge etwa 32 %. Einzelne Datenblätter nennen zusätzlich H318 oder H302.',
+    props: { flash: null, fire: 'nicht brennbar', boil: 'über 130', lel: null, uel: null, vapDens: null },
+    plume: false,
+    gefahren: [
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Verursacht schwere Verätzungen an Augen, Haut und Schleimhäuten (H314). Kontakt sofort mindestens 30 Minuten mit Wasser spülen (ERG).' },
+      { c: '#0e7490', t: 'Verdünnen', x: 'Mit Wasser entsteht Wärme, die lokal zum Sieden und Spritzen führen kann (CAMEO). Löst sich in Wasser, schwerer als Wasser (Dichte 1,5). Nimmt Kohlendioxid aus der Luft auf und bildet Krusten.' },
+      { c: '#ea580c', t: 'Brand und Metalle', x: 'Nicht brennbar. Kontakt mit Metallen, vor allem Aluminium, Zink und Zinn, kann brennbaren Wasserstoff freisetzen (ERG). Behälter können bei Erwärmung bersten.' },
+      { c: '#475569', t: 'Umwelt', x: 'Löschwasser und Abfluss können ätzend sein (ERG). Abfluss in Gewässer, Kanalisation und Keller verhindern. Kein relevanter Dampf in der Umgebungsluft, deshalb keine Ausbreitungskeule.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz bei Brand. Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Beschädigte Behälter und ausgelaufenes Material nur mit geeigneter Schutzkleidung berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Mit TROCKENER Erde, trockenem Sand oder anderem nicht brennbarem Material abdecken und aufnehmen.', 'KEIN WASSER IN BEHÄLTER.'],
+      brand: ['Der Stoff brennt nicht. Löschmittel auf die Umgebung abstimmen.', 'Kleinbrand: Pulver, CO2 oder Sprühwasser. Großbrand: Pulver, CO2, alkoholbeständiger Schaum oder Sprühwasser.', 'Unbeschädigte Behälter wenn möglich aus dem Brandbereich bringen. Löschwasser eindeichen.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, kein Wasser in Behälter, bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { kind: 'ERPG', unit: 'mg', status: 'laut CAMEO Chemicals (AIHA, 2022), für Natriumhydroxid gibt es keine AEGL', t: '1 h (Richtwert)', a1: 0.5, a2: 5, a3: 50, edition: 'AIHA', note: 'Die Werte sind in mg/m³ angegeben und gelten für Nebel. Für Natronlauge wird keine Keule gerechnet.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Sodium hydroxide solution', u: 'https://cameochemicals.noaa.gov/chemical/1499', f: 'Siedepunkt, Dichte, ERPG 0,5 / 5 / 50 mg/m³, keine AEGL, Gefahrentexte' },
+      { t: 'ERG Leitfaden 154 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_154.pdf', f: 'Absperrung 50 m, Brand 800 m, Maßnahmen. UN 1824 steht nicht in Tabelle 1' },
+      { t: 'ADR 2025, UN 1824 Natriumhydroxidlösung (Gefahrgut-Manager)', u: 'https://www.gefahrgutmanager.de/adr/un-1824-natronlauge', f: 'Klasse 8, Gefahrnummer 80, Verpackungsgruppe II oder III' },
+      { t: 'Merck, Natriumhydroxid-Lösung ca. 32 %', u: 'https://www.merckmillipore.com/DE/de/product/Sodium-hydroxide-solution-about-320-0,MDA_CHEM-105590', f: 'H290, H314' }
+    ]
+  },
+  hno3: {
+    id: 'hno3', name: 'Salpetersäure (65 bis 70 %)', formula: 'HNO3 (wässrig)', cas: '7697-37-2', un: '2031', kemler: '85', klasse: '8 (5.1)', vg: 'II', molMass: 63,
+    erg: { guide: '157', title: 'Giftige und/oder ätzende Stoffe (nicht brennbar, wasserempfindlich)', isolate: 50, spillDownwind: null, fire: 800 },
+    ghs: ['GHS03', 'GHS05'], signal: 'Gefahr',
+    h: [['H272', 'Kann Brand verstärken, Oxidationsmittel.'], ['H290', 'Kann gegenüber Metallen korrosiv sein.'], ['H314', 'Verursacht schwere Verätzungen der Haut und schwere Augenschäden.']],
+    hNote: 'Einstufung laut Sicherheitsdatenblättern (TU Braunschweig, Roth) für 65 bis unter 70 %. Einzelne Datenblätter nennen zusätzlich H331 oder H318.',
+    props: { flash: null, fire: 'nicht brennbar, wirkt oxidierend', boil: 83, lel: null, uel: null, vapDens: null },
+    gefahren: [
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Verursacht schwere Verätzungen (H314). Dämpfe sind giftig und ätzend, kann beim Einatmen schwere Atemwegsschäden verursachen (ERG). Lebensgefahr bei höheren Konzentrationen (NFPA Gesundheit 4).' },
+      { c: '#ea580c', t: 'Oxidationswirkung', x: 'Oberhalb von 65 % wirkt der Stoff als Oxidationsmittel und kann brennbare Stoffe entzünden, zum Beispiel Alkohole, Amine, Kohlenwasserstoffe, Metallpulver (CAMEO, ERG: auch Leitfaden 140 beachten).' },
+      { c: '#0e7490', t: 'Reaktion mit Wasser', x: 'Mit Wasser reagiert der Stoff heftig unter Wärme, Dämpfen und Spritzern (CAMEO). Raucht an der Luft. Kontakt mit Metallen kann brennbaren Wasserstoff freisetzen.' },
+      { c: '#475569', t: 'Umwelt', x: 'Löschwasser und Abfluss können ätzend und giftig sein (ERG). Abfluss in Gewässer, Kanalisation und Keller verhindern.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Beschädigte Behälter und ausgelaufenes Material nur mit geeigneter Schutzkleidung berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Sprühwasser kann Dämpfe niederschlagen. Kein Wasser direkt aufs Leck, auf die Lache oder in den Behälter.', 'Brennbares Material (Holz, Papier, Öl) fernhalten.', 'Kleines Leck: mit TROCKENER Erde, trockenem Sand oder anderem nicht brennbarem Material abdecken, dann mit Folie gegen Ausbreitung und Regen schützen.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.'],
+      brand: ['Hinweis: Manche Schäume reagieren mit dem Stoff und setzen ätzende oder giftige Gase frei.', 'Kleinbrand: CO2, Pulver, trockener Sand oder alkoholbeständiger Schaum.', 'Großbrand: Sprühstrahl, Nebel oder alkoholbeständiger Schaum, keinen Vollstrahl aufs Produkt richten. Abfluss eindeichen.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, kein Wasser in den Behälter, bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { kind: 'AEGL', status: 'laut CAMEO Chemicals (NAC/NRC, final)', t: '60 min', a1: 0.16, a2: 24, a3: 92, edition: 'NAC/NRC, 2024', note: 'Die Quellstärke muss die Einsatzleitung schätzen. ERPG-1/2/3 liegen bei 1 / 10 / 78 ppm (AIHA).' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Nitric acid, other than red fuming', u: 'https://cameochemicals.noaa.gov/chemical/19337', f: 'Siedepunkt, Molmasse, AEGL 60 min: 0,16 / 24 / 92 ppm, ERPG, Gefahrentexte' },
+      { t: 'ERG Leitfaden 157 (CAMEO-Auszug), UN 2031', u: 'https://cameochemicals.noaa.gov/unna/2031', f: 'Absperrung 50 m, Brand 800 m. UN 2031 steht nicht in Tabelle 1' },
+      { t: 'ADR 2025, UN 2031 Salpetersäure (Gefahrgut-Manager)', u: 'https://www.gefahrgutmanager.de/adr/un-2031-salpetersaeure', f: 'Klasse 8, 65 bis 70 % Säure: Gefahrnummer 85, Verpackungsgruppe II, Gefahrzettel 8+5.1' },
+      { t: 'Sicherheitsdatenblatt Salpetersäure (TU Braunschweig)', u: 'https://www.tu-braunschweig.de/fileadmin/Redaktionsgruppen/Stabsstellen/ZLCHEM/zl2123-sdb.pdf', f: 'H272, H290, H314' }
+    ]
+  },
+  h2o2: {
+    id: 'h2o2', name: 'Wasserstoffperoxid (20 bis 60 %)', formula: 'H2O2 (wässrig)', cas: '7722-84-1', un: '2014', kemler: '58', klasse: '5.1 (8)', vg: 'II', molMass: 34.02,
+    erg: { guide: '140', title: 'Oxidationsmittel', isolate: 50, spillDownwind: 100, fire: 800 },
+    ghs: ['GHS05', 'GHS07'], signal: 'Gefahr',
+    h: [['H302', 'Gesundheitsschädlich bei Verschlucken.'], ['H318', 'Verursacht schwere Augenschäden.'], ['H332', 'Gesundheitsschädlich bei Einatmen.']],
+    hNote: 'Einstufung laut Sicherheitsdatenblatt Hedinger für eine 30-%-Lösung. Je nach Hersteller und Konzentration kommen H271 (oxidierend), H314 oder H335 hinzu. Die ADR-Einstufung nennt Klasse 5.1 mit Nebengefahr ätzend.',
+    props: { flash: null, fire: 'nicht brennbar, beschleunigt aber Brände (Oxidator)', boil: 150, lel: null, uel: null, vapDens: null },
+    plume: false,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Beschleunigt Brände, kann brennbare Stoffe (Holz, Papier, Öl, Kleidung) entzünden. Behälter können bei Erwärmung oder Verunreinigung bersten. Zersetzung setzt viel Wärme und Sauerstoff frei (CAMEO). Lösungsmittel wie Aceton und Ethanol können mit Peroxid ab 30 % detonieren.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Einatmen, Verschlucken und Kontakt mit Dämpfen oder Substanz kann schwere Verletzungen, Verbrennungen oder den Tod verursachen (ERG). Verursacht schwere Augenschäden (H318).' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Mit Wasser mischbar, schwerer als Wasser (Dichte 1,11). Kein relevanter Dampf in der Umgebungsluft, deshalb keine Ausbreitungskeule.' },
+      { c: '#475569', t: 'Umwelt', x: 'Löschwasser und Abfluss können die Umwelt belasten (ERG). Abfluss in Gewässer, Kanalisation und Keller verhindern.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Brennbares Material (Holz, Papier, Öl) fernhalten.', 'Beschädigte Behälter und ausgelaufenes Material nur mit geeigneter Schutzkleidung berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Kein Wasser in Behälter.', 'Kleines Flüssigkeitsleck: mit nicht brennbarem Material wie Vermiculit oder Sand aufnehmen und in Behälter füllen.', 'Großes Leck: weit vor der Flüssigkeit eindämmen.'],
+      brand: ['Wasser einsetzen. Keine Löschpulver oder Schäume. CO2 oder Halon wirken nur begrenzt.', 'Großbrand: Brandbereich aus der Entfernung mit Wasser fluten.', 'Unbeschädigte Behälter wenn möglich aus dem Brandbereich bringen. Bei Hitzeeinwirkung Ladung und Fahrzeug nicht bewegen.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, bis lange nach dem Löschen kühlen. Immer Abstand zu Tanks halten, die in Flammen stehen.']
+    },
+    aegl: { kind: 'ERPG', status: 'laut CAMEO Chemicals (AIHA, 2022), für Wasserstoffperoxid gibt es keine AEGL', t: '1 h (Richtwert)', a1: 10, a2: 50, a3: 100, edition: 'AIHA', note: 'Wasserstoffperoxid verdampft bei Umgebungstemperatur kaum (Dampfdruck 1 mmHg bei 15 °C), deshalb wird keine Keule gerechnet.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Hydrogen peroxide, aqueous solution (20 bis 60 %)', u: 'https://cameochemicals.noaa.gov/chemical/890', f: 'Siedepunkt, Dichte, Molmasse, ERPG 10 / 50 / 100 ppm, keine AEGL' },
+      { t: 'ERG Leitfaden 140 (CAMEO-Auszug), UN 2014', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_140.pdf', f: 'Absperrung 50 m, großes Leck 100 m, Brand 800 m, Maßnahmen. UN 2014 steht nicht in Tabelle 1' },
+      { t: 'ADR 2025, UN 2014 Wasserstoffperoxid (Gefahrgut-Manager)', u: 'https://www.gefahrgutmanager.de/adr/un-2014-wasserstoffperoxid', f: 'Klasse 5.1, Gefahrnummer 58' },
+      { t: 'Sicherheitsdatenblatt Wasserstoffperoxid-Lösung 30 % (Hedinger)', u: 'https://www.hedinger.de/fileadmin/content/04_Downloads/Sicherheitsdatenblaetter/Wasserstoffperoxid-Loesung__eSDB-GER__30__v025.pdf', f: 'H302, H332, H318' }
     ]
   }
 };
