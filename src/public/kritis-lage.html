@@ -439,12 +439,17 @@ function download(name, text, type) {
 const obj = id => state.objects[id] || (state.objects[id] = { status: 'unbekannt' });
 
 let saveTimer;
+window.addEventListener('pagehide', () => { if (saveTimer) { clearTimeout(saveTimer); saveNow(); } });
 function save() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
+  saveTimer = setTimeout(saveNow, 300);
+}
+function saveNow() {
+  saveTimer = 0;
+  {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
     catch (e) { try { const s = Object.assign({}, state, { pois: {}, layerLoaded: {} }); localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e2) { /* Speicher nicht verfügbar */ } }
-  }, 300);
+  }
 }
 
 /* Geometrie */
@@ -795,6 +800,7 @@ function poiPopup(p) {
     affected.has(p.id) ? el('div', { class: 'notice', text: 'Hängt laut manueller Verknüpfung von einem ausgefallenen Objekt ab.' }) : null,
     el('label', { text: 'Ansprechpartner' }), contact,
     el('label', { text: 'Notiz' }), note,
+    personsBox(p),
     outgoing.length ? el('div', { class: 'hint', text: 'Versorgt: ' + outgoing.map(d => d.toName).join(', ') }) : null,
     incoming.length ? el('div', { class: 'hint', text: 'Versorgt durch: ' + incoming.map(d => d.fromName).join(', ') }) : null,
     el('div', { class: 'row' },
@@ -803,6 +809,24 @@ function poiPopup(p) {
       p.manual ? el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { map.closePopup(); removeManualPoi(p); } })
                : el('a', { href: 'https://www.openstreetmap.org/' + p.osm, target: '_blank', rel: 'noopener', text: 'OSM-Objekt' })));
   return wrap;
+}
+
+function personsBox(p) {
+  const o = obj(p.id); o.persons = o.persons || {};
+  const grid = el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-top:4px' });
+  Object.entries(CAS).forEach(([k, v]) => {
+    const inp = el('input', { type: 'number', min: '0', step: '1', value: o.persons[k] || '', placeholder: '0', style: 'width:100%', oninput: ev => {
+      const n = Math.max(0, Math.round(+ev.target.value || 0)); if (n) o.persons[k] = n; else delete o.persons[k];
+      renderCas(); renderList(); save(); } });
+    grid.append(el('label', { style: 'margin:0' }, v.label, inp));
+  });
+  const d = el('details', {}, el('summary', { text: 'Personen am Objekt' }), grid);
+  if (Object.keys(o.persons).length) d.open = true;
+  return d;
+}
+function personsText(id) {
+  const pe = (state.objects[id] || {}).persons; if (!pe) return '';
+  return Object.entries(CAS).filter(([k]) => pe[k]).map(([k, v]) => v.label + ' ' + pe[k]).join(', ');
 }
 
 /* Abhängigkeiten */
@@ -955,7 +979,12 @@ const inArea = (lat, lng) => !state.area || state.area.rings.some(r => pip(lat, 
 function casTotals() {
   const t = Object.fromEntries(Object.keys(CAS).map(k => [k, 0])); let outside = 0;
   state.casualties.forEach(c => { if (c.lat != null && !inArea(c.lat, c.lng)) outside++; else t[c.cat] += c.n; });
-  return { t, outside };
+  const ot = Object.fromEntries(Object.keys(CAS).map(k => [k, 0]));
+  Object.values(state.pois).forEach(p => {
+    const pe = (state.objects[p.id] || {}).persons; if (!pe || !inArea(p.lat, p.lng)) return;
+    Object.keys(CAS).forEach(k => { const n = pe[k] || 0; t[k] += n; ot[k] += n; });
+  });
+  return { t, outside, ot };
 }
 function addCas(lat, lng) {
   const cat = $('#casCat').value, n = Math.max(0, Math.round(parseFloat($('#casN').value) || 0));
@@ -966,9 +995,9 @@ function addCas(lat, lng) {
   renderCas(); save();
 }
 function renderCas() {
-  const { t, outside } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
-  Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, el('b', { text: String(t[k]) }), el('span', { text: v.label }))));
-  $('#casHint').textContent = (state.area ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb des Gebiets.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '');
+  const { t, outside, ot } = casTotals(), tiles = $('#casTiles'); tiles.replaceChildren();
+  Object.entries(CAS).forEach(([k, v]) => tiles.append(el('div', { class: 'tile', style: '--c:' + v.color }, el('b', { text: String(t[k]) }), el('span', { text: v.label + (ot[k] ? ' (davon ' + ot[k] + ' an Objekten)' : '') }))));
+  $('#casHint').textContent = (state.area ? 'Gezählt: Einträge ohne Ort und Einträge innerhalb des Gebiets.' : 'Noch kein Gebiet gewählt, es zählen alle Einträge.') + (outside ? ' ' + outside + ' Eintrag/Einträge außerhalb sind nicht enthalten.' : '') + ' Zahlen an Objekten (Objekt-Popup) werden zu den Einträgen addiert: denselben Fall nicht an beiden Stellen erfassen.';
   const list = $('#casList'); list.replaceChildren();
   if (!state.casualties.length) list.append(el('div', { class: 'hint', text: 'Noch keine Einträge.' }));
   state.casualties.slice().reverse().forEach(c => {
@@ -1100,7 +1129,7 @@ function renderList() {
     const o = state.objects[p.id] || {}, st = STATUS[o.status || 'unbekannt'];
     const tr = el('tr', { class: 'clickable', onclick: () => { map.setView([p.lat, p.lng], Math.max(map.getZoom(), 16)); const m = markers[p.id]; if (m) { groups[p.layer].zoomToShowLayer(m, () => m.openPopup()); } } },
       el('td', { text: poiTitle(p) }), el('td', { text: LAYER_BY_ID[p.layer].name }),
-      el('td', {}, el('span', { class: 'dot', style: 'background:' + st.color }), ' ' + st.label + (affected.has(p.id) ? ' (betroffen?)' : '')));
+      el('td', {}, el('span', { class: 'dot', style: 'background:' + st.color }), ' ' + st.label + (affected.has(p.id) ? ' (betroffen?)' : ''), personsText(p.id) ? el('div', { class: 'hint', text: personsText(p.id) }) : null));
     body.append(tr);
   });
 }
@@ -1138,10 +1167,10 @@ $('#btnReset').onclick = () => { if (confirm('Gesamte Lage unwiderruflich lösch
 
 function csvCell(v) { v = v == null ? '' : String(v); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
 $('#btnCsv').onclick = () => {
-  const head = ['OSM-ID', 'Sektor', 'Art', 'Name', 'Adresse', 'Status', 'Status seit', 'Möglicherweise betroffen', 'Ansprechpartner', 'Notiz', 'Breite', 'Länge', 'Link'];
+  const head = ['OSM-ID', 'Sektor', 'Art', 'Name', 'Adresse', 'Status', 'Status seit', 'Möglicherweise betroffen', 'Ansprechpartner', 'Notiz', 'Personen', 'Breite', 'Länge', 'Link'];
   const rows = Object.values(state.pois).map(p => {
     const o = state.objects[p.id] || {}, l = LAYER_BY_ID[p.layer];
-    return [p.manual ? 'manuell' : p.osm, SECTORS[l.sector].name, l.name, poiTitle(p), p.addr, STATUS[o.status || 'unbekannt'].label, o.statusTime || '', affected.has(p.id) ? 'ja' : '', o.contact, o.note, p.lat, p.lng, p.manual ? '' : 'https://www.openstreetmap.org/' + p.osm];
+    return [p.manual ? 'manuell' : p.osm, SECTORS[l.sector].name, l.name, poiTitle(p), p.addr, STATUS[o.status || 'unbekannt'].label, o.statusTime || '', affected.has(p.id) ? 'ja' : '', o.contact, o.note, personsText(p.id), p.lat, p.lng, p.manual ? '' : 'https://www.openstreetmap.org/' + p.osm];
   });
   download('objekte-' + stamp() + '.csv', '﻿' + [head, ...rows].map(r => r.map(csvCell).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
 };
