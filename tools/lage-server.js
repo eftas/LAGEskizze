@@ -2,10 +2,9 @@
 /*
  * Kleiner Server für die Live-Freigabe der Lagekarte (keine Abhängigkeiten, nur Node.js).
  *
- *   node lage-server.js                             sucht kritis-lage-offline.html neben dem Skript, Port 8080, zufällige PIN
- *   node tools/lage-server.js --port 9000 --pin 4711
- *   node tools/lage-server.js --file src/public/kritis-lage.html
- *   node tools/lage-server.js --no-pin              ohne PIN (nur in einem abgeschotteten Netz)
+ *   node lage-server.js                             sucht kritis-lage-offline.html neben dem Skript, Port 8080
+ *   node lage-server.js --port 9000
+ *   node lage-server.js --file C:\\Lage\\kritis-lage-offline.html
  *
  * Ablauf: Auf diesem Rechner http://localhost:PORT öffnen. Dort wird die Karte bearbeitet und jeder
  * Stand an den Server übergeben. Andere Geräte im selben Netz öffnen den Link aus dem QR-Code
@@ -29,7 +28,6 @@ const FILE = (() => {
   process.exit(1);
 })();
 const ROOT = path.dirname(FILE);
-const PIN = process.argv.includes('--no-pin') ? '' : String(arg('pin', String(crypto.randomInt(1000, 10000))));
 const STORE = path.join(__dirname, 'lage-live.json');   // zuletzt übergebener Stand, liegt neben dem Skript
 const MAX_BODY = 40 * 1024 * 1024;
 
@@ -42,18 +40,16 @@ const lanUrls = () => {
   Object.values(os.networkInterfaces()).forEach(list => (list || []).forEach(i => { if (i.family === 'IPv4' && !i.internal) out.push('http://' + i.address + ':' + PORT); }));
   return out;
 };
-// Nur Anfragen vom Rechner selbst (Loopback) dürfen Stände einliefern. Alle anderen brauchen die PIN und dürfen nur lesen.
+// Nur Anfragen vom Rechner selbst (Loopback) dürfen Stände einliefern. Alle anderen Geräte im Netz dürfen nur lesen (ohne PIN).
 const isLocal = req => { const a = (req.socket.remoteAddress || '').replace(/^::ffff:/, ''); return a === '127.0.0.1' || a === '::1'; };
-const pinOk = (req, url) => isLocal(req) || !PIN || url.searchParams.get('k') === PIN;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.ico': 'image/x-icon' };
 const send = (res, code, body, type) => { res.writeHead(code, { 'Content-Type': type || 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body)); };
 const notify = () => clients.forEach(c => c.write('data: ' + JSON.stringify({ rev: live.rev }) + '\n\n'));
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
-  if (url.pathname === '/api/info') return send(res, 200, { server: true, master: isLocal(req), pin: isLocal(req) ? PIN : undefined, pinRequired: !!PIN, urls: lanUrls(), viewers: clients.size, rev: live.rev });
+  if (url.pathname === '/api/info') return send(res, 200, { server: true, master: isLocal(req), urls: lanUrls(), viewers: clients.size, rev: live.rev });
   if (url.pathname === '/api/state' && req.method === 'GET') {
-    if (!pinOk(req, url)) return send(res, 403, { error: 'PIN falsch' });
     return send(res, 200, live);
   }
   if (url.pathname === '/api/state' && req.method === 'POST') {
@@ -71,7 +67,6 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === '/api/events') {
-    if (!pinOk(req, url)) return send(res, 403, { error: 'PIN falsch' });
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' });
     res.write('retry: 3000\ndata: ' + JSON.stringify({ rev: live.rev }) + '\n\n');
     if (!isLocal(req)) clients.add(res);
@@ -88,7 +83,7 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log('Lagekarte, Live-Freigabe');
   console.log('  Karte bearbeiten (auf diesem Rechner): http://localhost:' + PORT + '/');
-  lanUrls().forEach(u => console.log('  Ansicht für andere Geräte:             ' + u + '/?ansicht=1' + (PIN ? '&k=' + PIN : '')));
-  console.log('  PIN: ' + (PIN || 'keine') + '   Datei: ' + FILE);
+  lanUrls().forEach(u => console.log('  Ansicht für andere Geräte:             ' + u + '/?ansicht=1' + ''));
+  console.log('  Datei: ' + FILE + '   (ohne PIN: jedes Gerät im Netz kann lesen)');
   console.log('  Beenden mit Strg+C. Die Windows-Firewall fragt beim ersten Start nach Zugriff im privaten Netz.');
 });

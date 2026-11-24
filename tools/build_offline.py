@@ -81,6 +81,22 @@ for f in sorted(os.listdir(symdir)):
     uris[f[:-4]] = 'data:image/svg+xml;base64,' + base64.b64encode(t.encode()).decode()
 html = re.sub(r'<!-- Taktische Zeichen.*?-->\s*<script src="images/symbols/symbols.js"[^>]*></script>',
               lambda m: '<script>' + symjs.replace('</script', '<\\/script') + '\nwindow.SYMBOL_URIS=' + json.dumps(uris) + ';</script>', html, flags=re.S)
+# Zusatzzeichen (Jonas Köritz) und DV-102-Generator (Philipp Jardas) einbetten
+tzdir = os.path.join(os.path.dirname(symdir), 'symbols-tz')
+if os.path.isdir(tzdir):
+    tzjs = open(os.path.join(tzdir, 'symbols-tz.js'), encoding='utf-8').read().replace('</script', '<\\/script')
+    tzuris = {}
+    for dp, dn, fn in os.walk(tzdir):
+        for f in fn:
+            if f.endswith('.svg'):
+                rel = os.path.relpath(os.path.join(dp, f), tzdir).replace(os.sep, '/')[:-4]
+                tzuris['tz/' + rel] = 'data:image/svg+xml;base64,' + base64.b64encode(open(os.path.join(dp, f), 'rb').read()).decode()
+    html = html.replace('<script src="images/symbols-tz/symbols-tz.js"></script>', '<script>' + tzjs + '\nObject.assign(window.SYMBOL_URIS,' + json.dumps(tzuris) + ');</script>')
+libdir = os.path.join(os.path.dirname(symdir), '..', 'lib')
+def inline_local(m):
+    f = os.path.join(os.path.dirname(os.path.abspath(a.src)), m.group(1))
+    return '<script>' + open(f, encoding='utf-8').read().replace('</script', '<\\/script') + '</script>'
+html = re.sub(r'<script src="(lib/[^"]+)"></script>', inline_local, html)
 
 # ---- Daten einbetten (vor dem Hauptskript) ----
 blob = json.dumps(D, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')

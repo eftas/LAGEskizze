@@ -92,6 +92,7 @@ textarea { width: 100%; resize: vertical; }
 .sector { border: 1px solid var(--line); border-radius: 4px; margin-bottom: 8px; }
 .sector > .head { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f3f5f8; }
 .sector > .head label { flex: 1; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+#btnShare { display: none; }
 body.viewer #qat, body.viewer #btnAddPoi, body.viewer #btnShare, body.viewer .editonly,
 body.viewer #tabs [data-tab="gebiet"], body.viewer #tabs [data-tab="ebenen"], body.viewer #tabs [data-tab="keule"], body.viewer #tabs [data-tab="lage"], body.viewer #tabs [data-tab="daten"] { display: none !important; }
 body.beamer #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr; }
@@ -411,7 +412,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <div class="row"><button class="btn danger" id="btnReset">Gesamte Lage löschen</button></div>
       <h2>Quellen</h2>
       <div class="hint" id="dataInfo"></div>
-      <div class="hint">Objektdaten: OpenStreetMap-Mitwirkende (ODbL), abgefragt über die Overpass API. Gebietssuche: Nominatim. Kartengrundlagen: OpenStreetMap, Geobasis NRW (dl-de/by-2-0). Taktische Zeichen aus dem Repository LAGEskizze.</div>
+      <div class="hint">Objektdaten: OpenStreetMap-Mitwirkende (ODbL), abgefragt über die Overpass API. Gebietssuche: Nominatim. Kartengrundlagen: OpenStreetMap, Geobasis NRW (dl-de/by-2-0). Taktische Zeichen: LAGEskizze (MIT), Jonas Köritz (CC BY 4.0, github.com/jonas-koeritz/Taktische-Zeichen) und Philipp Jardas (MIT, github.com/phjardas/taktische-zeichen). Einzelheiten in images/LICENSES-symbole.md.</div>
     </section>
   </aside>
 
@@ -430,6 +431,8 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1" crossorigin="anonymous"></script>
 <!-- Taktische Zeichen aus dem Repository. Datei muss in src/public liegen, sonst fehlt nur die Zeichenpalette. -->
 <script src="images/symbols/symbols.js" onerror="window.symbolsMissing=true"></script>
+<script src="images/symbols-tz/symbols-tz.js"></script>
+<script src="lib/tz-core.min.js"></script>
 
 <script>
 (function () {
@@ -525,7 +528,7 @@ function freshState() {
 let state = freshState();
 const runtime = { sector: {}, mode: null, placing: null, drawPurpose: null, drawHandler: null, vis: new Set() };
 const qs = new URLSearchParams(location.search);
-runtime.viewer = qs.has('ansicht'); runtime.beamer = qs.has('beamer'); runtime.pin = qs.get('k') || '';
+runtime.viewer = qs.has('ansicht'); runtime.beamer = qs.has('beamer');
 if (runtime.viewer) document.body.classList.add('viewer');
 if (runtime.beamer) document.body.classList.add('beamer');
 const PAL = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#475569'];
@@ -1282,7 +1285,7 @@ function renderDeps() {
 /* ------------------------------------------------------------------ */
 /* Taktische Zeichen, Abschnitte, Journal                              */
 /* ------------------------------------------------------------------ */
-const symUrl = n => (window.SYMBOL_URIS && window.SYMBOL_URIS[n]) || 'images/symbols/' + encodeURI(n) + '.svg';
+const symUrl = n => (window.SYMBOL_URIS && window.SYMBOL_URIS[n]) || (n.startsWith('tz/') ? 'images/symbols-tz/' + encodeURI(n.slice(3)) + '.svg' : 'images/symbols/' + encodeURI(n) + '.svg');
 function symIcon(name) {
   return L.icon({ iconUrl: symUrl(name), iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -22] });
 }
@@ -1358,6 +1361,7 @@ function buildPalette() {
   }
   sel.append(el('option', { value: '', text: 'alle Kategorien' }));
   symbolProperties.categories.forEach(c => sel.append(el('option', { value: c.id, text: c.name })));
+  sel.value = String(symbolProperties.categories[0].id);
   const draw = () => {
     const q = $('#symQ').value.trim().toLowerCase(), cat = sel.value, grid = $('#symGrid'); grid.replaceChildren();
     symbolProperties.symbols.filter(s => (!cat || String(s.category) === cat) && (!q || (s.title + ' ' + s.name).toLowerCase().includes(q))).forEach(s => {
@@ -2089,7 +2093,7 @@ async function pushLive() {
   const vis = {}; visiblePois().forEach(p => { if (p.manual || state.layerOn[p.layer]) vis[p.id] = p; });
   const share = Object.assign({}, state, { pois: vis, loaded: {}, journal: state.journal.slice(0, 300) });
   try {
-    const r = await fetch('/api/state?k=' + encodeURIComponent(runtime.live.pin || ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: share }) });
+    const r = await fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: share }) });
     runtime.live.ok = r.ok; if (r.ok) runtime.live.rev = (await r.json()).rev;
   } catch (e) { runtime.live.ok = false; }
   updateBadge();
@@ -2108,15 +2112,14 @@ async function liveInit() {
     runtime.server = j;
     if (runtime.viewer) { openTab('objekte'); viewerStart(); }
     else if (j.master) {
-      runtime.live = { pin: j.pin || '', urls: j.urls || [], ok: null, viewers: j.viewers || 0 }; pushLive();
+      runtime.live = { urls: j.urls || [], ok: null, viewers: j.viewers || 0 }; $('#btnShare').style.display = 'inline-block'; pushLive();
       setInterval(async () => { try { const i = await (await fetch('/api/info', { cache: 'no-store' })).json(); runtime.live.viewers = i.viewers; runtime.live.urls = i.urls || runtime.live.urls; updateBadge(); } catch (e) { runtime.live.ok = false; updateBadge(); } }, 5000);
     }
   } catch (e) { if (runtime.viewer) { runtime.connected = false; updateBadge(); } }
 }
 async function viewerFetch() {
   try {
-    const r = await fetch('/api/state?k=' + encodeURIComponent(runtime.pin), { cache: 'no-store' });
-    if (r.status === 403) { say('PIN falsch oder fehlt. Bitte den Link aus dem QR-Code verwenden.', 0); runtime.connected = false; updateBadge(); return; }
+    const r = await fetch('/api/state', { cache: 'no-store' });
     const j = await r.json(); runtime.connected = true;
     if (j.state && j.rev !== runtime.rev) { runtime.rev = j.rev; runtime.stand = j.time; applyRemote(j.state); }
     else if (!j.state) { say('Noch kein Stand vom Server-Rechner empfangen.', 4000); }
@@ -2133,7 +2136,7 @@ function applyRemote(data) {
 function viewerStart() {
   viewerFetch();
   try {
-    const es = new EventSource('/api/events?k=' + encodeURIComponent(runtime.pin));
+    const es = new EventSource('/api/events');
     es.onmessage = () => viewerFetch();
     es.onerror = () => { runtime.connected = false; updateBadge(); };
     es.onopen = () => { runtime.connected = true; updateBadge(); };
@@ -2149,23 +2152,13 @@ function openShare() {
   const dlg = el('div', { class: 'dlg', role: 'dialog', 'aria-modal': 'true' }, body);
   dlg.addEventListener('mousedown', e => { if (e.target === dlg) close(); });
   dlg.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } });
-  if (!runtime.live) {
-    body.append(
-      el('p', { text: 'Damit andere Geräte dieselbe laufende Lagekarte sehen, muss ein kleiner Server auf diesem Rechner laufen. Eine einzelne HTML-Datei kann von anderen Geräten nicht erreicht werden.' }),
-      el('ol', {}, el('li', { text: 'Node.js auf diesem Rechner installieren (einmalig, nodejs.org).' }),
-        el('li', {}, 'Im Ordner der Lagekarte starten: ', el('code', { text: 'node tools/lage-server.js' })),
-        el('li', { text: 'Die Karte auf diesem Rechner über http://localhost:8080 öffnen, nicht als Datei.' }),
-        el('li', { text: 'Hier erneut auf „Teilen“ klicken: Der QR-Code erscheint.' })),
-      el('p', { class: 'hint', text: 'Der Server arbeitet nur im lokalen Netz (zum Beispiel Einsatz-WLAN). Die Windows-Firewall fragt beim ersten Start nach Zugriff im privaten Netz.' }),
-      el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Schließen', onclick: close })));
-    document.body.append(dlg); dlg.querySelector('button.primary').focus(); return;
-  }
+  if (!runtime.live) return;
   const urls = runtime.live.urls.length ? runtime.live.urls : [location.origin];
   const sel = el('select', { 'aria-label': 'Adresse' }, urls.map(u => el('option', { value: u, text: u })));
   const beam = el('input', { type: 'checkbox' });
   const qrBox = el('div', { style: 'width:min(280px,70vw);margin:8px auto;background:#fff' }), link = el('input', { type: 'text', readonly: 'readonly' });
   const build = () => {
-    const url = sel.value + '/?ansicht=1' + (runtime.live.pin ? '&k=' + runtime.live.pin : '') + (beam.checked ? '&beamer=1' : '');
+    const url = sel.value + '/?ansicht=1' + (beam.checked ? '&beamer=1' : '');
     link.value = url; qrBox.replaceChildren();
     try { const qr = qrcode(0, 'M'); qr.addData(url); qr.make(); qrBox.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); qrBox.firstChild.setAttribute('role', 'img'); qrBox.firstChild.setAttribute('aria-label', 'QR-Code zur Ansicht'); qrBox.firstChild.style.width = '100%'; qrBox.firstChild.style.height = 'auto'; }
     catch (e) { qrBox.textContent = 'QR-Code nicht möglich: ' + e.message; }
@@ -2179,7 +2172,7 @@ function openShare() {
     urls.length > 1 ? el('div', { class: 'row' }, el('label', { text: 'Adresse dieses Rechners', for: 'x' }), sel) : null,
     qrBox, el('div', { class: 'row' }, link, el('button', { class: 'btn small', text: 'Kopieren', onclick: () => copyText(link.value, 'Link kopiert') })),
     el('div', { class: 'row' }, el('label', {}, beam, ' Beamer-Ansicht (Vollbild ohne Leisten)')),
-    el('div', { class: 'hint', text: runtime.live.pin ? 'PIN: ' + runtime.live.pin + ' (steckt im Link und im Code).' : 'Ohne PIN. Nur in einem abgeschotteten Netz verwenden.' }),
+    el('div', { class: 'hint', text: 'Ohne PIN: Jedes Gerät im selben Netz, das den Link kennt, kann die Lage lesen.' }),
     vw, el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Schließen', onclick: close })));
   document.body.append(dlg); dlg.querySelector('button.primary').focus();
 }
