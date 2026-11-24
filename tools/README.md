@@ -1,7 +1,7 @@
 # Werkzeuge
 
-- `extract_osm.py`: zieht aus einem OSM-Auszug (PBF) die Daten für die Offline-Karte.
-- `build_offline.py`: baut aus `src/public/kritis-lage.html` die eigenständige Datei `kritis-lage-einzeldatei.html`.
+- `build_offline.py`: baut aus `src/public/kritis-lage.html` die eigenständige Einzeldatei `kritis-lage-einzeldatei.html` (Bibliotheken, Schriften und Zeichen eingebettet).
+- `build_symbols.py`: erzeugt die zusätzlichen Taktischen Zeichen aus dem Repository jonas-koeritz/Taktische-Zeichen (CC BY 4.0).
 - `lage-server.js`: Live-Freigabe. Ein Rechner bearbeitet die Karte, andere Geräte im selben Netz sehen den Stand live (nur lesend).
 
 ## Live-Freigabe
