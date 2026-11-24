@@ -41,6 +41,13 @@ button { cursor: pointer; }
 .ctx-item img { width: 22px; height: 22px; flex: none; }
 .ctx-lb { flex: 1; }
 .ctx-ar, .ctx-ck { color: #5d6b7a; }
+#qat { display: flex; align-items: center; gap: 10px; padding-right: 10px; border-right: 1px solid rgba(255,255,255,.25); }
+.qb { display: inline-flex; border-radius: 4px; }
+header .qb button { background: none; border: 0; color: #fff; width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px 0 0 4px; }
+header .qb button.caret { width: 14px; border-radius: 0 4px 4px 0; }
+header .qb button:hover:not(:disabled) { background: rgba(255,255,255,.2); }
+header .qb button:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+header .qb button:disabled { opacity: .35; }
 header button:disabled { opacity: .4; cursor: default; }
 .dlg { position: fixed; inset: 0; background: rgba(15,42,71,.35); z-index: 3000; display: flex; align-items: center; justify-content: center; }
 .dlg > div { background: #fff; border-radius: 6px; padding: 14px; width: min(380px, 92vw); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
@@ -150,6 +157,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 .card .row { margin: 4px 0; }
 .card .row > * { flex: 1; min-width: 0; }
 .card .row > button { flex: none; }
+.card .row > label.prio { flex: none; display: inline-flex; align-items: center; gap: 4px; }
 .btn.wide { width: 100%; }
 @media (max-width: 860px) {
   #app { grid-template-columns: 1fr; grid-template-rows: 46px 1fr 46vh; transition: grid-template-rows .2s ease; }
@@ -174,14 +182,16 @@ table.list tr.clickable:hover { background: #f1f5fa; }
 <body>
 <div id="app">
   <header>
+    <div id="qat" role="toolbar" aria-label="Schnellzugriff">
+      <span class="qb"><button id="btnUndo" disabled aria-label="Rückgängig"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button><button id="btnUndoMenu" class="caret" disabled aria-label="Rückgängig-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
+      <span class="qb"><button id="btnRedo" disabled aria-label="Wiederholen"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button><button id="btnRedoMenu" class="caret" disabled aria-label="Wiederholen-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
+    </div>
     <h1>Lagekarte KRITIS</h1>
     <span id="hdrArea"></span>
     <span class="sp"></span>
     <div id="hdrCounts"></div>
     <span id="clock"></span>
     <button id="btnPanel" title="Seitenleiste ein- oder ausklappen (Umschalt+P)">Leiste</button>
-    <button id="btnUndo" disabled>Zurück</button>
-    <button id="btnRedo" disabled>Wiederholen</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
   </header>
@@ -276,7 +286,8 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <h2>Problem erfassen</h2>
       <div class="row"><input type="text" id="pTitle" placeholder="Kurzbeschreibung, z. B. Trinkwasser Stadtteil Mitte ausgefallen"></div>
       <div class="row">
-        <select id="pPrio"><option value="hoch">Priorität hoch</option><option value="mittel" selected>Priorität mittel</option><option value="niedrig">Priorität niedrig</option></select>
+        <label for="pPrio">Prio</label>
+        <input type="number" id="pPrio" min="1" step="1" value="2" style="max-width:70px" title="Priorität als Zahl ab 1, 1 = höchste">
         <input type="text" id="pOwner" placeholder="Zuständig">
       </div>
       <div class="row"><textarea id="pText" rows="2" placeholder="Einzelheiten, Maßnahmen, Rückfragen"></textarea></div>
@@ -284,7 +295,7 @@ table.list tr.clickable:hover { background: #f1f5fa; }
       <h2>Liste</h2>
       <div class="row">
         <select id="pfStatus"><option value="aktiv">offen und in Arbeit</option><option value="">alle</option><option value="offen">offen</option><option value="inArbeit">in Arbeit</option><option value="erledigt">erledigt</option></select>
-        <select id="pfPrio"><option value="">alle Prioritäten</option><option value="hoch">hoch</option><option value="mittel">mittel</option><option value="niedrig">niedrig</option></select>
+        <input type="number" id="pfPrio" min="1" step="1" placeholder="Prio bis" style="max-width:100px" title="Nur Probleme bis zu dieser Prio-Zahl anzeigen">
       </div>
       <div class="row"><input type="search" id="pfText" placeholder="Suchen"></div>
       <div class="hint" id="pInfo"></div>
@@ -471,6 +482,8 @@ const runtime = { sector: {}, mode: null, placing: null, drawPurpose: null, draw
 const PAL = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#475569'];
 const safeColor = (c, d) => /^#[0-9a-f]{6}$/i.test(c || '') ? c : (d || PAL[0]);
 
+const PRIO_OLD = { hoch: 1, mittel: 2, niedrig: 3 };
+function fixProblems(list) { (list || []).forEach(x => { x.prio = typeof x.prio === 'string' && PRIO_OLD[x.prio] ? PRIO_OLD[x.prio] : prioNum(x.prio); }); return list; }
 /* Version 1 (ein Gebiet) -> Version 2 (mehrere Gebiete) */
 function migrate(s) {
   if (!s || typeof s !== 'object') throw new Error('unbekanntes Format');
@@ -487,6 +500,7 @@ function migrate(s) {
   const d = freshState(); Object.keys(d).forEach(k => { if (s[k] === undefined) s[k] = d[k]; });
   s.areas.forEach(a => { a.color = safeColor(a.color); a.sections = undefined; delete a.sections; });
   s.sections.forEach(x => { x.color = safeColor(x.color, '#e11d48'); });
+  fixProblems(s.problems);
   return s;
 }
 
@@ -546,10 +560,11 @@ function commit(label) {
 }
 function updateUndoButtons() {
   const u = $('#btnUndo'), r = $('#btnRedo'); if (!u) return;
+  $('#btnUndoMenu').disabled = !hist.past.length; $('#btnRedoMenu').disabled = !hist.future.length;
   const pu = hist.past[hist.past.length - 1], fr = hist.future[hist.future.length - 1];
   u.disabled = !pu; r.disabled = !fr;
-  u.title = pu ? 'Rückgängig: ' + pu.label : 'Nichts rückgängig zu machen';
-  r.title = fr ? 'Wiederholen: ' + fr.label : 'Nichts zu wiederholen';
+  u.title = pu ? 'Rückgängig: ' + pu.label + ' (Strg+Z)' : 'Nichts rückgängig zu machen';
+  r.title = fr ? 'Wiederholen: ' + fr.label + ' (Strg+Y)' : 'Nichts zu wiederholen';
 }
 function undo() {
   commit('Änderung'); const e = hist.past.pop(); if (!e) return;
@@ -558,6 +573,18 @@ function undo() {
 function redo() {
   commit('Änderung'); const e = hist.future.pop(); if (!e) return;
   hist.past.push(e); restore(e.after); addJournal('Wiederholt: ' + e.label, true); updateUndoButtons();
+}
+function undoTo(n) {            // n Schritte auf einmal zurück (Liste wie in Word)
+  commit('Änderung'); n = Math.min(n, hist.past.length); if (!n) return;
+  const taken = []; for (let i = 0; i < n; i++) { const e = hist.past.pop(); hist.future.push(e); taken.push(e); }
+  restore(taken[taken.length - 1].before);
+  addJournal('Rückgängig: ' + taken[0].label + (n > 1 ? ' und ' + (n - 1) + ' weitere' : ''), true); updateUndoButtons();
+}
+function redoTo(n) {
+  commit('Änderung'); n = Math.min(n, hist.future.length); if (!n) return;
+  const taken = []; for (let i = 0; i < n; i++) { const e = hist.future.pop(); hist.past.push(e); taken.push(e); }
+  restore(taken[taken.length - 1].after);
+  addJournal('Wiederholt: ' + taken[0].label + (n > 1 ? ' und ' + (n - 1) + ' weitere' : ''), true); updateUndoButtons();
 }
 function restore(snap) {
   cancelEdit(); closeMenu(); stopDraw(); map.closePopup();
@@ -1307,7 +1334,9 @@ const CAS = {
   evakuiert: { label: 'Evakuierte',      short: 'E',  color: '#0369a1' },
   gerettet:  { label: 'Gerettete',       short: 'G',  color: '#15803d' }
 };
-const PRIO = { hoch: { label: 'hoch', color: '#dc2626', ord: 0 }, mittel: { label: 'mittel', color: '#f59e0b', ord: 1 }, niedrig: { label: 'niedrig', color: '#64748b', ord: 2 } };
+const PRIO_COL = ['#dc2626', '#ea580c', '#f59e0b', '#84cc16', '#64748b'];
+const prioNum = v => { const n = Math.round(parseFloat(v)); return n >= 1 ? n : 1; };
+const prioColor = n => PRIO_COL[Math.min(prioNum(n), PRIO_COL.length) - 1];
 const PSTAT = { offen: 'offen', inArbeit: 'in Arbeit', erledigt: 'erledigt' };
 
 function initOffline() {
@@ -1336,10 +1365,10 @@ function initNewUi() {
   $('#btnCasPlace').onclick = () => { stopDraw(); runtime.mode = 'cas'; $('#btnCasPlace').classList.add('active'); map.getContainer().style.cursor = 'crosshair'; say('Ort für die Zahl anklicken. Mehrfach möglich, Esc beendet.'); };
   $('#btnPAdd').onclick = () => {
     const t = $('#pTitle').value.trim(); if (!t) { $('#pTitle').focus(); return; }
-    addProblem({ title: t, text: $('#pText').value.trim(), prio: $('#pPrio').value, owner: $('#pOwner').value.trim() });
+    addProblem({ title: t, text: $('#pText').value.trim(), prio: prioNum($('#pPrio').value), owner: $('#pOwner').value.trim() });
     $('#pTitle').value = ''; $('#pText').value = '';
   };
-  ['pfStatus', 'pfPrio'].forEach(id => $('#' + id).addEventListener('change', renderProblems));
+  $('#pfStatus').addEventListener('change', renderProblems); $('#pfPrio').addEventListener('input', renderProblems);
   $('#pfText').addEventListener('input', renderProblems);
 }
 
@@ -1421,7 +1450,7 @@ function renderCas() {
 
 /* Problemliste */
 function addProblem(data) {
-  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 'mittel', status: 'offen', owner: '', time: new Date().toISOString() }, data);
+  const pr = Object.assign({ id: uid(), title: 'Neues Problem', text: '', prio: 2, status: 'offen', owner: '', time: new Date().toISOString() }, data);
   state.problems.unshift(pr); addJournal('Problem erfasst: ' + pr.title, true); renderProblems(); renderCounts(); save('Problem erfasst: ' + pr.title); return pr;
 }
 function reportProblemFor(p) {
@@ -1432,18 +1461,18 @@ function reportProblemFor(p) {
   if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); inp.scrollIntoView({ block: 'nearest' }); }
 }
 function renderProblems() {
-  const fs = $('#pfStatus').value, fp = $('#pfPrio').value, q = $('#pfText').value.trim().toLowerCase();
-  const rows = state.problems.filter(x => (!fs || (fs === 'aktiv' ? x.status !== 'erledigt' : x.status === fs)) && (!fp || x.prio === fp)
+  const fs = $('#pfStatus').value, fp = parseInt($('#pfPrio').value, 10) || 0, q = $('#pfText').value.trim().toLowerCase();
+  const rows = state.problems.filter(x => (!fs || (fs === 'aktiv' ? x.status !== 'erledigt' : x.status === fs)) && (!fp || x.prio <= fp)
     && (!q || (x.title + ' ' + x.text + ' ' + x.owner + ' ' + (x.poiName || '')).toLowerCase().includes(q)))
-    .sort((a, b) => (a.status === 'erledigt') - (b.status === 'erledigt') || PRIO[a.prio].ord - PRIO[b.prio].ord || (a.time < b.time ? 1 : -1));
+    .sort((a, b) => (a.status === 'erledigt') - (b.status === 'erledigt') || a.prio - b.prio || (a.time < b.time ? 1 : -1));
   $('#pInfo').textContent = rows.length + ' von ' + state.problems.length + ' Problemen';
   const box = $('#pList'); box.replaceChildren();
   rows.forEach(x => {
     const sel = (opts, cur, fn) => { const s = el('select', { onchange: ev => fn(ev.target.value) }, Object.entries(opts).map(([k, v]) => el('option', { value: k, text: v.label || v }))); s.value = cur; return s; };
-    const card = el('div', { class: 'card' + (x.status === 'erledigt' ? ' done' : ''), 'data-pid': x.id, style: '--c:' + PRIO[x.prio].color },
+    const card = el('div', { class: 'card' + (x.status === 'erledigt' ? ' done' : ''), 'data-pid': x.id, style: '--c:' + prioColor(x.prio) },
       el('input', { type: 'text', class: 'title', value: x.title, oninput: ev => { x.title = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
       el('div', { class: 'row' },
-        sel(PRIO, x.prio, v => { x.prio = v; save('Priorität geändert: ' + x.title); renderProblems(); }),
+        el('label', { class: 'hint prio' }, 'Prio ', el('input', { type: 'number', min: '1', step: '1', value: x.prio, title: 'Priorität, 1 = höchste', style: 'width:56px', onchange: ev => { x.prio = prioNum(ev.target.value); save('Priorität geändert: ' + x.title + ' auf ' + x.prio); renderProblems(); } })),
         sel(PSTAT, x.status, v => { x.status = v; addJournal('Problem „' + x.title + '“: ' + PSTAT[v], true); save('Problemstatus: ' + x.title + ' ' + PSTAT[v]); renderProblems(); renderCounts(); }),
         el('input', { type: 'text', value: x.owner || '', placeholder: 'Zuständig', oninput: ev => { x.owner = ev.target.value; save(); }, onchange: () => save('Zuständig geändert: ' + x.title) })),
       el('textarea', { rows: '2', placeholder: 'Einzelheiten, Maßnahmen', oninput: ev => { x.text = ev.target.value; save(); }, onchange: () => save('Problem bearbeitet: ' + x.title) }),
@@ -1458,10 +1487,10 @@ function renderProblems() {
   if (!rows.length) box.append(el('div', { class: 'hint', text: 'Keine Probleme in dieser Ansicht.' }));
   probLayer.clearLayers();
   state.problems.filter(x => x.lat != null && x.status !== 'erledigt').forEach(x => {
-    const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + PRIO[x.prio].color + '">!</div>' }) });
-    m.bindTooltip(el('span', { text: x.title + ' (' + PRIO[x.prio].label + ')' }));
+    const m = L.marker([x.lat, x.lng], { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 22], html: '<div class="prob" style="--c:' + prioColor(x.prio) + '">' + prioNum(x.prio) + '</div>' }) });
+    m.bindTooltip(el('span', { text: x.title + ' (Prio ' + x.prio + ')' }));
     m.on('contextmenu', e => ctxOpen(e, problemItems(x), null, 'Problem: ' + x.title));
-    m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + PRIO[x.prio].color; setTimeout(() => { c.style.outline = ''; }, 1800); } });
+    m.on('click', () => { openTab('probleme'); const c = document.querySelector('[data-pid="' + x.id + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.style.outline = '2px solid ' + prioColor(x.prio); setTimeout(() => { c.style.outline = ''; }, 1800); } });
     m.addTo(probLayer);
   });
 }
@@ -1851,6 +1880,8 @@ $('#jText').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnJ')
 $('#fltText').addEventListener('input', renderList); $('#fltStatus').addEventListener('change', renderList);
 $('#btnPrint').onclick = () => window.print();
 $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
+$('#btnUndoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.past.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => undoTo(i + 1) }))); };
+$('#btnRedoMenu').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); showMenu(r.left - 30, r.bottom + 2, hist.future.slice(-30).reverse().map((en, i) => ({ label: en.label, onclick: () => redoTo(i + 1) }))); };
 const typing = t => !!t && (t.tagName === 'TEXTAREA' || t.isContentEditable || (t.tagName === 'INPUT' && !/^(checkbox|radio|range|color|button|file)$/.test(t.type)));
 document.addEventListener('keydown', e => {
   if (typing(e.target)) return;
