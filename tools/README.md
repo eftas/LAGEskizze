@@ -1,12 +1,12 @@
 # Werkzeuge
 
 - `extract_osm.py`: zieht aus einem OSM-Auszug (PBF) die Daten für die Offline-Karte.
-- `build_offline.py`: baut aus `src/public/kritis-lage.html` die eigenständige Datei `kritis-lage-offline.html`.
+- `build_offline.py`: baut aus `src/public/kritis-lage.html` die eigenständige Datei `kritis-lage-einzeldatei.html`.
 - `lage-server.js`: Live-Freigabe. Ein Rechner bearbeitet die Karte, andere Geräte im selben Netz sehen den Stand live (nur lesend).
 
 ## Live-Freigabe
 
-Voraussetzung: Node.js auf dem Rechner, der die Karte führt. Keine weiteren Pakete nötig. Das Skript und die Datei `kritis-lage-offline.html` können im selben Ordner liegen, das Repository ist nicht nötig.
+Voraussetzung: Node.js auf dem Rechner, der die Karte führt. Keine weiteren Pakete nötig. Das Skript und die Datei `kritis-lage-einzeldatei.html` können im selben Ordner liegen, das Repository ist nicht nötig.
 
     node lage-server.js
 

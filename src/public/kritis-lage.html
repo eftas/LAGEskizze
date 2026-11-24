@@ -104,6 +104,15 @@ body.beamer header h1 { font-size: 20px; }
 #liveBadge::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #16a34a; display: inline-block; }
 #liveBadge.off::before { background: #dc2626; }
 .sector .state { font-size: 12px; color: var(--muted); }
+#placeSearch { position: absolute; top: 10px; left: 56px; z-index: 1000; width: min(380px, 52vw); display: flex; flex-wrap: wrap; gap: 4px; }
+#placeSearch input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid #94a3b8; border-radius: 5px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+#placeSearch button { border: 1px solid #94a3b8; background: #fff; border-radius: 5px; padding: 0 12px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+#placeRes { flex: 1 0 100%; background: #fff; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,.3); max-height: 260px; overflow: auto; }
+#placeRes:empty { display: none; }
+#placeRes button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; box-shadow: none; padding: 7px 10px; font-weight: 400; }
+#placeRes button:hover, #placeRes button:focus { background: #e3edf8; outline: none; }
+#placeRes .none { padding: 7px 10px; color: var(--muted); }
+body.beamer #placeSearch { display: none; }
 #reviewBar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1100; background: #b45309; color: #fff; padding: 7px 12px; border-radius: 6px; display: none; gap: 10px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); font-weight: 600; }
 #reviewBar.on { display: flex; }
 #reviewBar button { border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.2); color: #fff; border-radius: 4px; padding: 3px 10px; }
@@ -305,11 +314,11 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 
     <section class="tabpane active" id="tab-einsatz">
       <h2>Übung oder Einsatz</h2>
-      <div class="row"><input type="text" id="exName" placeholder="Bezeichnung, z. B. Stabsübung Köln"></div>
+      <div class="row"><input type="text" id="exName" placeholder="Bezeichnung der Übung oder des Einsatzes"></div>
       <div class="row"><label><input type="checkbox" id="exActive"> Übungsuhr verwenden</label></div>
       <div class="row"><label for="exStart">Beginn der Übung</label><input type="datetime-local" id="exStart" style="max-width:210px"><button class="btn" id="exApply">Uhr stellen</button></div>
       <div class="row"><button class="btn" id="exPause">Pause</button><label for="exSpeed">Tempo</label>
-        <select id="exSpeed" style="max-width:160px"><option value="1">1-fach (Echtzeit)</option><option value="2">2-fach</option><option value="5">5-fach</option><option value="10">10-fach</option><option value="30">30-fach</option><option value="60">60-fach</option></select>
+        <select id="exSpeed" style="min-width:150px"><option value="1">1-fach (Echtzeit)</option><option value="2">2-fach</option><option value="5">5-fach</option><option value="10">10-fach</option><option value="30">30-fach</option><option value="60">60-fach</option></select>
         <button class="btn" id="exReal">Zurück auf Echtzeit</button></div>
       <div class="hint" id="exInfo"></div>
       <div class="notice">Mit Übungsuhr erhalten alle neuen Einträge, Meldungen und Statuswechsel die Zeit der Übung, nicht die der Uhr im Laptop. Bereits gespeicherte Zeiten bleiben unverändert.</div>
@@ -337,23 +346,15 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 
       <h2>Verwaltungsgrenze</h2>
       <form class="row" id="nomForm">
-        <input type="search" id="nomQ" value="Köln" placeholder="Ort, Gemeinde oder Kreis, z. B. Kreis Soest">
+        <input type="search" id="nomQ" placeholder="Ort, Gemeinde oder Kreis, z. B. Kreis Soest">
         <button class="btn" type="submit">Suchen</button>
       </form>
       <div id="nomResults"></div>
-
-      <div id="localAdminBox" hidden>
-        <h2>Gebiet aus eingebauter Liste</h2>
-        <div class="row"><input type="search" id="adminLocalQ" list="adminDl" placeholder="Stadtbezirk oder Stadtteil wählen oder tippen"></div>
-        <datalist id="adminDl"></datalist>
-        <div class="hint">Funktioniert ohne Internet.</div>
-      </div>
 
       <h2>Gebietsdatei</h2>
       <div class="row"><input type="file" id="areaFile" accept=".geojson,.json,.kml"></div>
       <div class="hint">GeoJSON oder KML mit Polygon, z. B. eine Evakuierungszone.</div>
 
-      <div class="row" id="embBox" hidden><label><input type="checkbox" id="useEmb"> Eingebaute Daten statt Online-Abfrage verwenden</label></div>
       <h2>Einsatzgebiete</h2>
       <div id="areaList"></div>
       <div class="row">
@@ -401,7 +402,7 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <div id="uSummary"></div>
       <div class="editonly">
         <h2>Einheit anlegen</h2>
-        <div class="row"><input type="text" id="uName" placeholder="Bezeichnung, z. B. LF 20 Köln-Nord"><input type="text" id="uCall" placeholder="Funkrufname"></div>
+        <div class="row"><input type="text" id="uName" placeholder="Bezeichnung, z. B. LF 20 Nord"><input type="text" id="uCall" placeholder="Funkrufname"></div>
         <div class="row"><button class="btn" id="uSymBtn">Zeichen wählen</button><span id="uSymPrev" class="hint">kein Zeichen gewählt</span></div>
         <div class="row"><label>Stärke</label>
           <input type="number" id="uF" min="0" step="1" placeholder="F" title="Führer" class="unum"><span>/</span><input type="number" id="uU" min="0" step="1" placeholder="U" title="Unterführer" class="unum"><span>/</span><input type="number" id="uH" min="0" step="1" placeholder="H" title="Helfer" class="unum"><span>=</span><b id="uSum">0</b></div>
@@ -580,13 +581,13 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <h2>Zurücksetzen</h2>
       <div class="row"><button class="btn danger" id="btnReset">Gesamte Lage löschen</button></div>
       <h2>Quellen</h2>
-      <div class="hint" id="dataInfo"></div>
       <div class="hint">Objektdaten: OpenStreetMap-Mitwirkende (ODbL), abgefragt über die Overpass API. Gebietssuche: Nominatim. Kartengrundlagen: OpenStreetMap, Geobasis NRW (dl-de/by-2-0). Taktische Zeichen: LAGEskizze (MIT), Jonas Köritz (CC BY 4.0, github.com/jonas-koeritz/Taktische-Zeichen) und Philipp Jardas (MIT, github.com/phjardas/taktische-zeichen). Einzelheiten in images/LICENSES-symbole.md.</div>
     </section>
   </aside>
 
   <div id="mapWrap">
     <div id="map"></div>
+    <form id="placeSearch" role="search" autocomplete="off"><input type="search" id="placeQ" placeholder="Ort suchen und hinzoomen" aria-label="Ort suchen"><button type="submit" aria-label="Suchen">Suchen</button><div id="placeRes" role="listbox"></div></form>
     <div id="editBar" role="toolbar" aria-label="Eckpunkte bearbeiten"><span id="editTxt">Eckpunkte bearbeiten</span><button id="editOk">Übernehmen (Enter)</button><button id="editCancel">Verwerfen (Esc)</button></div>
     <div id="reviewBar" role="status"><span id="reviewTxt"></span><button id="reviewBack">Zur aktuellen Lage</button></div>
     <button id="panelToggle" title="Seitenleiste ein- oder ausklappen (Umschalt+P)" aria-label="Seitenleiste ein- oder ausklappen" aria-expanded="true">&lsaquo;</button>
@@ -684,7 +685,7 @@ const ROLES_DEFAULT = [{ id: 'S1', label: 'S1 Personal und Innerer Dienst' }, { 
 function freshState() {
   return {
     version: 2,
-    useEmbedded: null,   // true: eingebaute Daten, null: noch nicht entschieden
+    view: null,          // zuletzt gezeigter Kartenausschnitt
     areas: [],           // { id, name, color, opacity, visible, query, kind, rings:[[ [lat,lng] ]], areaId?, circle?:{lat,lng,km} }
     pois: {},            // Cache: id -> { id, osm, lat, lng, layer, name, addr, manual? }
     layerOn: Object.fromEntries(LAYERS.map(l => [l.id, l.on])),
@@ -931,7 +932,7 @@ function geomRings(g) {            // GeoJSON-Geometrie -> Außenringe als [lat,
 /* Karte                                                               */
 /* ------------------------------------------------------------------ */
 // Feinere Zoomstufen: Viertelstufen, Knöpfe in halben Schritten, Mausrad deutlich sanfter
-const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 180, wheelDebounceTime: 30, zoomAnimationThreshold: 6 }).setView([50.9375, 6.9603], 12);
+const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 180, wheelDebounceTime: 30, zoomAnimationThreshold: 6 }).setView([51.1657, 10.4515], 6);
 const baseLayers = {
   'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
   'Satellit (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
@@ -939,20 +940,14 @@ const baseLayers = {
   'NRW Topografie (DTK)': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
   'NRW Luftbild': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dop', { layers: 'nw_dop_rgb', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' })
 };
-const OFFKEY = 'Offline-Karte Köln (eingebaut)';
-if (window.OFFLINE_DATA) baseLayers[OFFKEY] = createOfflineBase(window.OFFLINE_DATA);
-const START = window.OFFLINE_DATA && navigator.onLine === false ? OFFKEY : 'Straßenkarte (Esri)';
-baseLayers[START].addTo(map);
-function switchOffline() {
-  Object.values(baseLayers).forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
-  baseLayers[OFFKEY].addTo(map); say('Keine Kartenkacheln erreichbar: eingebaute Offline-Karte aktiv.', 7000);
+baseLayers['Straßenkarte (Esri)'].addTo(map);
+{ // Ohne Kartenkacheln (kein Internet) bleibt die Lage benutzbar, nur der Hintergrund fehlt
+  let ok = 0, bad = 0, warned = false;
+  Object.values(baseLayers).forEach(l => {
+    l.on('tileload', () => { ok++; });
+    l.on('tileerror', () => { bad++; if (!ok && bad >= 4 && !warned) { warned = true; say('Keine Kartenkacheln erreichbar. Die Lage bleibt benutzbar, nur der Kartenhintergrund fehlt.', 9000); } });
+  });
 }
-Object.entries(baseLayers).forEach(([k, l]) => {
-  if (k === OFFKEY) return;
-  let ok = 0, bad = 0;
-  l.on('tileload', () => { ok++; });
-  l.on('tileerror', () => { bad++; if (!ok && bad >= 4 && window.OFFLINE_DATA && !map.hasLayer(baseLayers[OFFKEY]) && map.hasLayer(l)) switchOffline(); });
-});
 L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
 L.control.scale({ imperial: false }).addTo(map);
 
@@ -966,77 +961,6 @@ const casLayer = L.layerGroup().addTo(map);
 const probLayer = L.layerGroup().addTo(map);
 const secLayers = {};
 
-
-/* ------------------------------------------------------------------ */
-/* Eingebaute Offline-Grundkarte (Vektordaten aus window.OFFLINE_DATA)  */
-/* ------------------------------------------------------------------ */
-function decodePoly(str) {
-  const out = []; let i = 0, la = 0, lo = 0;
-  while (i < str.length) {
-    let r = 0, sh = 0, b;
-    do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32);
-    la += (r & 1) ? ~(r >> 1) : (r >> 1); r = 0; sh = 0;
-    do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32);
-    lo += (r & 1) ? ~(r >> 1) : (r >> 1);
-    out.push(la / 1e5, lo / 1e5);
-  }
-  return out;
-}
-function createOfflineBase(D) {
-  let G = null;
-  const prep = arr => arr.map(str => {
-    const p = decodePoly(str); let a = 90, b = 180, c = -90, d = -180;
-    for (let i = 0; i < p.length; i += 2) { if (p[i] < a) a = p[i]; if (p[i] > c) c = p[i]; if (p[i + 1] < b) b = p[i + 1]; if (p[i + 1] > d) d = p[i + 1]; }
-    return { p, a, b, c, d };
-  });
-  const init = () => {
-    if (G) return G;
-    G = { green: prep(D.green), water: prep(D.water), rail: prep(D.lines.rail), river: prep(D.lines.river), roads: {} };
-    ['minor', 'tertiary', 'secondary', 'primary', 'trunk', 'motorway'].forEach(k => { G.roads[k] = prep(D.lines[k]); });
-    G.admin = D.admin.map(x => ({ level: x.level, rings: prep(x.rings) }));
-    return G;
-  };
-  const ROADS = [['minor', 14, 1.4, '#ffffff'], ['tertiary', 12, 1.8, '#ffffff'], ['secondary', 11, 2.2, '#f9e49a'], ['primary', 9, 2.8, '#f6c874'], ['trunk', 7, 3, '#f3a47e'], ['motorway', 6, 3.5, '#e9786e']];
-  const K = 256;
-  const labels = L.layerGroup();
-  const labs = D.places.map(pl => ({ z: [8, 10, 12, 14][pl[3]], m: L.marker([pl[0], pl[1]], { interactive: false, keyboard: false,
-    icon: L.divIcon({ className: 'plabel r' + pl[3], html: '<span>' + pl[2].replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>', iconSize: [0, 0] }) }) }));
-  const OB = L.GridLayer.extend({
-    onAdd(m) { L.GridLayer.prototype.onAdd.call(this, m); init(); m.addLayer(labels); m.on('zoomend', this._lab, this); this._lab(); },
-    onRemove(m) { m.removeLayer(labels); m.off('zoomend', this._lab, this); L.GridLayer.prototype.onRemove.call(this, m); },
-    _lab() {
-      const z = this._map.getZoom();
-      labs.forEach(l => { const on = z >= l.z, has = labels.hasLayer(l.m); if (on && !has) labels.addLayer(l.m); else if (!on && has) labels.removeLayer(l.m); });
-    },
-    createTile(c) {
-      const tile = document.createElement('canvas'), dpr = window.devicePixelRatio || 1;
-      tile.width = tile.height = K * dpr; const x = tile.getContext('2d'); x.scale(dpr, dpr);
-      const z = c.z, k = K * Math.pow(2, z), ox = c.x * K, oy = c.y * K, bb = this._tileCoordsToBounds(c), pad = 0.003 * (z < 12 ? 4 : 1);
-      const s0 = bb.getSouth() - pad, n0 = bb.getNorth() + pad, w0 = bb.getWest() - pad, e0 = bb.getEast() + pad;
-      const PX = lng => (lng + 180) / 360 * k - ox, PY = lat => (0.5 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / (2 * Math.PI)) * k - oy;
-      const g = init();
-      const hit = f => f.c >= s0 && f.a <= n0 && f.d >= w0 && f.b <= e0;
-      const path = (f, close) => { const p = f.p; x.moveTo(PX(p[1]), PY(p[0])); for (let i = 2; i < p.length; i += 2) x.lineTo(PX(p[i + 1]), PY(p[i])); if (close) x.closePath(); };
-      x.fillStyle = '#f1eee8'; x.fillRect(0, 0, K, K);
-      x.fillStyle = '#cfe5c1'; x.beginPath(); g.green.forEach(f => { if (hit(f)) path(f, true); }); x.fill();
-      x.fillStyle = '#a9d0ea'; x.beginPath(); g.water.forEach(f => { if (hit(f)) path(f, true); }); x.fill();
-      x.lineCap = x.lineJoin = 'round';
-      const sc = 1 + Math.max(0, z - 13) * 0.4;
-      if (z >= 7) { x.strokeStyle = '#a9d0ea'; x.lineWidth = Math.min(8, 1.2 * sc + 1); x.beginPath(); g.river.forEach(f => { if (hit(f)) path(f); }); x.stroke(); }
-      if (z >= 9) { x.strokeStyle = '#8c8c8c'; x.lineWidth = 1.2; x.setLineDash([6, 4]); x.beginPath(); g.rail.forEach(f => { if (hit(f)) path(f); }); x.stroke(); x.setLineDash([]); }
-      if (z >= 9) {
-        x.strokeStyle = '#9b8ab8'; x.setLineDash([8, 5]);
-        g.admin.forEach(a => { if (a.level === 10 && z < 12) return; x.lineWidth = a.level === 6 ? 2.2 : a.level === 9 ? 1.5 : 0.8; x.beginPath(); a.rings.forEach(f => { if (hit(f)) path(f, true); }); x.stroke(); });
-        x.setLineDash([]);
-      }
-      const act = ROADS.filter(r => z >= r[1]);
-      if (z >= 13) { x.strokeStyle = '#b9b2a6'; act.forEach(r => { x.lineWidth = r[2] * sc + 1.6; x.beginPath(); g.roads[r[0]].forEach(f => { if (hit(f)) path(f); }); x.stroke(); }); }
-      act.forEach(r => { x.strokeStyle = r[3]; x.lineWidth = r[2] * sc * (z >= 13 ? 1 : 0.8); if (z < 13) x.strokeStyle = r[0] === 'minor' || r[0] === 'tertiary' ? '#d8d3c8' : r[3]; x.beginPath(); g.roads[r[0]].forEach(f => { if (hit(f)) path(f); }); x.stroke(); });
-      return tile;
-    }
-  });
-  return new OB({ maxZoom: 18, attribution: 'Eingebaute Offline-Karte: OpenStreetMap-Mitwirkende (ODbL)' });
-}
 
 /* ------------------------------------------------------------------ */
 /* Gebiet                                                              */
@@ -1204,32 +1128,19 @@ function applyCircle(lat, lng) {
 $('#nomForm').addEventListener('submit', async ev => {
   ev.preventDefault();
   const q = $('#nomQ').value.trim(), box = $('#nomResults'); if (!q) return;
-  const local = localAdmin().filter(x => x.name.toLowerCase().includes(q.toLowerCase()));
-  const showLocal = () => local.forEach(x => box.append(el('button', { class: 'btn', onclick: () => applyLocalAdmin(x) }, x.name, el('br'), el('span', { class: 'hint', text: x.levelName + ' · eingebaute Liste' }))));
   box.replaceChildren(el('div', { class: 'hint', text: 'Suche läuft…' }));
   try {
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
     const url = NOMINATIM + '?format=jsonv2&polygon_geojson=1&polygon_threshold=0.0005&limit=8&countrycodes=de&accept-language=de&q=' + encodeURIComponent(q);
     const r = await fetch(url, { signal: ctl.signal }); clearTimeout(to); if (!r.ok) throw new Error('HTTP ' + r.status);
     const list = (await r.json()).filter(x => x.geojson && /Polygon/.test(x.geojson.type));
-    box.replaceChildren(); showLocal();
-    if (!list.length && !local.length) { box.append(el('div', { class: 'hint', text: 'Keine Fläche gefunden. Anderen Suchbegriff probieren.' })); return; }
+    box.replaceChildren();
+    if (!list.length) { box.append(el('div', { class: 'hint', text: 'Keine Fläche gefunden. Anderen Suchbegriff probieren.' })); return; }
     list.forEach(x => box.append(el('button', { class: 'btn', onclick: () => applyAdmin(x) }, x.display_name, el('br'), el('span', { class: 'hint', text: x.type + (x.osm_type ? ' · ' + x.osm_type + ' ' + x.osm_id : '') }))));
   } catch (e) {
-    box.replaceChildren(); showLocal();
-    box.append(el(local.length ? 'div' : 'div', { class: local.length ? 'hint' : 'err', text: 'Online-Suche nicht möglich (' + e.message + ').' + (local.length ? '' : window.OFFLINE_DATA ? ' In der eingebauten Liste gibt es dazu nichts.' : '') }));
+    box.replaceChildren(el('div', { class: 'err', text: 'Suche nicht möglich (' + e.message + '). Ohne Internet gibt es keine Ortssuche.' }));
   }
 });
-/* Eingebaute Verwaltungsgebiete (nur mit OFFLINE_DATA) */
-function localAdmin() {
-  if (!window.OFFLINE_DATA) return [];
-  if (!localAdmin.cache) localAdmin.cache = window.OFFLINE_DATA.admin.map(x => ({ name: x.name, level: x.level, levelName: { 6: 'Stadt', 9: 'Stadtbezirk', 10: 'Stadtteil' }[x.level], rings: x.rings.map(r => { const p = decodePoly(r), o = []; for (let i = 0; i < p.length; i += 2) o.push([p[i], p[i + 1]]); return o; }) }));
-  return localAdmin.cache;
-}
-function applyLocalAdmin(x) {
-  $('#nomResults').replaceChildren();
-  addArea({ kind: 'admin-local', name: x.name + ' (' + x.levelName + ')', rings: x.rings.map(r => r.slice()) });
-}
 function applyAdmin(x) {
   $('#nomResults').replaceChildren();
   const areaId = x.osm_type === 'relation' ? 3600000000 + Number(x.osm_id) : null;
@@ -1298,19 +1209,6 @@ function ingest(elements, layers) {
   return n;
 }
 
-const hasEmbedded = () => !!window.OFFLINE_DATA;
-const embeddedPreferred = () => hasEmbedded() && state.useEmbedded === true;
-function ingestEmbedded(layers, area) {
-  const D = window.OFFLINE_DATA, idx = new Set(layers.map(l => D.meta.layers.indexOf(l.id))); let n = 0;
-  const bb = D.meta.bbox, inBox = area.rings.some(r => r.some(q => q[0] >= bb[0] && q[0] <= bb[2] && q[1] >= bb[1] && q[1] <= bb[3]));
-  if (!inBox) { say('Das Gebiet liegt außerhalb der eingebauten Daten (Köln und Umgebung).', 7000); return 0; }
-  for (const p of D.pois) {
-    if (!idx.has(p[3]) || state.pois[p[0]]) continue;
-    if (!area.rings.some(r => pip(p[1], p[2], r))) continue;
-    state.pois[p[0]] = { id: p[0], osm: { n: 'node', w: 'way', r: 'relation' }[p[0][0]] + '/' + p[0].slice(1), lat: p[1], lng: p[2], layer: D.meta.layers[p[3]], name: p[4], addr: p[5] }; n++;
-  }
-  return n;
-}
 function loadObjects() {
   if (runtime.viewer) return;
   queryAreas().forEach(a => {
@@ -1331,18 +1229,14 @@ async function pump() {
     if (!area || !area.query) { runtime.sector[job.sector] = { s: 'ok', msg: '' }; renderSectors(); continue; }
     setSectorState(job.sector, 'loading');
     try {
-      let data = null, emb = embeddedPreferred(), fell = false;
-      if (!emb) {
-        try {
-          try { data = await overpass(buildQuery(job.layers, area)); }
-          catch (e) { if (area.areaId) data = await overpass(buildQuery(job.layers, area, true)); else throw e; }
-        } catch (e) { if (!hasEmbedded()) throw e; emb = fell = true; }
-      }
+      let data;
+      try { data = await overpass(buildQuery(job.layers, area)); }
+      catch (e) { if (area.areaId) data = await overpass(buildQuery(job.layers, area, true)); else throw e; }
       if (!state.areas.some(a => a.id === job.areaId)) continue;     // Gebiet wurde währenddessen entfernt
-      if (emb) ingestEmbedded(job.layers, area); else ingest(data.elements || [], job.layers);
+      ingest(data.elements || [], job.layers);
       const ld = state.loaded[job.areaId] || (state.loaded[job.areaId] = {});
       job.layers.forEach(l => { ld[l.id] = true; });
-      setSectorState(job.sector, 'ok', emb ? (fell ? 'offline: eingebaute Daten' : 'eingebaute Daten') : '');
+      setSectorState(job.sector, 'ok');
       renderMarkers(); renderAll(); save();
     } catch (e) {
       setSectorState(job.sector, 'error', e.message);
@@ -1608,19 +1502,7 @@ const prioNum = v => { const n = Math.round(parseFloat(v)); return n >= 1 ? n : 
 const prioColor = n => PRIO_COL[Math.min(prioNum(n), PRIO_COL.length) - 1];
 const PSTAT = { offen: 'offen', inArbeit: 'in Arbeit', erledigt: 'erledigt' };
 
-function initOffline() {
-  if (!window.OFFLINE_DATA) return;
-  const D = window.OFFLINE_DATA;
-  $('#localAdminBox').hidden = false; $('#embBox').hidden = false;
-  const dl = $('#adminDl'); localAdmin().forEach(x => dl.append(el('option', { value: x.name + ' (' + x.levelName + ')' })));
-  $('#adminLocalQ').addEventListener('change', ev => { const x = localAdmin().find(y => ev.target.value === y.name + ' (' + y.levelName + ')'); if (x) { applyLocalAdmin(x); ev.target.value = ''; } });
-  if (state.useEmbedded === null) state.useEmbedded = navigator.onLine === false;
-  $('#useEmb').checked = state.useEmbedded;
-  $('#useEmb').addEventListener('change', ev => { state.useEmbedded = ev.target.checked; save(); });
-  $('#dataInfo').textContent = 'Eingebaute Daten: ' + D.meta.source + ', Stand ' + D.meta.built + '. Neuere Änderungen an Objekten fehlen darin.';
-}
 function initNewUi() {
-  initOffline();
   const sel = $('#poiType');
   Object.entries(SECTORS).forEach(([sid, sec]) => {
     const g = el('optgroup', { label: sec.name });
@@ -2802,6 +2684,34 @@ function initStaende() {
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* Ortssuche und Startansicht                                          */
+/* ------------------------------------------------------------------ */
+const GERMANY = [[47.2, 5.8], [55.1, 15.1]];
+function initPlaceSearch() {
+  const box = $('#placeRes');
+  $('#placeSearch').addEventListener('submit', async ev => {
+    ev.preventDefault(); const q = $('#placeQ').value.trim(); if (!q) return;
+    box.replaceChildren(el('div', { class: 'none', text: 'Suche läuft…' }));
+    try {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+      const r = await fetch(NOMINATIM + '?format=jsonv2&limit=6&countrycodes=de&accept-language=de&q=' + encodeURIComponent(q), { signal: ctl.signal }); clearTimeout(to);
+      if (!r.ok) throw new Error('HTTP ' + r.status); const list = await r.json();
+      box.replaceChildren(); if (!list.length) { box.append(el('div', { class: 'none', text: 'Nichts gefunden. Anderen Suchbegriff versuchen.' })); return; }
+      const go = x => { const b = x.boundingbox.map(Number); map.fitBounds([[b[0], b[2]], [b[1], b[3]]], { maxZoom: 17, padding: [30, 30] }); };
+      go(list[0]);
+      if (list.length > 1) { box.append(el('div', { class: 'none', text: 'Andere Treffer:' })); list.slice(1).forEach(x => box.append(el('button', { type: 'button', text: x.display_name, onclick: () => { go(x); box.replaceChildren(); } }))); }
+    } catch (e) { box.replaceChildren(el('div', { class: 'none', text: 'Suche nicht möglich (' + e.message + '). Ohne Internet gibt es keine Ortssuche.' })); }
+  });
+  map.on('mousedown', () => box.replaceChildren());
+  map.on('moveend', () => { const c = map.getCenter(); state.view = { lat: +c.lat.toFixed(5), lng: +c.lng.toFixed(5), z: map.getZoom() }; persist(); });
+}
+function initialView() {
+  if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08), { animate: false });
+  else if (state.view) map.setView([state.view.lat, state.view.lng], state.view.z, { animate: false });
+  else { map.fitBounds(GERMANY, { animate: false }); if (!runtime.viewer) { say('Ort oben links eingeben, die Karte zoomt dorthin.', 10000); setTimeout(() => $('#placeQ').focus(), 300); } }
+}
+
 /* Karte anklicken */
 map.on('click', e => {
   if (runtime.edit) { const b = runtime.edit.layer.getBounds ? runtime.edit.layer.getBounds().pad(0.03) : null; if (b && !b.contains(e.latlng)) finishEdit(true); return; }
@@ -2985,7 +2895,7 @@ state.areas.forEach(prepArea);
 histInit();
 initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
 renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
-if (state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
+initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));
 liveInit();

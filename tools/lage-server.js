@@ -2,9 +2,9 @@
 /*
  * Kleiner Server für die Live-Freigabe der Lagekarte (keine Abhängigkeiten, nur Node.js).
  *
- *   node lage-server.js                             sucht kritis-lage-offline.html neben dem Skript, Port 8080
+ *   node lage-server.js                             sucht kritis-lage-einzeldatei.html neben dem Skript, Port 8080
  *   node lage-server.js --port 9000
- *   node lage-server.js --file C:\\Lage\\kritis-lage-offline.html
+ *   node lage-server.js --file C:\\Lage\\kritis-lage-einzeldatei.html
  *
  * Ablauf: Auf diesem Rechner http://localhost:PORT öffnen. Dort wird die Karte bearbeitet und jeder
  * Stand an den Server übergeben. Andere Geräte im selben Netz öffnen den Link aus dem QR-Code
@@ -16,15 +16,15 @@ const http = require('http'), fs = require('fs'), path = require('path'), os = r
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > -1 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const PORT = parseInt(arg('port', '8080'), 10);
 // Datei der Karte suchen: --file, dann neben dem Skript, dann im aktuellen Ordner, dann im Repository (src/public)
-const NAMES = ['kritis-lage-offline.html', 'kritis-lage.html'];
+const NAMES = ['kritis-lage-einzeldatei.html', 'kritis-lage.html'];
 const FILE = (() => {
   const given = arg('file', null);
   if (given) { const f = path.resolve(given); if (fs.existsSync(f)) return f; console.error('Datei nicht gefunden: ' + f); process.exit(1); }
   const dirs = [__dirname, process.cwd(), path.join(__dirname, '..', 'src', 'public'), path.join(process.cwd(), 'src', 'public')];
   for (const d of dirs) for (const n of NAMES) { const f = path.join(d, n); if (fs.existsSync(f)) return f; }
-  console.error('Die Datei der Lagekarte (kritis-lage-offline.html) wurde nicht gefunden.');
+  console.error('Die Datei der Lagekarte (kritis-lage-einzeldatei.html) wurde nicht gefunden.');
   console.error('Legen Sie sie neben dieses Skript oder geben Sie den Pfad an, zum Beispiel:');
-  console.error('  node lage-server.js --file C:\\Lage\\kritis-lage-offline.html');
+  console.error('  node lage-server.js --file C:\\Lage\\kritis-lage-einzeldatei.html');
   process.exit(1);
 })();
 const ROOT = path.dirname(FILE);

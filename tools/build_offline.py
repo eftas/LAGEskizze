@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Baut aus src/public/kritis-lage.html eine einzelne Datei ohne Internetabhängigkeit.
+"""Baut aus src/public/kritis-lage.html eine eigenständige Einzeldatei ohne Abhängigkeit von Internet-Bibliotheken.
 
-Aufruf:  python3 tools/build_offline.py --data koeln.json [--cache ordner] [--out src/public/kritis-lage-offline.html]
-Die Daten stammen aus tools/extract_osm.py. Beim Bauen wird Internet gebraucht (Bibliotheken von cdnjs), beim Benutzen nicht.
+Aufruf:  python3 tools/build_offline.py [--cache ordner] [--out src/public/kritis-lage-einzeldatei.html]
+Eingebettet werden Bibliotheken (von cdnjs), Schriften, Taktische Zeichen und der Zeichengenerator. Beim Bauen wird Internet gebraucht, beim Benutzen nicht.
+Kartenkacheln, Ortssuche und die Abfrage der KRITIS-Objekte brauchen weiterhin eine Internetverbindung.
 """
 import argparse, base64, json, os, re, urllib.request
-from shapely.geometry import Polygon, Point
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--src', default='src/public/kritis-lage.html')
-ap.add_argument('--data', required=True)
 ap.add_argument('--cache', default='/tmp/kritis-cache')
-ap.add_argument('--out', default='src/public/kritis-lage-offline.html')
+ap.add_argument('--out', default='src/public/kritis-lage-einzeldatei.html')
 a = ap.parse_args()
 os.makedirs(a.cache, exist_ok=True)
 
@@ -22,38 +21,7 @@ def fetch(url):
         open(f, 'wb').write(urllib.request.urlopen(req, timeout=60).read())
     return open(f, 'rb').read()
 
-def dec(s):
-    out = []; i = la = lo = 0
-    while i < len(s):
-        for k in (0, 1):
-            r = sh = 0
-            while True:
-                b = ord(s[i]) - 63; i += 1; r |= (b & 31) << sh; sh += 5
-                if b < 32: break
-            d = ~(r >> 1) if r & 1 else r >> 1
-            if k == 0: la += d
-            else: lo += d
-        out.append((lo / 1e5, la / 1e5))
-    return out
-
 html = open(a.src, encoding='utf-8').read()
-
-# ---- Daten: Verwaltungsgebiete auf Köln beschränken ----
-D = json.load(open(a.data, encoding='utf-8'))
-koeln = [x for x in D['admin'] if x['level'] == 6 and x['name'] == 'Köln'][0]
-kp = max((Polygon(dec(r)) for r in koeln['rings']), key=lambda p: p.area).buffer(0)
-keep = []
-for x in D['admin']:
-    if x['level'] == 6 and x['name'] != 'Köln': continue
-    pts = [Polygon(dec(r)) for r in x['rings'] if len(r) > 3]
-    if not pts: continue
-    big = max(pts, key=lambda p: p.area).buffer(0)
-    if x['level'] == 6 or kp.contains(big.representative_point()): keep.append(x)
-D['admin'] = keep
-minx, miny, maxx, maxy = kp.bounds
-D['meta']['bbox'] = [round(miny - 0.05, 4), round(minx - 0.05, 4), round(maxy + 0.05, 4), round(maxx + 0.05, 4)]
-D['meta']['source'] = 'OpenStreetMap-Mitwirkende (ODbL), Auszug Köln'
-print('admin kept', len(keep), 'bbox', D['meta']['bbox'])
 
 # ---- CSS inline ----
 img = {n: 'data:image/png;base64,' + base64.b64encode(fetch('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/' + n)).decode() for n in ('layers.png', 'layers-2x.png')}
@@ -103,12 +71,6 @@ def inline_local(m):
     f = os.path.join(os.path.dirname(os.path.abspath(a.src)), m.group(1))
     return '<script>' + open(f, encoding='utf-8').read().replace('</script', '<\\/script') + '</script>'
 html = re.sub(r'<script src="(lib/[^"]+)"></script>', inline_local, html)
-
-# ---- Daten einbetten (vor dem Hauptskript) ----
-blob = json.dumps(D, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
-marker = '<script>\n(function () {'
-assert html.count(marker) == 1
-html = html.replace(marker, '<script>window.OFFLINE_DATA=' + blob + ';</script>\n' + marker)
 
 assert 'cdnjs.cloudflare.com' not in html.replace('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images', ''), 'externe Verweise übrig'
 open(a.out, 'w', encoding='utf-8').write(html)
