@@ -315,6 +315,10 @@ const LAYERS = [
   { id: 'zeitung',       sector: 'medien',     name: 'Zeitungsredaktionen', glyph: 'Z', on: false, match: [[['office', 'newspaper']]] },
   { id: 'studio',        sector: 'medien',     name: 'Rundfunkstudios', glyph: 'St', on: false, match: [[['amenity', 'studio']]] }
 ];
+const SINGULAR = { umspannwerk: 'Umspannwerk', kraftwerk: 'Kraftwerk', wasserwerk: 'Wasserwerk', klaeranlage: 'Kläranlage', wasserturm: 'Wasserturm',
+  krankenhaus: 'Krankenhaus', pflege: 'Pflegeheim', apotheke: 'Apotheke', feuerwehr: 'Feuerwache', polizei: 'Polizeidienststelle', rettungswache: 'Rettungswache',
+  bahnhof: 'Bahnhof', flughafen: 'Flugplatz', hafen: 'Hafen', rechenzentrum: 'Rechenzentrum', vermittlung: 'Vermittlungsstelle', funkmast: 'Funkmast',
+  grosshandel: 'Großhandel', supermarkt: 'Supermarkt', bank: 'Bank', rathaus: 'Rathaus', behoerde: 'Behörde', gericht: 'Gericht', zeitung: 'Zeitungsredaktion', studio: 'Rundfunkstudio' };
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map(l => [l.id, l]));
 
 /* ------------------------------------------------------------------ */
@@ -666,7 +670,7 @@ function poiIcon(p) {
   return L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -13],
     html: '<div class="poi' + (affected.has(p.id) ? ' affected' : '') + '" style="--c:' + SECTORS[l.sector].color + ';--s:' + st.color + '">' + l.glyph + '</div>' });
 }
-const poiTitle = p => p.name || ('(ohne Name) ' + LAYER_BY_ID[p.layer].name.replace(/e?n$/, ''));
+const poiTitle = p => p.name || ('(ohne Name) ' + SINGULAR[p.layer]);
 
 function renderMarkers() {
   affected = computeAffected();
@@ -758,7 +762,7 @@ function renderSymbols() {
   symLayer.clearLayers();
   state.symbols.forEach(s => {
     const m = L.marker([s.lat, s.lng], { icon: symIcon(s.name), draggable: true });
-    if (s.label) m.bindTooltip(s.label, { permanent: true, direction: 'bottom', className: 'symlabel', offset: [0, 18] });
+    if (s.label) m.bindTooltip(el('span', { text: s.label }), { permanent: true, direction: 'bottom', className: 'symlabel', offset: [0, 18] });
     m.on('dragend', () => { const ll = m.getLatLng(); s.lat = ll.lat; s.lng = ll.lng; save(); });
     m.bindPopup(() => {
       const inp = el('input', { type: 'text', value: s.label || '', placeholder: 'Beschriftung', onchange: ev => { s.label = ev.target.value; save(); renderSymbols(); } });
@@ -772,7 +776,7 @@ function renderSections() {
   secLayer.clearLayers();
   state.sections.forEach(s => {
     const lyr = s.kind === 'line' ? L.polyline(s.pts, { color: s.color, weight: 5 }) : L.polygon(s.pts, { color: s.color, weight: 3, fillOpacity: .12 });
-    lyr.bindTooltip(s.name, { permanent: true, direction: 'center', className: 'seclabel' });
+    lyr.bindTooltip(el('span', { text: s.name }), { permanent: true, direction: 'center', className: 'seclabel' });
     lyr.bindPopup(() => el('div', { class: 'pp' }, el('h3', { text: s.name }),
       el('div', { class: 'row' }, el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.sections = state.sections.filter(x => x !== s); renderSections(); save(); } }))));
     lyr.addTo(secLayer);
