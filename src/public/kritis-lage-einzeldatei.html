@@ -1381,9 +1381,21 @@ body.printing .umk .ulb, body.printing .symlabel { background: #fff !important; 
 .vtsec { border: 1px solid var(--line); border-left: 8px solid var(--c); border-radius: 10px; padding: 8px 12px; margin: 8px 0; background: var(--panel, #fff); } .vtsec.sub { margin-left: 14px; background: rgba(100,116,139,.07); } .vtsec b { font-size: 18px; } .vtsec .sm { color: var(--muted); font-size: 13.5px; }
 .vtu { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 16px; font-weight: 600; } .vtu img { width: 46px; height: 34px; object-fit: contain; } .vtu .st { margin-left: auto; text-align: right; }
 .vtc { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 13.5px; font-weight: 700; } .vtc.bad { background: #fee2e2; color: #7f1d1d; }
-#vtCtl { position: absolute; left: 14px; bottom: 36px; z-index: 1600; display: flex; flex-wrap: wrap; gap: 6px; max-width: 214px; }
-.vtb { border: 1px solid var(--line); background: var(--panel, #fff); color: var(--ink); border-radius: 8px; padding: 5px 11px; font-weight: 700; font-size: 12.5px; box-shadow: 0 1px 4px rgba(0,0,0,.35); cursor: pointer; opacity: .92; } .vtb.view { background: var(--accent); border-color: var(--accent); color: #fff; opacity: .75; } .vtb.view.on { opacity: 1; outline: 3px solid rgba(30,64,175,.35); }
-.vtb:not(.on):not(.end):not(.all):not(.view) { opacity: .6; text-decoration: line-through; } .vtb.end { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+#vtCtl { position: absolute; left: 14px; bottom: 36px; z-index: 1600; }
+#vtBurger { width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel, #fff); box-shadow: 0 2px 8px rgba(0,0,0,.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0; }
+#vtBurger i { display: block; width: 22px; height: 3px; border-radius: 2px; background: var(--ink); transition: transform .4s ease, opacity .4s ease; }
+#vtCtl.open #vtBurger i:nth-child(1) { transform: translateY(8px) rotate(45deg); } #vtCtl.open #vtBurger i:nth-child(2) { opacity: 0; } #vtCtl.open #vtBurger i:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+#vtMenu { position: absolute; left: 0; bottom: 58px; min-width: 230px; background: var(--panel, #fff); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.45); padding: 6px; transform-origin: bottom left; opacity: 0; visibility: hidden; transform: translateY(14px) scale(.94); transition: opacity .4s ease, transform .4s ease, visibility 0s linear .4s; }
+#vtCtl.open #vtMenu { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+@media (prefers-reduced-motion: reduce) { #vtMenu, #vtBurger i { transition: none !important; } }
+.vtgrp { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px 3px; }
+.vtm { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; border: 0; background: none; color: inherit; font: 600 14.5px Inter, sans-serif; text-align: left; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+.vtm:hover { background: rgba(30, 64, 175, .1); }
+.vtchk { width: 20px; height: 20px; border: 2px solid var(--muted); border-radius: 5px; flex: none; display: grid; place-items: center; }
+.vtm.on .vtchk { background: var(--accent); border-color: var(--accent); } .vtm.on .vtchk::after { content: ''; width: 5px; height: 10px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.vtm.view .vtchk { border-radius: 50%; } .vtm.view.on .vtchk::after { width: 8px; height: 8px; border: 0; border-radius: 50%; background: #fff; transform: none; }
+.vtm.all .vtchk, .vtm.end .vtchk { border: 0; } .vtm.all { border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; margin-top: 4px; }
+.vtm.end { background: #b91c1c; color: #fff; margin-top: 6px; } .vtm.end:hover { background: #991b1b; }
 body.vortrag #unitOv, body.vortrag #fueOv { z-index: 1550; padding-bottom: 170px; background: var(--bg, #eef2f7) !important; }
 body.vortrag #unitOv .ovhead, body.vortrag .fuehd { background: var(--bg, #eef2f7) !important; }
 body.vortrag #vtCtl { z-index: 1700; }
@@ -4380,14 +4392,31 @@ function startVortrag() {
 function endVortrag() {
   if (!runtime.vortrag) return; runtime.vortrag = false; document.body.classList.remove('vortrag'); $('#vt').hidden = true; setPanel(VT.prevPanel, false); setTimeout(() => map.invalidateSize(), 300);
 }
+let vtMenuOpen = false;
+function vtBuildMenu() {
+  const ctl = $('#vtCtl'); if (ctl.dataset.built) return; ctl.dataset.built = '1';
+  const item = (k, t, fn, cls) => el('button', { class: 'vtm ' + (cls || ''), 'data-k': k, role: 'menuitem', onclick: () => { fn(); } }, el('span', { class: 'vtchk', 'aria-hidden': 'true' }), el('span', { text: t }));
+  const toggle = k => { VT.bars[k] = !VT.bars[k]; vtSave(); vtApply(); };
+  const menu = el('div', { id: 'vtMenu', role: 'menu', 'aria-label': 'Vortragsansicht', 'aria-hidden': 'true' },
+    el('div', { class: 'vtgrp', text: 'Ansicht' }), item('view-map', 'Karte', () => { closeUnitOverview(); closeFue(); vtApply(); }, 'view'), item('view-fue', 'Führungsstruktur', () => { openFue(); vtApply(); }, 'view'),
+    el('div', { class: 'vtgrp', text: 'Leisten' }), item('top', 'Oben', () => toggle('top')), item('left', 'Zahlen', () => toggle('left')), item('right', 'Kräfte', () => toggle('right')), item('bottom', 'Gefahrstoff', () => toggle('bottom')),
+    el('button', { class: 'vtm all', 'data-k': 'all', role: 'menuitem', onclick: () => { const on = !Object.values(VT.bars).some(Boolean); Object.keys(VT.bars).forEach(k => { VT.bars[k] = on; }); vtSave(); vtApply(); } }, el('span', { class: 'vtchk' }), el('span', { class: 'vtallt' })),
+    el('button', { class: 'vtm end', role: 'menuitem', onclick: endVortrag }, el('span', { class: 'vtchk' }), el('span', { text: 'Beenden' })));
+  const burger = el('button', { id: 'vtBurger', 'aria-label': 'Menü der Vortragsansicht', 'aria-haspopup': 'menu', 'aria-expanded': 'false', title: 'Menü der Vortragsansicht', onclick: () => vtMenu(!vtMenuOpen) }, el('i'), el('i'), el('i'));
+  ctl.replaceChildren(menu, burger);
+  document.addEventListener('mousedown', e => { if (vtMenuOpen && !e.target.closest('#vtCtl')) vtMenu(false); });
+}
+function vtMenu(open) {
+  vtMenuOpen = !!open; const c = $('#vtCtl'); c.classList.toggle('open', vtMenuOpen); $('#vtBurger').setAttribute('aria-expanded', String(vtMenuOpen)); $('#vtMenu').setAttribute('aria-hidden', String(!vtMenuOpen));
+}
 function vtApply() {
   const b = VT.bars, r = document.documentElement.style;
   ['top', 'left', 'right', 'bottom'].forEach(k => document.body.classList.toggle('vt-no-' + k, !b[k]));
   r.setProperty('--vtL', b.left ? '236px' : '0px'); r.setProperty('--vtR', b.right ? '436px' : '0px'); r.setProperty('--vtT', b.top ? '64px' : '0px');
-  const ov = !$('#unitOv').hidden ? 'units' : !$('#fueOv').hidden ? 'fue' : 'map';
-  const ctl = $('#vtCtl'); ctl.replaceChildren(...[['map', 'Karte'], ['units', 'Einheiten'], ['fue', 'Führungsstruktur']].map(([k, t]) => el('button', { class: 'vtb view' + (ov === k ? ' on' : ''), 'aria-pressed': String(ov === k), text: t, title: 'Ansicht wechseln: ' + t, onclick: () => { if (k === 'map') { closeUnitOverview(); closeFue(); } else if (k === 'units') openUnitOverview(); else openFue(); vtApply(); } })), ...[['top', 'Oben'], ['left', 'Zahlen'], ['right', 'Kräfte'], ['bottom', 'Gefahrstoff']].map(([k, t]) => el('button', { class: 'vtb' + (b[k] ? ' on' : ''), 'aria-pressed': String(!!b[k]), title: t + (b[k] ? ' einklappen' : ' ausklappen'), text: t, onclick: () => { VT.bars[k] = !VT.bars[k]; vtSave(); vtApply(); } })),
-    el('button', { class: 'vtb all', text: Object.values(b).some(Boolean) ? 'Alle einklappen' : 'Alle ausklappen', title: 'Alle Leisten ein- oder ausklappen', onclick: () => { const on = !Object.values(VT.bars).some(Boolean); Object.keys(VT.bars).forEach(k => { VT.bars[k] = on; }); vtSave(); vtApply(); } }),
-    el('button', { class: 'vtb end', text: 'Beenden', title: 'Vortragsansicht verlassen (Esc)', onclick: endVortrag }));
+  vtBuildMenu(); const ov = !$('#fueOv').hidden ? 'fue' : 'map', menu = $('#vtMenu');
+  menu.querySelectorAll('.vtm[data-k]').forEach(x => { const k = x.dataset.k; let on = false;
+    if (k === 'all') { x.querySelector('.vtallt').textContent = Object.values(b).some(Boolean) ? 'Alle einklappen' : 'Alle ausklappen'; return; }
+    on = k.startsWith('view-') ? ov === k.slice(5) : !!b[k]; x.classList.toggle('on', on); x.setAttribute('aria-checked', String(on)); x.setAttribute('role', k.startsWith('view-') ? 'menuitemradio' : 'menuitemcheckbox'); });
   setTimeout(() => map.invalidateSize(), 120);
 }
 function vtMeetingText() {
@@ -4416,7 +4445,7 @@ function renderVortrag() {
     free.length ? el('div', { class: 'vtsec', style: '--c:#94a3b8' }, el('b', { text: 'nicht zugeteilt' }), ...free.map(unitRow)) : '', !state.units.length ? el('div', { class: 'sm', text: 'Noch keine Einheit.' }) : '');
 }
 setInterval(() => { if (runtime.vortrag) renderVortrag(); }, 5000);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && runtime.vortrag && !document.querySelector('.dlg')) endVortrag(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && runtime.vortrag && !document.querySelector('.dlg')) { if (vtMenuOpen) vtMenu(false); else endVortrag(); } });
 function renderChem() { renderChemMap(); renderChemTab(); renderChemBand(); }
 function chemWindChanged() {
   renderChemMap(); fillChemNumbers();
