@@ -1,6 +1,6 @@
 # Lizenzen der Taktischen Zeichen
 
-Die Lagekarte verwendet Zeichen aus drei Quellen.
+Die LAGEkarte verwendet Zeichen aus drei Quellen.
 
 ## 1. LAGEskizze (eigener Zeichensatz, 185 Zeichen)
 Aus dem Repository eftas/LAGEskizze (MIT-Lizenz). Die Zeichen wurden überwiegend von Sebastian Ramrath, Feuerwehr Much, gezeichnet. Die Darstellung folgt der Empfehlung für Taktische Zeichen im Bevölkerungsschutz (Ständige Konferenz für Katastrophenvorsorge und Katastrophenschutz, 2010).

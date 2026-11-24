@@ -11,6 +11,6 @@ As base maps the recent version is using the open data WMS of the NRW-Atlas of t
 **Credits**:
 Base work was done by Saphir El-Kaiy (functional requirements and specification) and Sebastian Niklasch (first software implementation) in their bachelor thesis. The tactical signs where mostly drawn by Sebastian Ramrath, Fire Brigade Much.
 
-## Lagekarte für Stäbe (neu)
+## LAGEkarte für Stäbe
 
 Im Ordner `src/public` liegt `kritis-lage.html`, eine eigenständige Lagekarte für einen operativ-taktischen Stab (Gebiete, KRITIS-Objekte, Kräfte, Abschnitte, Meldungen, Tagebuch, Lagestände, Wind und Keule). `python3 tools/build_offline.py` baut daraus die Einzeldatei `kritis-lage-einzeldatei.html`, die ohne weitere Dateien läuft. Kartenkacheln, Ortssuche und die Abfrage der KRITIS-Objekte brauchen Internet. Hinweise zur Live-Freigabe und zu den Lizenzen der Zeichen: `tools/README.md`, `src/public/images/LICENSES-symbole.md`.

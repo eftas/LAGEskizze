@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Kleiner Server für die Live-Freigabe der Lagekarte (keine Abhängigkeiten, nur Node.js).
+ * Kleiner Server für die Live-Freigabe der LAGEkarte (keine Abhängigkeiten, nur Node.js).
  *
  *   node lage-server.js                             sucht kritis-lage-einzeldatei.html neben dem Skript, Port 8080
  *   node lage-server.js --port 9000
@@ -81,7 +81,7 @@ const server = http.createServer((req, res) => {
   fs.readFile(full, (err, data) => err ? send(res, 404, 'nicht gefunden', 'text/plain; charset=utf-8') : send(res, 200, data, TYPES[path.extname(full)] || 'application/octet-stream'));
 });
 server.listen(PORT, '0.0.0.0', () => {
-  console.log('Lagekarte, Live-Freigabe');
+  console.log('LAGEkarte, Live-Freigabe');
   console.log('  Karte bearbeiten (auf diesem Rechner): http://localhost:' + PORT + '/');
   lanUrls().forEach(u => console.log('  Ansicht für andere Geräte:             ' + u + '/?ansicht=1' + ''));
   console.log('  Datei: ' + FILE + '   (ohne PIN: jedes Gerät im Netz kann lesen)');

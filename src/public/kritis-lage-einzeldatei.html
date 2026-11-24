@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lagekarte KRITIS</title>
+<title>LAGEkarte</title>
+<script>try { var t = localStorage.getItem("kritis-theme"); if (!t) t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.setAttribute("data-theme", t); } catch (e) { /* ohne Speicher: hell */ }</script>
 
 <style>/* required styles */
 
@@ -1044,6 +1045,72 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
 .poptbl { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 6px 0; }
 .poptbl th, .poptbl td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--line, #d6dbe3); white-space: nowrap; }
 .poptbl th:first-child, .poptbl td:first-child { text-align: left; white-space: normal; }
+
+/* ===== Meeting-Zeile, Uhr als Schaltfläche, Auswahlfenster ===== */
+#mtLine { order: 5; flex: 1 0 100%; font-weight: 700; font-size: 13px; color: #b45309; font-variant-numeric: tabular-nums; }
+#mtLine.soon { color: #c2410c; }
+#mtLine.due { color: #b91c1c; }
+#clock, #tacTime { cursor: pointer; border-radius: 4px; }
+#clock:hover, #tacTime:hover { background: rgba(30, 64, 175, .08); }
+#clock:focus-visible, #tacTime:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#mtPop { position: fixed; z-index: 3500; width: 290px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.3); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+#mtPop .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+#btnTheme { display: inline-grid; place-items: center; padding: 5px 8px; }
+/* ===== Dunkelmodus ===== */
+:root[data-theme="dark"] { color-scheme: dark; --bg: #0b1220; --panel: #111a2b; --ink: #e6ebf2; --muted: #9aa8bb; --line: #2a3850; --accent: #8ab4ff; --rail: #0e1625; --warn: #f5c26b; --warn-bg: #3a2a0e; }
+[data-theme="dark"] body { background: var(--bg); color: var(--ink); }
+[data-theme="dark"] header { background: #0e1625; color: var(--ink); border-bottom-color: var(--accent); }
+[data-theme="dark"] header h1 { color: #bcd2ff; }
+[data-theme="dark"] header button, [data-theme="dark"] .btn, [data-theme="dark"] .seg button, [data-theme="dark"] #symGrid button, [data-theme="dark"] .sgrid button, [data-theme="dark"] .stbtns button, [data-theme="dark"] #placeSearch button { background: #17233a; color: var(--ink); border-color: #3a4a63; }
+[data-theme="dark"] header button:hover:not(:disabled), [data-theme="dark"] .btn:hover:not(:disabled) { background: #1f2f4d; border-color: var(--accent); }
+[data-theme="dark"] .btn.primary { background: #2f5fc4; border-color: #2f5fc4; color: #fff; }
+[data-theme="dark"] header .qb button { background: none; color: #dbe5f5; border: 0; }
+[data-theme="dark"] header .qb button:hover:not(:disabled) { background: #22314d; }
+[data-theme="dark"] #qat { border-right-color: #2a3850; }
+[data-theme="dark"] .chip { background: #17233a; color: var(--ink); border-color: #3a4a63; }
+[data-theme="dark"] .chip.soon { background: #3a2a0e; color: #fcd9a0; border-color: #b45309; }
+[data-theme="dark"] .chip.ex { background: #7c2d12; color: #fff; }
+[data-theme="dark"] #mtLine { color: #fbbf24; }
+[data-theme="dark"] #mtLine.soon { color: #fb923c; }
+[data-theme="dark"] #mtLine.due { color: #f87171; }
+[data-theme="dark"] #clock:hover, [data-theme="dark"] #tacTime:hover { background: rgba(138, 180, 255, .14); }
+[data-theme="dark"] #panel, [data-theme="dark"] .tabpane { background: var(--panel); color: var(--ink); }
+[data-theme="dark"] #tabs { background: var(--rail); }
+[data-theme="dark"] #tabs button { color: #b6c3d6; }
+[data-theme="dark"] #tabs button:hover { background: #1a2740; }
+[data-theme="dark"] #tabs button[aria-selected="true"] { background: var(--panel); color: var(--accent); }
+[data-theme="dark"] #panelToggle { background: #17233a; color: var(--ink); }
+[data-theme="dark"] #panelToggle:hover { background: #1f2f4d; }
+[data-theme="dark"] input[type=text], [data-theme="dark"] input[type=search], [data-theme="dark"] input[type=number], [data-theme="dark"] input[type=time], [data-theme="dark"] input[type=datetime-local], [data-theme="dark"] select, [data-theme="dark"] textarea, [data-theme="dark"] #placeSearch input { background: #0c1424; color: var(--ink); border-color: #3a4a63; }
+[data-theme="dark"] ::placeholder { color: #7d8ba0; }
+[data-theme="dark"] .card, [data-theme="dark"] .arow, [data-theme="dark"] .tile, [data-theme="dark"] #areaInfo, [data-theme="dark"] .ovcol { background: #152036; color: var(--ink); }
+[data-theme="dark"] .sector > .head, [data-theme="dark"] .ovcol > header { background: #1b2a42; }
+[data-theme="dark"] .licpre { background: #0c1424; }
+[data-theme="dark"] table.list th { background: var(--panel); }
+[data-theme="dark"] table.list tr.clickable:hover { background: #1b2a42; }
+[data-theme="dark"] .ctx, [data-theme="dark"] .dlg > div, [data-theme="dark"] #placeRes, [data-theme="dark"] #mtPop { background: #152036; color: var(--ink); border-color: #3a4a63; }
+[data-theme="dark"] .ctx-item:hover, [data-theme="dark"] .ctx-item:focus, [data-theme="dark"] #placeRes button:hover, [data-theme="dark"] #placeRes button:focus { background: #22314d; }
+[data-theme="dark"] .ctx-item.dis { color: #6b7a90; }
+[data-theme="dark"] .ctx-sep { background: #2a3850; }
+[data-theme="dark"] .ctx-ar, [data-theme="dark"] .ctx-ck { color: #9aa8bb; }
+[data-theme="dark"] #placeRes button { background: transparent; color: var(--ink); border-bottom-color: #2a3850; }
+[data-theme="dark"] #unitOv, [data-theme="dark"] #unitOv .ovhead { background: rgba(11, 18, 32, .985); }
+[data-theme="dark"] .notice, [data-theme="dark"] .warn { background: var(--warn-bg); color: var(--warn); }
+[data-theme="dark"] .sympv img { background: #e8edf5; }
+[data-theme="dark"] .windctl { background: #152036; color: var(--ink); }
+[data-theme="dark"] .umk .ulb, [data-theme="dark"] .symlabel { background: rgba(21, 32, 54, .92); color: var(--ink); border-color: #5d6b7a; }
+[data-theme="dark"] .poptbl th, [data-theme="dark"] .poptbl td { border-bottom-color: #2a3850; }
+[data-theme="dark"] a { color: #9cc0ff; }
+[data-theme="dark"] .leaflet-popup-content-wrapper, [data-theme="dark"] .leaflet-popup-tip { background: #152036; color: var(--ink); }
+[data-theme="dark"] .leaflet-popup-close-button { color: #9aa8bb; }
+[data-theme="dark"] .leaflet-bar a, [data-theme="dark"] .leaflet-control-layers, [data-theme="dark"] .leaflet-bar a:hover { background: #17233a; color: var(--ink); border-color: #3a4a63; }
+[data-theme="dark"] .leaflet-control-attribution, [data-theme="dark"] .leaflet-control-scale-line { background: rgba(14, 22, 37, .8); color: #9aa8bb; }
+[data-theme="dark"] .leaflet-control-attribution a { color: #9cc0ff; }
+[data-theme="dark"] .leaflet-tooltip { background: #152036; color: var(--ink); border-color: #3a4a63; }
+[data-theme="dark"] .leaflet-tile-pane .bm-inv { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.8); }
+[data-theme="dark"] .leaflet-tile-pane { filter: none; }
+[data-theme="dark"] .leaflet-container { background: #0b1220; }
+@media print { [data-theme="dark"] body { background: #fff; color: #000; } }
 </style>
 </head>
 <body>
@@ -1053,16 +1120,18 @@ header .qb button:hover:not(:disabled) { background: #e2e8f0; }
       <span class="qb"><button id="btnUndo" disabled aria-label="Rückgängig"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button><button id="btnUndoMenu" class="caret" disabled aria-label="Rückgängig-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
       <span class="qb"><button id="btnRedo" disabled aria-label="Wiederholen"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button><button id="btnRedoMenu" class="caret" disabled aria-label="Wiederholen-Liste"><svg viewBox="0 0 10 6" width="9" height="6" aria-hidden="true"><path fill="currentColor" d="M0 0h10L5 6z"/></svg></button></span>
     </div>
-    <h1>Lagekarte KRITIS</h1>
+    <h1>LAGEkarte</h1>
     <span id="hdrArea"></span>
     <span class="sp"></span>
     <div id="hdrCounts"></div>
-    <span id="clock"></span>
-    <span id="tacTime" class="chip" title="Taktische Zeit (Tag, Stunde, Minute: TTHHMM)" aria-label="Taktische Zeit"></span>
+    <div id="mtLine" hidden></div>
+    <span id="clock" role="button" tabindex="0" title="Klicken: nächste Lagebesprechung festlegen"></span>
+    <span id="tacTime" class="chip" role="button" tabindex="0" title="Taktische Zeit (TTHHMM). Klicken: nächste Lagebesprechung festlegen" aria-label="Taktische Zeit"></span>
     <span id="exTag" class="chip ex" hidden>ÜBUNG</span>
     <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
+    <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
     <button id="btnUnits" title="Alle Einheiten auf einen Blick, zum Beispiel für den Lagevortrag">Einheiten</button>
     <button id="btnAddPoi" title="KRITIS-Objekt per Mausklick auf der Karte setzen">+ Objekt setzen</button>
     <button id="btnPrint" title="Karte drucken oder als PDF speichern">Drucken</button>
@@ -1835,7 +1904,7 @@ function freshState() {
     journal: [],         // { id, time, text, auto }
     exercise: { active: false, name: '', startIso: null, setAtMs: null, running: true, pausedAt: null, speed: 1 },   // Übungsuhr
     weather: { temp: null, sky: '', note: '', time: null },
-    meeting: { intervalMin: 60, lastIso: null },   // Takt der Lagebesprechung in Minuten
+    meeting: { intervalMin: 60, lastIso: null, nextIso: null },   // Takt der Lagebesprechung in Minuten
     wind: { dir: null, speed: null, cond: 'bedeckt', stab: '', terrain: 'land', time: null },   // dir: Wind AUS dieser Richtung in Grad
     plumes: [],          // { id, name, lat, lng, mode:'gauss'|'takt', follow, dir, speed, Q, H, thr1, thr2, len, angle, r0 }
     messages: [], msgSeq: 0, diarySeq: 0, standSeq: 0, msgExtra: false, author: '',
@@ -2073,10 +2142,10 @@ function geomRings(g) {            // GeoJSON-Geometrie -> Außenringe als [lat,
 // Feinere Zoomstufen: Viertelstufen, Knöpfe in halben Schritten, Mausrad deutlich sanfter
 const map = L.map('map', { zoomControl: true, preferCanvas: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 180, wheelDebounceTime: 30, zoomAnimationThreshold: 6 }).setView([51.1657, 10.4515], 6);
 const baseLayers = {
-  'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
+  'Straßenkarte (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'bm-inv', attribution: 'Esri, HERE, Garmin, OpenStreetMap-Mitwirkende' }),
   'Satellit (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' }),
-  'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap-Mitwirkende' }),
-  'NRW Topografie (DTK)': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
+  'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'bm-inv', attribution: '&copy; OpenStreetMap-Mitwirkende' }),
+  'NRW Topografie (DTK)': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dtk', { className: 'bm-inv', layers: 'nw_dtk_col', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' }),
   'NRW Luftbild': L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dop', { layers: 'nw_dop_rgb', format: 'image/png', version: '1.3.0', attribution: 'Geobasis NRW (dl-de/by-2-0)' })
 };
 baseLayers['Straßenkarte (Esri)'].addTo(map);
@@ -3435,18 +3504,44 @@ function renderEinsatz() {
   $('#mtInfo').textContent = meetingText();
   tickClock(); renderCounts();
 }
-function meetingDue() { const m = state.meeting; if (!m.intervalMin) return null; const last = m.lastIso ? Date.parse(m.lastIso) : (state.exercise.active && state.exercise.startIso ? Date.parse(state.exercise.startIso) : null); return last == null ? null : last + m.intervalMin * 60000; }
+function meetingDue() {
+  const m = state.meeting; if (m.nextIso) { const t = Date.parse(m.nextIso); if (!isNaN(t)) return t; }
+  if (!m.intervalMin) return null; const last = m.lastIso ? Date.parse(m.lastIso) : (state.exercise.active && state.exercise.startIso ? Date.parse(state.exercise.startIso) : null); return last == null ? null : last + m.intervalMin * 60000;
+}
+const fmtHM = ms => new Date(ms).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 function meetingText() {
   const due = meetingDue(); if (due == null) return 'Der Takt beginnt mit der ersten Lagebesprechung' + (state.exercise.active ? '' : ' (oder mit dem Beginn der Übungsuhr)') + '.';
   const d = due - nowMs(); return d >= 0 ? 'Nächste Lagebesprechung um ' + new Date(due).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' (in ' + fmtDur(d) + ').' : 'Lagebesprechung überfällig seit ' + fmtDur(-d) + '.';
 }
 const fmtDur = ms => { const t = Math.round(ms / 1000), h = Math.floor(t / 3600), mi = Math.floor(t % 3600 / 60), se = t % 60; return (h ? h + ' h ' : '') + pad2(mi) + ':' + pad2(se) + (h ? '' : ' min'); };
 function updateMeetingChip() {
-  const c = $('#mtChip'); if (!c) return; const due = meetingDue();
-  if (due == null) { c.hidden = true; return; }
-  const d = due - nowMs(); c.hidden = false; c.classList.toggle('due', d < 0); c.classList.toggle('soon', d >= 0 && d < 5 * 60000);
-  c.textContent = d >= 0 ? 'Lagebesprechung in ' + fmtDur(d) : 'Lagebesprechung überfällig ' + fmtDur(-d);
+  const c = $('#mtLine'); if (!c) return; const due = meetingDue();
+  if (due == null) { c.hidden = true; } else {
+    const d = due - nowMs(); c.hidden = false; c.classList.toggle('due', d < 0); c.classList.toggle('soon', d >= 0 && d < 5 * 60000);
+    c.textContent = 'Nächste Lagebesprechung ' + fmtHM(due) + ' Uhr · ' + (d >= 0 ? 'in ' + fmtDur(d) : 'überfällig seit ' + fmtDur(-d));
+  }
   if (document.activeElement !== $('#mtInt') && $('#tab-einsatz').classList.contains('active')) $('#mtInfo').textContent = meetingText();
+}
+/* Klick auf die Uhr: nächste Lagebesprechung festlegen */
+function openMeetingPicker() {
+  if (runtime.viewer || $('#mtPop')) return;
+  const due = meetingDue(), base = due != null ? due : nowMs() + (state.meeting.intervalMin || 60) * 60000;
+  const set = (ms, label) => { state.meeting.nextIso = new Date(ms).toISOString(); addJournal('Nächste Lagebesprechung auf ' + fmtHM(ms) + ' Uhr gesetzt', true); renderEinsatz(); save(label || 'Nächste Lagebesprechung ' + fmtHM(ms)); close(); };
+  const t = el('input', { type: 'time', id: 'mtTime', value: fmtHM(base), 'aria-label': 'Uhrzeit der nächsten Lagebesprechung' });
+  const apply = () => { const m = /^(\d\d):(\d\d)$/.exec(t.value); if (!m) return; const d = new Date(nowMs()); d.setHours(+m[1], +m[2], 0, 0); let ms = d.getTime(); if (ms < nowMs() - 60000) ms += 86400000; set(ms); };
+  const quick = min => el('button', { class: 'btn small', text: '+' + min + ' min', onclick: () => set(nowMs() + min * 60000) });
+  const pop = el('div', { id: 'mtPop', role: 'dialog', 'aria-label': 'Nächste Lagebesprechung' },
+    el('b', { text: 'Nächste Lagebesprechung' }),
+    el('div', { class: 'row' }, t, el('button', { class: 'btn primary small', text: 'Übernehmen', onclick: apply })),
+    el('div', { class: 'row' }, quick(15), quick(30), quick(60)),
+    el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Takt (' + (state.meeting.intervalMin || 60) + ' min) verwenden', onclick: () => { state.meeting.nextIso = null; renderEinsatz(); save('Nächste Lagebesprechung nach Takt'); close(); } }),
+      el('button', { class: 'btn small', text: 'Jetzt beginnen', onclick: () => { close(); $('#btnMeeting').click(); } })));
+  const r = $('#clock').getBoundingClientRect(); pop.style.top = (r.bottom + 6) + 'px'; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - 300)) + 'px';
+  document.body.append(pop); t.focus();
+  function close() { pop.remove(); document.removeEventListener('mousedown', out, true); document.removeEventListener('keydown', key, true); }
+  function out(e) { if (!pop.contains(e.target) && !e.target.closest('#clock, #tacTime')) close(); }
+  function key(e) { if (e.key === 'Escape') close(); else if (e.key === 'Enter' && document.activeElement === t) { e.preventDefault(); apply(); } }
+  document.addEventListener('mousedown', out, true); document.addEventListener('keydown', key, true);
 }
 function initEinsatz() {
   $('#wxSky').append(...SKY.map(x => el('option', { value: x, text: x || '–' })));
@@ -3475,6 +3570,7 @@ function initEinsatz() {
     ex.speed = v; if (ex.active) addJournal('Tempo der Übungsuhr: ' + v + '-fach', true); commitSoft();
   });
   $('#exReal').addEventListener('click', () => { if (state.exercise.active) addJournal('Übungsuhr ausgeschaltet', true); state.exercise.active = false; commitSoft(); });
+  ['#clock', '#tacTime'].forEach(q => { const n = $(q); n.addEventListener('click', openMeetingPicker); n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMeetingPicker(); } }); });
   $('#mtInt').addEventListener('change', e => { const v = Math.round(+e.target.value); state.meeting.intervalMin = v >= 1 ? v : 60; commitSoft(); });
   const wx = () => { state.weather.time = nowIso(); renderEinsatz(); save(); };
   $('#wxTemp').addEventListener('change', e => { state.weather.temp = numOrNull(e.target.value); wx(); });
@@ -4032,7 +4128,7 @@ function initStaende() {
   $('#reviewBack').onclick = leaveReview;
   $('#stTake').onclick = () => { takeStand($('#stTitle').value.trim(), $('#stNote').value.trim()); $('#stTitle').value = ''; $('#stNote').value = ''; };
   $('#btnMeeting').onclick = () => {
-    const n = state.standSeq + 1; takeStand('Lagebesprechung ' + n, ''); state.meeting.lastIso = nowIso(); addJournal('Lagebesprechung begonnen (Lagestand Nr. ' + state.standSeq + ')', true); renderEinsatz(); persist();
+    const n = state.standSeq + 1; takeStand('Lagebesprechung ' + n, ''); state.meeting.lastIso = nowIso(); state.meeting.nextIso = null; addJournal('Lagebesprechung begonnen (Lagestand Nr. ' + state.standSeq + ')', true); renderEinsatz(); persist();
   };
 }
 
@@ -4141,7 +4237,6 @@ function renderCounts() {
   const wx = state.weather, wd = state.wind;
   const wtxt = [wx.temp != null ? String(wx.temp).replace('.', ',') + ' °C' : '', wx.sky || '', wd.dir != null ? 'Wind ' + compassName(wd.dir) + (wd.speed != null ? ' ' + String(wd.speed).replace('.', ',') + ' m/s' : '') : ''].filter(Boolean).join(', ');
   if (wtxt) box.append(el('span', { class: 'chip', title: 'Wetter und Wind', text: wtxt }));
-  box.append(el('span', { class: 'chip', id: 'mtChip', hidden: 'hidden' }));
   box.append(el('span', { class: 'chip', text: total + ' Objekte' }));
   if (POP.total != null) box.append(el('span', { class: 'chip', title: 'Wohnbevölkerung im Abfragegebiet nach Zensus 2022', text: 'ca. ' + popFmtN(POP.total) + ' Einwohner' }));
   const openP = state.problems.filter(x => x.status !== 'erledigt').length;
@@ -4206,6 +4301,7 @@ function setPanel(open, remember) {
 }
 function togglePanel() { setPanel($('#app').classList.contains('collapsed')); }
 $('#panelToggle').onclick = togglePanel;
+$('#btnTheme').onclick = () => { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('kritis-theme', t); } catch (e) { /* ohne Speicher */ } };
 try { if (localStorage.getItem('kritis-panel') === '0') { $('#app').classList.add('collapsed'); $('#panelToggle').innerHTML = panelGlyph(false); $('#panelToggle').setAttribute('aria-expanded', 'false'); setTimeout(() => map.invalidateSize(), 0); } } catch (e) { /* egal */ }
 
 /* Speichern, Laden, Export */
