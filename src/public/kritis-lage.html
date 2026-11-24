@@ -1045,7 +1045,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
         <p class="hint">Diese Datei enthält fremde Bestandteile. Die Lizenzen im Überblick:</p>
         <ul class="hint">
           <li>GHS-Piktogramme (Flamme, Gesundheitsgefahr, Ausrufezeichen): UNECE, Dateien von Wikimedia Commons, gemeinfrei (PD-ineligible)</li>
-          <li>Stoffdaten Benzol: GESTIS-Stoffdatenbank (DGUV), Emergency Response Guidebook 2024 (PHMSA/Transport Canada), CAMEO Chemicals (NOAA), AEGL (US EPA). Quellen mit Adresse im Reiter Gefahrstoff</li>
+          <li>Stoffdaten: GESTIS-Stoffdatenbank (DGUV, Benzol), Emergency Response Guidebook (PHMSA/Transport Canada), CAMEO Chemicals (NOAA), Datenbank GEFAHRGUT (BAM), ECHA, AEGL (US EPA) und ERPG (AIHA). Quellen mit Adresse im Reiter Gefahrstoff</li>
           <li>Zeichen für Personen (Betroffene, Sichtungskategorien, Tote, Vermisste, Gerettete): eigene Zeichnung für diese Anwendung, MIT-Lizenz wie das Repository</li>
           <li>Zensus 2022, Gitterzellen (Bevölkerung, Alter): © Statistische Ämter des Bundes und der Länder, 2025, Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2-0). Für diese Anwendung als Auszug aufbereitet, Altersklassen zusammengefasst</li>
           <li>Leaflet 1.9.4: BSD-2-Clause, (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade</li>
@@ -3208,6 +3208,61 @@ const SUBSTANCES = {
       { t: 'CAMEO Chemicals (NOAA), Benzene', u: 'https://cameochemicals.noaa.gov/chemical/2577', f: 'AEGL (interim), ERG-Auszug' },
       { t: 'EPA AEGL-Programm, Benzene', u: 'https://www.epa.gov/aegl/benzene-results-acute-exposure-guideline-levels-aegl-program', f: 'AEGL 60 min: 52 / 800 / 4000 ppm' }
     ]
+  },
+  aceton: {
+    id: 'aceton', name: 'Aceton', formula: 'C3H6O', cas: '67-64-1', un: '1090', kemler: '33', klasse: '3', vg: 'II', molMass: 58.08,
+    erg: { guide: '127', title: 'Entzündbare Flüssigkeiten (mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
+    ghs: ['GHS02', 'GHS07'], signal: 'Gefahr',
+    h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H319', 'Verursacht schwere Augenreizung.'], ['H336', 'Kann Schläfrigkeit und Benommenheit verursachen.']],
+    props: { flash: -18, boil: 56, lel: 2.6, uel: 12.8, vapDens: 2 },
+    heavy: true,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Leicht entzündbar, Zündung durch Wärme, Funken oder Flammen. Dämpfe bilden mit Luft explosionsfähige Gemische und können zur Zündquelle zurückschlagen. Explosionsgefahr in Räumen, im Freien und in der Kanalisation. Behälter können bei Erwärmung bersten. Der Flammpunkt liegt weit unter Raumtemperatur.' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Dampf ist schwerer als Luft (Dichte 2). Er breitet sich am Boden aus und sammelt sich in Senken, Kellern, Schächten und Kanälen. Aceton mischt sich vollständig mit Wasser, Löschwasser und Abfluss tragen den Stoff weiter.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Reizt Augen (H319), Dämpfe können Schläfrigkeit und Benommenheit verursachen (H336). In geschlossenen Räumen kann Atemluft verdrängt werden.' },
+      { c: '#475569', t: 'Umwelt', x: 'Abfluss in Gewässer, Kanalisation und Keller verhindern. Löschwasser kann die Umwelt belasten (ERG).' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Feuerwehr-Schutzkleidung schützt thermisch, aber nur begrenzt chemisch.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Dampfunterdrückender Schaum kann die Dämpfe verringern.', 'Mit trockener Erde, Sand oder anderem nicht brennbarem Material aufnehmen, mit funkenfreiem Werkzeug sammeln.', 'Großes Leck: weit vor der Flüssigkeit eindämmen. Sprühwasser kann Dampf mindern, verhindert aber in geschlossenen Räumen keine Zündung.'],
+      brand: ['Vorsicht: Der Flammpunkt ist sehr niedrig, Wassersprühstrahl kann wirkungslos sein.', 'Kleinbrand: Pulver, CO2, Sprühwasser oder alkoholbeständiger Schaum.', 'Großbrand: Sprühstrahl, Nebel oder alkoholbeständiger Schaum, keinen Vollstrahl direkt aufs Produkt richten.', 'Tank, Kesselwagen oder Tankwagen im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, Behälter bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.', 'Bei großem Brand und fehlender Möglichkeit zur sicheren Brandbekämpfung zurückziehen und brennen lassen.']
+    },
+    aegl: { kind: 'AEGL', status: 'laut CAMEO Chemicals (NAC/NRC)', t: '60 min', a1: 200, a2: 3200, a3: 5700, edition: 'NAC/NRC', note: 'AEGL-2 und AEGL-3 liegen bei 10 bis 49 % der unteren Explosionsgrenze, Explosionsschutz beachten.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Acetone', u: 'https://cameochemicals.noaa.gov/chemical/8', f: 'Flammpunkt, Explosionsgrenzen, Siedepunkt, Dampfdichte, Molmasse, AEGL 60 min: 200 / 3200 / 5700 ppm' },
+      { t: 'ERG Leitfaden 127 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_127.pdf', f: 'Absperr- und Evakuierungsdistanzen 50 / 300 / 800 m, Maßnahmen bei Leck und Brand' },
+      { t: 'Datenbank GEFAHRGUT (BAM), UN 1090 Aceton', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/adr/p1gnvn97', f: 'Klasse 3, Verpackungsgruppe II, Gefahrnummer 33' },
+      { t: 'Sicherheitsdatenblatt Acetone (Chemos), CLP-Einstufung', u: 'https://www.chemos.de/import/data/msds/GB_en/67-64-1-A0001274-GB-en.pdf', f: 'H225, H319, H336' }
+    ]
+  },
+  ethanol: {
+    id: 'ethanol', name: 'Ethanol', formula: 'C2H6O', cas: '64-17-5', un: '1170', kemler: '33', klasse: '3', vg: 'II (Lösungen auch III)', molMass: 46.07,
+    erg: { guide: '127', title: 'Entzündbare Flüssigkeiten (mit Wasser mischbar)', isolate: 50, spillDownwind: 300, fire: 800 },
+    ghs: ['GHS02', 'GHS07'], signal: 'Gefahr',
+    h: [['H225', 'Flüssigkeit und Dampf leicht entzündbar.'], ['H319', 'Verursacht schwere Augenreizung.']],
+    props: { flash: 13, boil: 78, lel: 3.3, uel: 19, vapDens: 1.59 },
+    heavy: true,
+    gefahren: [
+      { c: '#ea580c', t: 'Brand und Explosion', x: 'Leicht entzündbar, Zündung durch Wärme, Funken oder Flammen. Dämpfe bilden mit Luft explosionsfähige Gemische und können zur Zündquelle zurückschlagen. Ethanol kann mit unsichtbarer Flamme brennen: Brand mit Wärmebildkamera oder anderen Hilfsmitteln erkennen.' },
+      { c: '#0e7490', t: 'Ausbreitung', x: 'Dampf ist schwerer als Luft (Dichte 1,59) und sammelt sich in Senken, Kellern, Schächten und Kanälen. Ethanol mischt sich mit Wasser, Löschwasser und Abfluss tragen den Stoff weiter.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Reizt Augen (H319). Dämpfe können Schwindel verursachen, in geschlossenen Räumen kann Atemluft verdrängt werden.' },
+      { c: '#475569', t: 'Umwelt', x: 'Abfluss in Gewässer, Kanalisation und Keller verhindern. Löschwasser kann die Umwelt belasten (ERG).' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Feuerwehr-Schutzkleidung schützt thermisch, aber nur begrenzt chemisch.',
+      leck: ['Alle Zündquellen entfernen (kein Rauchen, keine Fackeln, Funken oder Flammen).', 'Alle Geräte erden. Ausgelaufenes Material nicht berühren oder durchschreiten.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Eintritt in Gewässer, Kanalisation, Keller und geschlossene Räume verhindern.', 'Dampfunterdrückender Schaum kann die Dämpfe verringern.', 'Mit trockener Erde, Sand oder anderem nicht brennbarem Material aufnehmen, mit funkenfreiem Werkzeug sammeln.', 'Großes Leck: weit vor der Flüssigkeit eindämmen. Sprühwasser kann Dampf mindern, verhindert aber in geschlossenen Räumen keine Zündung.'],
+      brand: ['Vorsicht: Ethanol kann mit unsichtbarer Flamme brennen. Brand mit Wärmebildkamera oder anderen Hilfsmitteln erkennen.', 'Bei Ethanol alkoholbeständigen Schaum einsetzen.', 'Kleinbrand: Pulver, CO2, Sprühwasser oder alkoholbeständiger Schaum.', 'Großbrand: Sprühstrahl, Nebel oder alkoholbeständiger Schaum, keinen Vollstrahl direkt aufs Produkt richten.', 'Tank, Kesselwagen oder Tankwagen im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren löschen, Behälter bis lange nach dem Löschen kühlen, bei ansteigendem Heulen der Sicherheitsventile oder Verfärbung des Tanks sofort zurückziehen.']
+    },
+    aegl: { kind: 'ERPG', status: 'laut CAMEO Chemicals (AIHA), für Ethanol gibt es keine AEGL', t: '1 h (Richtwert)', a1: 1800, a2: 3300, a3: null, edition: 'AIHA', note: 'ERPG-3 ist für Ethanol nicht festgelegt. ERPG-2 liegt bei 10 bis 49 % der unteren Explosionsgrenze, Explosionsschutz beachten.' },
+    verified: true, verifiedAt: '24.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Ethanol', u: 'https://cameochemicals.noaa.gov/chemical/667', f: 'Flammpunkt, Explosionsgrenzen, Siedepunkt, Dampfdichte, Molmasse, ERPG-1 1800 ppm, ERPG-2 3300 ppm, keine AEGL' },
+      { t: 'ERG Leitfaden 127 (CAMEO-Auszug)', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_127.pdf', f: 'Absperr- und Evakuierungsdistanzen 50 / 300 / 800 m, Hinweis unsichtbare Flamme, alkoholbeständiger Schaum' },
+      { t: 'Datenbank GEFAHRGUT, UN 1170 Ethanol (ADR)', u: 'https://www.gefahrgutbrumme.de/ADR2025/ADR/UN1170B.html', f: 'Klasse 3, Gefahrnummer 33, Explosionsgrenzen 3,3 bis 19 %' },
+      { t: 'ECHA CHEM, Ethanol, harmonisierte Einstufung', u: 'https://chem.echa.europa.eu/100.000.526/activities/clhProcess/d2abd82e9fa1142d133e50cfbf460420', f: 'Flam. Liq. 2 (H225)' },
+      { t: 'Sicherheitsdatenblatt Ethanol (Carl Roth), CLP-Einstufung', u: 'https://www.carlroth.com/medias/SDB-1Y4E-IE-EN.pdf', f: 'H225, H319' }
+    ]
   }
 };
 const chemSub = id => SUBSTANCES[id];
@@ -3267,7 +3322,7 @@ function removeChem(inc) {
 }
 const chemActive = () => state.chem.find(x => x.id === runtime.chemActive) || state.chem[state.chem.length - 1] || null;
 function chemSheet(s) {
-  const p = s.props, a = s.aegl, ueg = p.lel * 10000;
+  const p = s.props, a = s.aegl, ueg = p.lel * 10000, lk = a.kind || 'AEGL';
   const kv = (k, v) => [el('b', { text: k }), el('span', { text: v })];
   return el('div', { class: 'cm-card' },
     el('div', { class: 'cm-head' }, el('div', {}, el('h3', { text: s.name }), el('div', { class: 'cm-sub', text: s.formula + ' · CAS ' + s.cas + ' · UN ' + s.un + ' · Klasse ' + s.klasse + ' · VG ' + s.vg + ' · ERG ' + s.erg.guide })), chemPlate(s)),
@@ -3282,10 +3337,10 @@ function chemSheet(s) {
     el('div', { class: 'hint' }, el('b', { text: 'Schutz: ' }), s.massnahmen.schutz),
     el('details', {}, el('summary', { text: 'Leck und Austritt' }), el('ul', { class: 'cm-ul' }, ...s.massnahmen.leck.map(t => el('li', { text: t })))),
     el('details', {}, el('summary', { text: 'Brand' }), el('ul', { class: 'cm-ul' }, ...s.massnahmen.brand.map(t => el('li', { text: t })))),
-    el('h3', { class: 'cm-h', text: 'Grenzwerte für die Keule (AEGL, ' + a.t + ')' }),
+    el('h3', { class: 'cm-h', text: 'Grenzwerte für die Keule (' + lk + ', ' + a.t + ')' }),
     el('table', { class: 'cm-zt' }, el('thead', {}, el('tr', {}, ...['Stufe', 'ppm', 'mg/m³'].map(x => el('th', { text: x })))),
-      el('tbody', {}, ...[['AEGL-1', a.a1], ['AEGL-2', a.a2], ['AEGL-3', a.a3]].map(r => el('tr', {}, el('td', { text: r[0] }), el('td', { text: nfmt(r[1]) }), el('td', { text: nfmt(ppmToMg(r[1], s.molMass)) }))))),
-    el('div', { class: 'hint', text: 'AEGL ' + a.status + ', ' + a.edition + '. mg/m³ bei 20 °C und 1013 hPa umgerechnet (Molmasse ' + nfmt(s.molMass, 2) + '). AEGL-3 liegt bei ' + nfmt(100 * a.a3 / ueg) + ' % der unteren Explosionsgrenze, die Explosionsgefahr kommt dort vor der Giftwirkung.' }),
+      el('tbody', {}, ...[[lk + '-1', a.a1], [lk + '-2', a.a2], [lk + '-3', a.a3]].map(r => el('tr', {}, el('td', { text: r[0] }), el('td', { text: r[1] == null ? 'nicht festgelegt' : nfmt(r[1]) }), el('td', { text: r[1] == null ? '-' : nfmt(ppmToMg(r[1], s.molMass)) }))))),
+    el('div', { class: 'hint', text: lk + ' ' + a.status + ', ' + a.edition + '. mg/m³ bei 20 °C und 1013 hPa umgerechnet (Molmasse ' + nfmt(s.molMass, 2) + ').' + (a.a3 != null ? ' ' + lk + '-3 liegt bei ' + nfmt(100 * a.a3 / ueg) + ' % der unteren Explosionsgrenze' + (a.a3 / ueg > 0.5 ? ', die Explosionsgefahr kommt dort vor der Giftwirkung.' : '.') : '') + (a.note ? ' ' + a.note : '') }),
     el('div', { class: 'hint', text: s.verified ? 'Werte geprüft am ' + s.verifiedAt + ' gegen die unten genannten Quellen. Die deutschen Maßnahmentexte sind sinngemäß nach ERG 2024 übersetzt, die amtliche Fassung gilt.' : 'NICHT GEPRÜFT' }),
     el('details', {}, el('summary', { text: 'Quellen' }), el('ul', { class: 'cm-ul' }, ...s.src.map(r => el('li', {}, el('a', { href: r.u, target: '_blank', rel: 'noopener', text: r.t }), ' (' + r.f + ')'))),
       el('div', { class: 'hint', text: 'GHS-Piktogramme: UNECE, Dateien von Wikimedia Commons (gemeinfrei, PD-ineligible).' })));
@@ -3315,7 +3370,7 @@ function renderChemTab() {
       el('h3', { class: 'cm-h', text: 'Objekte in den Zonen' }), el('div', { 'data-c': 'objs', class: 'cm-objs', text: '…' }),
       el('h3', { class: 'cm-h', text: 'Ausbreitungskeule' }),
       el('div', { class: 'row' }, el('label', {}, 'Quelle g/s ', q), el('label', {}, 'Höhe m ', h)),
-      el('div', { class: 'hint', text: 'Äußere Linie AEGL-1 (' + nfmt(ppmToMg(s.aegl.a1, s.molMass)) + ' mg/m³), innere Linie AEGL-2 (' + nfmt(ppmToMg(s.aegl.a2, s.molMass)) + ' mg/m³), jeweils 60 min, vorläufig. Die Quellstärke muss die Einsatzleitung schätzen, sie wird nicht vorgegeben.' }),
+      el('div', { class: 'hint', text: 'Äußere Linie ' + (s.aegl.kind || 'AEGL') + '-1 (' + nfmt(ppmToMg(s.aegl.a1, s.molMass)) + ' mg/m³), innere Linie ' + (s.aegl.kind || 'AEGL') + '-2 (' + nfmt(ppmToMg(s.aegl.a2, s.molMass)) + ' mg/m³), jeweils ' + s.aegl.t + (s.aegl.status.startsWith('vorl') ? ', vorläufig' : '') + '. Die Quellstärke muss die Einsatzleitung schätzen, sie wird nicht vorgegeben.' }),
       el('div', { class: 'notice', text: 'Das Gauß-Modell rechnet mit einem Gas, das sich wie Luft verhält. ' + s.name + '-Dampf ist schwerer als Luft und sammelt sich in Senken. Die Keule ist eine grobe Schätzung, Messungen gehen vor.' }),
       pl ? el('div', { class: 'kres hint', 'data-c': 'plume', text: plumeLine(pl).text }) : el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Die zugehörige Keule wurde gelöscht.' }), el('button', { class: 'btn small', text: 'Keule neu anlegen', onclick: () => { const np = { id: uid(), name: 'Keule ' + s.name, lat: inc.lat, lng: inc.lng, mode: 'gauss', follow: true, dir: null, speed: null, Q: inc.Q, H: inc.H || 0, thr1: Math.round(ppmToMg(s.aegl.a2, s.molMass)), thr2: Math.round(ppmToMg(s.aegl.a1, s.molMass)), len: null, angle: null, r0: null }; state.plumes.push(np); inc.plumeId = np.id; renderKeulen(); renderChem(); save('Keule neu: ' + s.name); } })),
       el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => { map.setView([inc.lat, inc.lng], Math.max(map.getZoom(), 15)); runtime.chemActive = inc.id; renderChemBand(); } }),
@@ -3397,23 +3452,23 @@ async function printLagekarte() {
 /* Messpunkte (Gefahrstoff): Messwert, Ort, Zeit, Vergleich mit Keule  */
 /* ------------------------------------------------------------------ */
 function measLevel(m) { const s = chemSub(m.sid); if (!s) return 0; return m.ppm >= s.aegl.a2 ? 2 : m.ppm >= s.aegl.a1 ? 1 : 0; }
-const MEAS_COL = ['#16a34a', '#d97706', '#b91c1c'], MEAS_TXT = ['unter AEGL-1', 'AEGL-1 bis AEGL-2', 'AEGL-2 oder mehr'];
+const MEAS_COL = ['#16a34a', '#d97706', '#b91c1c'], measTxt = (m, i) => { const k = (chemSub(m.sid) || { aegl: {} }).aegl.kind || 'AEGL'; return ['unter ' + k + '-1', k + '-1 bis ' + k + '-2', k + '-2 oder mehr'][i]; };
 function measExpect(m) {
   const inc = state.chem.find(c => c.sid === m.sid) || chemActive(); const pl = inc && state.plumes.find(x => x.id === inc.plumeId); if (!pl) return null;
   const g = plumeCalc(pl), ew = effWind(pl); if (g.error || g.mode !== 'gauss') return null;
   const inRing = r => r && !r.none && pip(m.lat, m.lng, r.poly.map(q => toLL(pl, ew.dir, q[0], q[1])));
   return inRing(g.rings[1]) ? 2 : inRing(g.rings[0]) ? 1 : 0;
 }
-function measCompare(m) { const e = measExpect(m); if (e == null) return 'Keule nicht berechnet, kein Vergleich'; const l = measLevel(m); return 'Rechnung: ' + MEAS_TXT[e] + (l === e ? ', passt zur Messung' : l > e ? ', Messung ist höher als berechnet' : ', Messung ist niedriger als berechnet'); }
+function measCompare(m) { const e = measExpect(m); if (e == null) return 'Keule nicht berechnet, kein Vergleich'; const l = measLevel(m); return 'Rechnung: ' + measTxt(m, e) + (l === e ? ', passt zur Messung' : l > e ? ', Messung ist höher als berechnet' : ', Messung ist niedriger als berechnet'); }
 function drawMeasures() {
   (state.measure || []).forEach(m => { const l = measLevel(m);
     L.marker([m.lat, m.lng], { zIndexOffset: 800, icon: L.divIcon({ className: '', iconSize: [64, 26], iconAnchor: [32, 13], html: el('div', { class: 'measpt', style: '--c:' + MEAS_COL[l] }, m.ppm + ' ppm') }) })
-      .bindTooltip(el('span', { text: fmtHM2(Date.parse(m.time)) + ' Uhr · ' + m.ppm + ' ppm · ' + MEAS_TXT[l] + (m.note ? ' · ' + m.note : '') + '. ' + measCompare(m) })).addTo(chemLayer); });
+      .bindTooltip(el('span', { text: fmtHM2(Date.parse(m.time)) + ' Uhr · ' + m.ppm + ' ppm · ' + measTxt(m, l) + (m.note ? ' · ' + m.note : '') + '. ' + measCompare(m) })).addTo(chemLayer); });
 }
 function measureBlock() {
   const ed = !ro('measure'), list = (state.measure || []).slice().sort((a, b) => b.time.localeCompare(a.time));
   return el('div', { class: 'card', style: '--c:#0e7490' }, el('h3', { text: 'Messwerte', style: 'font-size:15px' }),
-    el('div', { class: 'hint', text: 'Gemessene Konzentration in ppm mit Ort und Uhrzeit. Die Farbe folgt den AEGL-Stufen des Stoffs, der Vergleich nutzt die berechnete Keule.' }),
+    el('div', { class: 'hint', text: 'Gemessene Konzentration in ppm mit Ort und Uhrzeit. Die Farbe folgt den Grenzwertstufen des Stoffs (AEGL oder ERPG), der Vergleich nutzt die berechnete Keule.' }),
     ed ? el('div', { class: 'row' }, el('button', { class: 'btn primary', text: 'Messpunkt setzen', onclick: addMeasure })) : null,
     ...(list.length ? list.map(m => el('div', { class: 'cm-zone', style: '--c:' + MEAS_COL[measLevel(m)] }, el('span', {}, el('b', { text: m.ppm + ' ppm · ' + fmtHM2(Date.parse(m.time)) + ' Uhr' }), MEAS_TXT[measLevel(m)] + (m.note ? ' · ' + m.note : ''), el('br'), el('span', { class: 'hint', text: measCompare(m) })),
       el('span', { style: 'margin-left:auto;display:flex;gap:4px' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([m.lat, m.lng], Math.max(map.getZoom(), 17)) }), ed ? el('button', { class: 'btn small danger', text: '×', 'aria-label': 'Messpunkt entfernen', onclick: () => { state.measure = state.measure.filter(x => x !== m); renderChem(); save('Messpunkt entfernt'); } }) : null))) : [el('div', { class: 'hint', text: 'Noch keine Messwerte.' })]));
