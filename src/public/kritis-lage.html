@@ -3722,6 +3722,35 @@ const SUBSTANCES = {
       { t: 'Datenbank GEFAHRGUT (BAM), UN 1016 Kohlenmonoxid, verdichtet', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/adr/bejwmoxagsps?lang=en', f: 'Klasse 2, Gefahrnummer 263 (bestätigt durch Dräger-Stoffdatenbank und ADR-Tabelle bei umwelt-online)' },
       { t: 'Sicherheitsdatenblatt Kohlenmonoxid (Air Liquide)', u: 'https://de.airliquide.com/statics/2026-05/air-liquide-de-sicherheitsdatenblatt-kohlenmonoxid-gasflasche.pdf', f: 'H220, H280, H331, H360D' }
     ]
+  },
+  ammoniumnitrat: {
+    id: 'ammoniumnitrat', gestis: [['', 'Ammoniumnitrat']], name: 'Ammoniumnitrat (fest, UN 1942)', formula: 'NH4NO3', cas: '6484-52-2', un: '1942', kemler: '50', klasse: '5.1', vg: 'III', molMass: 80.05,
+    erg: { guide: '140', title: 'Oxidationsmittel', isolate: 25, spillDownwind: 100, fire: 1600 },
+    ghs: ['GHS03', 'GHS07'], signal: 'Achtung',
+    h: [['H272', 'Kann Brand verstärken, Oxidationsmittel.'], ['H319', 'Verursacht schwere Augenreizung.']],
+    hNote: 'Einstufung des Reinstoffs laut Sicherheitsdatenblättern (Sigma-Aldrich und andere). Gilt für UN 1942, Ammoniumnitrat mit höchstens 0,2 % brennbaren Stoffen. Düngemittel (zum Beispiel UN 2067) und Gemische sind je nach Gehalt und Zusammensetzung anders eingestuft, dann gilt das Datenblatt des Produkts.',
+    props: { flash: null, fire: 'nicht brennbar, brandfördernd, kann im Brand explodieren', boil: 'nicht angegeben, Schmelzpunkt 170', lel: null, uel: null, vapDens: null },
+    plume: false,
+    gefahren: [
+      { c: '#b91c1c', t: 'Explosion', x: 'Kann explodieren, wenn es in ein Feuer gerät, mit Kraftstoffen (Kohlenwasserstoffen), organischen Stoffen oder anderen Verunreinigungen in Berührung kommt oder wenn es heiß geschmolzen eingeschlossen ist. Im Brand wie einen Sprengstoff behandeln (ERG Leitfaden 112). Heiße wässrige Lösungen über 50 % können unter Einschluss explosionsartig zerfallen (CAMEO).' },
+      { c: '#ea580c', t: 'Brand', x: 'Brennt selbst nicht, beschleunigt aber Brände und kann Holz, Papier, Öl und Kleidung entzünden. Manche Zersetzungsprodukte unterstützen die Verbrennung. Behälter können bei Erwärmung bersten.' },
+      { c: '#7f1d1d', t: 'Gesundheit', x: 'Reizt die Augen (H319). Im Brand entstehen reizende, ätzende und giftige Gase (ERG). Atemschutz auch beim Ablöschen von Schwelbränden.' },
+      { c: '#475569', t: 'Umwelt', x: 'Löschwasser und Abfluss können die Umwelt belasten (ERG). Nitrat und Ammonium gelangen ins Wasser, Abfluss in Gewässer, Kanalisation und Keller verhindern. Kein Dampf in der Umgebungsluft, deshalb keine Ausbreitungskeule.' }
+    ],
+    massnahmen: {
+      schutz: 'Umluftunabhängiger Atemschutz (Überdruck). Chemikalienschutzanzug nach Herstellerempfehlung nur, wenn keine Brandgefahr besteht. Feuerwehr-Schutzkleidung schützt thermisch, chemisch nur begrenzt.',
+      leck: ['Brennbares Material (Holz, Papier, Öl, Kraftstoffe) von ausgelaufenem Stoff fernhalten.', 'Beschädigte Behälter und ausgelaufenes Material nur mit geeigneter Schutzkleidung berühren.', 'Leck nur stoppen, wenn es ohne Risiko geht.', 'Kein Wasser in Behälter.', 'Kleiner trockener Austritt: mit sauberer Schaufel in einen sauberen, trockenen Behälter füllen, lose abdecken und aus dem Bereich bringen.', 'Großer Austritt: weit vor der Flüssigkeit eindämmen. Verunreinigungen, vor allem Kraftstoffe und organische Stoffe, vermeiden.', 'Eintritt in Gewässer, Kanalisation und Keller verhindern.'],
+      brand: ['Brennt Ladung mit Ammoniumnitrat im Tank, Kesselwagen oder Lkw, die Ladung NICHT bekämpfen. Zurückziehen, evakuieren und 1600 m in alle Richtungen absperren. Wie einen Sprengstoff behandeln (ERG Leitfaden 112). Bereich 24 Stunden oder bis zur Freigabe durch Fachleute nicht betreten.', 'Kleinbrand ohne Beteiligung der Ladung: Wasser einsetzen. Keine Löschpulver oder Schäume. CO2 oder Halon wirken nur begrenzt.', 'Großbrand: Brandbereich aus der Entfernung mit Wasser fluten.', 'Wurde die Ladung erhitzt, Ladung und Fahrzeug nicht bewegen. Unbeschädigte Behälter nur aus dem Bereich bringen, wenn es sicher geht.', 'Tank im Brand: aus größtmöglichem Abstand oder mit ferngesteuerten Strahlrohren, bis lange nach dem Löschen kühlen, immer Abstand zu Tanks halten, die in Flammen stehen.']
+    },
+    aegl: { kind: 'PAC', unit: 'mg', status: 'laut CAMEO Chemicals (DOE, PAC-1/2/3), für Ammoniumnitrat gibt es keine AEGL und keine ERPG', t: 'ohne Zeitangabe', a1: 6.7, a2: 73, a3: 440, edition: 'DOE 2024', note: 'Die Werte sind in mg/m³ angegeben und gelten für Stäube und Rauch. Ammoniumnitrat ist ein Feststoff ohne Dampf, deshalb wird keine Keule gerechnet.' },
+    verified: true, verifiedAt: '25.11.2026',
+    src: [
+      { t: 'CAMEO Chemicals (NOAA), Ammonium nitrate', u: 'https://cameochemicals.noaa.gov/chemical/98', f: 'Schmelzpunkt, Dichte, Molmasse, PAC 6,7 / 73 / 440 mg/m³, keine AEGL, Gefahrentexte' },
+      { t: 'ERG Leitfaden 140 (CAMEO-Auszug), UN 1942', u: 'https://cameochemicals.noaa.gov/erg_guides/en/Guide_140.pdf', f: 'Absperrung 25 m (Feststoff), großes Leck 100 m, Brand 800 m, bei Ammoniumnitrat-Ladung im Brand 1600 m, Maßnahmen' },
+      { t: 'ERG UN/NA 1942 (CAMEO)', u: 'https://cameochemicals.noaa.gov/unna/1942', f: 'Leitfaden 140, keine Distanzen in Tabelle 1' },
+      { t: 'Datenbank GEFAHRGUT (BAM), UN 1942 Ammoniumnitrat, fest', u: 'https://www.dgg.bam.de/dgginfo/shortinfo/adr/uhitipqdfqnm?lang=en', f: 'Klasse 5.1, Verpackungsgruppe III, Gefahrnummer 50' },
+      { t: 'Sicherheitsdatenblatt Ammoniumnitrat (Sigma-Aldrich)', u: 'https://www.sigmaaldrich.com/sds/sial/a7455', f: 'Ox. Sol. 3 (H272), Eye Irrit. 2 (H319)' }
+    ]
   }
 };
 const chemSub = id => SUBSTANCES[id];

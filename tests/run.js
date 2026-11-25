@@ -4,7 +4,7 @@
 const { chromium } = require('playwright');
 const path = require('path'), assert = require('assert');
 const FILE = 'file://' + path.resolve(__dirname, '..', 'src', 'public', 'kritis-lage-einzeldatei.html');
-const SUBSTANZEN = ['benzol', 'aceton', 'ethanol', 'benzin', 'diesel', 'hcl', 'h2so4', 'propan', 'ammoniak', 'chlor', 'methanol', 'natronlauge', 'hno3', 'h2o2', 'co'];
+const SUBSTANZEN = ['benzol', 'aceton', 'ethanol', 'benzin', 'diesel', 'hcl', 'h2so4', 'propan', 'ammoniak', 'chlor', 'methanol', 'natronlauge', 'hno3', 'h2o2', 'co', 'ammoniumnitrat'];
 let ok = 0, fail = 0; const errs = [];
 async function t(name, fn) { try { await fn(); ok++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FEHLER ' + name + '\n       ' + String(e.message).split('\n')[0]); } }
 async function seite(b, q, w, h) {
