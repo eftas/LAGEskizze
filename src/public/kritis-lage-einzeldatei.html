@@ -915,6 +915,11 @@ body.beamer #placeSearch { display: none; }
 .seg button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent); }
 .chip.ex { background: #b45309; color: #fff; border-color: #92400e; letter-spacing: .08em; }
 .chip.due { background: #b91c1c; color: #fff; border-color: #7f1d1d; }
+.bhpm { display: flex; align-items: center; gap: 2px; background: #fff; border: 2px solid #b91c1c; border-radius: 6px; padding: 2px 3px; box-shadow: 0 1px 4px rgba(0,0,0,.4); font: 700 13px Inter, sans-serif; }
+.bhpm b { color: #b91c1c; padding: 0 3px; } .bhpm i { font-style: normal; color: #fff; min-width: 20px; text-align: center; border-radius: 4px; padding: 1px 3px; }
+.bhp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 0 6px 8px; border-left: 5px solid var(--c); margin: 6px 0; }
+.bhp-row b { min-width: 92px; } .bhp-w { display: inline-flex; align-items: center; gap: 4px; }
+[data-theme="dark"] .bhpm { background: #17233a; }
 .tour-shield { position: fixed; inset: 0; z-index: 7000; background: transparent; }
 .tour-spot { position: fixed; z-index: 7001; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(8, 15, 30, .62), 0 0 0 3px #fbbf24 inset; pointer-events: none; transition: left .4s ease, top .4s ease, width .4s ease, height .4s ease; }
 .tour-card { position: fixed; z-index: 7002; width: 320px; background: var(--panel, #fff); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 34px rgba(0, 0, 0, .5); padding: 14px 16px; transition: left .4s ease, top .4s ease; }
@@ -1510,6 +1515,7 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
       <button role="tab" data-tab="tagebuch" aria-selected="false">Tagebuch</button>
       <button role="tab" data-tab="probleme" aria-selected="false">Probleme</button>
       <button role="tab" data-tab="zahlen" aria-selected="false">Zahlen</button>
+      <button role="tab" data-tab="bhp" aria-selected="false" title="Behandlungsplatz: Sichtungskategorien, Transport, Kliniken">Behandlung</button>
       <button role="tab" data-tab="keule" aria-selected="false" title="Wetter, Wind und Keule">Wetter</button>
       <button role="tab" data-tab="chem" aria-selected="false" title="Gefahrstoffe: Datenblatt, Absperrzonen, Betroffene, Keule">Gefahrstoff</button>
       <button role="tab" data-tab="lage" aria-selected="false">Lage</button>
@@ -1630,6 +1636,14 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
       </div>
       <h2>Abschnitte und Führung</h2>
       <div id="abList"></div>
+    </section>
+
+    <section class="tabpane" id="tab-bhp">
+      <h2>Behandlungsplatz</h2>
+      <div class="hint">Nur Zahlen, keine Namen von Patienten. Die Sichtung nimmt der Rettungsdienst vor. Hier führen Sie mit, wie viele Patienten je Kategorie warten und abtransportiert wurden.</div>
+      <div class="row editonly"><button class="btn primary" id="bhpAdd">Behandlungsplatz auf der Karte setzen</button></div>
+      <div id="bhpSum" class="hint"></div>
+      <div id="bhpList"></div>
     </section>
 
     <section class="tabpane" id="tab-meldungen">
@@ -2309,6 +2323,7 @@ function freshState() {
     sources: {},         // eingelesene Dateien je Funktion (S2)
     fue: { people: {}, fb: [], funk: [] },   // Führungsstruktur: people[EL|LS|S1..|SL] = { name, call }, fb = Fachberater, funk = Funkplan
     measure: [],         // Messpunkte: { id, sid, lat, lng, time, ppm, note }
+    bhp: [],             // Behandlungsplätze: { id, name, lat, lng, leiter, funk, w:{sk1,sk2,sk3}, t:{sk1,sk2,sk3}, kap:{sk1,sk2,sk3}, rtw, ktw, na, kliniken:[{id,name,frei,min}] }, nur Zahlen, keine Personendaten
     chem: [],            // { id, sid, name, lat, lng, large, fire, Q, H, plumeId }
     chemBand: true,
     popRadius: 300,      // Umkreis in m für die Wohnbevölkerung an Objekten (nicht Teil des Rückgängig-Verlaufs)
@@ -2404,7 +2419,7 @@ function snapshot() {
     areas: state.areas.map(a => ({ id: a.id, name: a.name, color: a.color, opacity: a.opacity, visible: a.visible, query: a.query, kind: a.kind, rings: a.rings, areaId: a.areaId, circle: a.circle })),
     sections: state.sections, symbols: state.symbols, objects: objs,
     units: state.units, manual: Object.values(state.pois).filter(p => p.manual), deps: state.deps, casualties: state.casualties, problems: state.problems,
-    wind: state.wind, plumes: state.plumes, chem: state.chem, fue: state.fue, logi: state.logi, measure: state.measure
+    wind: state.wind, plumes: state.plumes, chem: state.chem, fue: state.fue, logi: state.logi, measure: state.measure, bhp: state.bhp
   });
 }
 function histInit() { hist.past = []; hist.future = []; hist.cur = snapshot(); updateUndoButtons(); }
@@ -2450,9 +2465,9 @@ function restore(snap) {
   Object.values(state.pois).filter(q => q.manual).forEach(q => { if (markers[q.id]) { groups[q.layer].removeLayer(markers[q.id]); delete markers[q.id]; } delete state.pois[q.id]; });
   state.areas = d.areas.map(a => prepArea(Object.assign({}, a, { color: safeColor(a.color) })));
   state.sections = d.sections; state.symbols = d.symbols; state.objects = d.objects; state.deps = d.deps; state.casualties = d.casualties; state.problems = d.problems;
-  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || []; state.measure = d.measure || []; state.fue = d.fue || freshState().fue; state.logi = d.logi || {};
+  state.wind = d.wind || freshState().wind; state.plumes = d.plumes || []; state.units = d.units || []; state.chem = d.chem || []; state.measure = d.measure || []; state.bhp = d.bhp || []; state.fue = d.fue || freshState().fue; state.logi = d.logi || {};
   d.manual.forEach(q => { state.pois[q.id] = q; });
-  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
+  renderAreas(); renderAreaList(); renderSecList(); renderSections(); renderSymbols(); renderMarkers(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderBhp(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
   hist.cur = snapshot(); persist();
 }
 
@@ -3506,6 +3521,7 @@ function mapItems(ll) {
     ok('units') && { label: 'Einheit hier einsetzen…', onclick: async () => { const v = await askText('Bezeichnung der Einheit', ''); if (v == null || !v.trim()) return; addUnit({ name: v.trim(), lat: ll.lat, lng: ll.lng }); } },
     ok('problems') && { label: 'Problem hier melden', onclick: () => reportProblemAt(ll) },
     ok('casualties') && { label: 'Personenzahl hier erfassen', sub: casNew().map(([k, v]) => ({ label: v.label, icon: casIcon(k), swatch: casIcon(k) ? null : v.color, onclick: () => askNumberCas(k, ll) })) },
+    ok('bhp') && { label: 'Behandlungsplatz hier einrichten', onclick: () => addBhp(ll) },
     !runtime.viewer && { label: 'Journaleintrag mit Ort', onclick: () => journalAt(ll) },
     { sep: true },
     { label: 'Entfernung messen ab hier', onclick: () => startMeasure(ll) },
@@ -4959,6 +4975,7 @@ function buildPrintSheet() {
     el('div', { class: 'psb' }, el('b', { text: 'Personen' }), el('div', { text: ['sk1', 'sk2', 'sk3', 'tot', 'vermisst', 'betroffen'].map(k => (CAS[k].tag || CAS[k].short) + ' ' + (t[k] || 0)).join(' · ') })),
     el('div', { class: 'psb' }, el('b', { text: 'Einheiten (' + u.length + ', Stärke ' + u.reduce((a, x) => a + uTotal(x), 0) + ')' }), el('table', {}, el('tbody', {}, ...rows.slice(0, 34))), rows.length > 34 ? el('div', { text: '… weitere Zeilen siehe Karte' }) : null),
     probs.length ? el('div', { class: 'psb' }, el('b', { text: 'Offene Probleme' }), ...probs.map(p => el('div', { text: p.prio + ' · ' + p.title }))) : null,
+    bhpTotals().n ? el('div', { class: 'psb' }, el('b', { text: 'Behandlungsplatz' }), el('div', { text: 'wartend: SK I ' + bhpTotals().w.sk1 + ', SK II ' + bhpTotals().w.sk2 + ', SK III ' + bhpTotals().w.sk3 + ' · abtransportiert: SK I ' + bhpTotals().t.sk1 + ', SK II ' + bhpTotals().t.sk2 + ', SK III ' + bhpTotals().t.sk3 })) : null,
     meas.length ? el('div', { class: 'psb' }, el('b', { text: 'Messwerte' }), ...meas.map(m => el('div', { text: fmtHM2(Date.parse(m.time)) + ' · ' + m.ppm + ' ppm' + (m.note ? ' · ' + m.note : '') }))) : null];
   sh.replaceChildren(...kids.filter(Boolean));
 }
@@ -5059,7 +5076,7 @@ function renderVortrag() {
   if (!runtime.vortrag) return; const ex = state.exercise, t = casTotals().t, probs = state.problems.filter(p => p.status !== 'erledigt').length;
   $('#vtTop').replaceChildren(el('span', { class: 'nm', text: 'LAGEkarte' }), ex && ex.active ? el('span', { class: 'ex', text: 'ÜBUNG' }) : '', ex && ex.name ? el('span', { class: 'en', text: ex.name }) : '', el('span', { class: 't', text: fmtClock(nowMs()) }), el('span', { class: 'tz', text: fmtTac(nowMs()) }), el('span', { class: 'mt', text: vtMeetingText() }));
   const k = (c, n, l, id) => el('div', { class: 'vtk', style: '--c:' + c }, el('b', { text: n, id: id || null }), el('span', { text: l })), zone = vtZone(), meas = (state.measure || []);
-  $('#vtKpi').replaceChildren(k('#dc2626', String(t.sk1 || 0), 'SK I (rot)'), k('#ca8a04', String(t.sk2 || 0), 'SK II (gelb)'), k('#16a34a', String(t.sk3 || 0), 'SK III (grün)'), k('#111827', String(t.vermisst || 0), 'Vermisste, ' + (t.tot || 0) + ' Tote'),
+  $('#vtKpi').replaceChildren(k('#dc2626', String(t.sk1 || 0), 'SK I (rot)'), k('#ca8a04', String(t.sk2 || 0), 'SK II (gelb)'), k('#16a34a', String(t.sk3 || 0), 'SK III (grün)'), k('#111827', String(t.vermisst || 0), 'Vermisste, ' + (t.tot || 0) + ' Tote'), ...(bhpTotals().n ? [k('#b91c1c', String(bhpTotals().w.sk1), 'SK I im Behandlungsplatz wartend')] : []),
     k('#0e7490', zone ? '…' : POP.total != null ? '≈ ' + popFmtN(POP.total) : '–', zone ? 'Einwohner im ' + zone.label : 'Einwohner im Abfragegebiet', 'vtPop'), k(probs ? '#b91c1c' : '#15803d', String(probs), 'Probleme offen'),
     meas.length ? k('#0e7490', Math.max(...meas.map(m => m.ppm)) + ' ppm', 'höchster Messwert') : '');
   if (zone && zone.ring) popFor([zone.ring]).then(r => { const e = $('#vtPop'); if (e) e.textContent = r.noData || r.missing.length ? '–' : '≈ ' + popFmtN(r.pop); });
@@ -5575,10 +5592,10 @@ const ROLLEN = [
   { id: 'EL', name: 'Einsatzleiter', d: 'Gesamtlage, Führungsstruktur, Entscheidungen' }, { id: 'S1', name: 'S1 Personal', d: 'Personen erfassen (Sichtung, Tote, Vermisste)' },
   { id: 'S2', name: 'S2 Lage', d: 'Lagevortrag, alles bearbeiten, Daten der anderen einlesen' }, { id: 'S3', name: 'S3 Einsatz', d: 'Einheiten und Abschnitte' },
   { id: 'S4', name: 'S4 Versorgung', d: 'Ablösung, Atemschutz, Nachforderung, Ausfälle' }, { id: 'S5', name: 'S5 Presse', d: 'Meldungen' }, { id: 'S6', name: 'S6 Kommunikation', d: 'Kommunikationsplan' }];
-const ROLE_DOM = { EL: ['people', 'fb'], S1: ['casualties'], S2: ['areas', 'objects', 'deps', 'symbols', 'manualPois', 'wind', 'weather', 'plumes', 'chem', 'measure', 'problems', 'exercise', 'meeting'], S3: ['units', 'sections'], S4: ['logi'], S5: [], S6: ['funk'] };
+const ROLE_DOM = { EL: ['people', 'fb'], S1: ['casualties', 'bhp'], S2: ['areas', 'objects', 'deps', 'symbols', 'manualPois', 'wind', 'weather', 'plumes', 'chem', 'measure', 'problems', 'exercise', 'meeting'], S3: ['units', 'sections'], S4: ['logi'], S5: [], S6: ['funk'] };
 const DOM_PATH = { people: ['fue', 'people'], fb: ['fue', 'fb'], funk: ['fue', 'funk'] };
-const ROLE_TABS = { EL: ['probleme', 'tagebuch', 'meldungen', 'staende', 'daten'], S1: ['zahlen', 'meldungen', 'tagebuch', 'daten'], S3: ['kraefte', 'abschnitte', 'meldungen', 'tagebuch', 'daten'],
-  S4: ['probleme', 'meldungen', 'daten'], S5: ['meldungen', 'tagebuch', 'daten'], S6: ['meldungen', 'daten'] };
+const ROLE_TABS = { EL: ['bhp', 'probleme', 'tagebuch', 'meldungen', 'staende', 'daten'], S1: ['bhp', 'zahlen', 'meldungen', 'tagebuch', 'daten'], S3: ['kraefte', 'abschnitte', 'meldungen', 'tagebuch', 'daten'],
+  S4: ['bhp', 'probleme', 'meldungen', 'daten'], S5: ['meldungen', 'tagebuch', 'daten'], S6: ['meldungen', 'daten'] };
 const roleId = () => runtime.role || 'S2';
 const can = d => roleId() === 'S2' || (ROLE_DOM[roleId()] || []).includes(d);
 const ro = d => runtime.viewer || !can(d);
@@ -5753,7 +5770,7 @@ function openGuidedMeeting() {
 /* ---- Einweisung (Rundgang) und Tastenkürzel ---- */
 const SHORTCUTS = [
   ['?', 'Diese Übersicht'], ['U', 'Einheiten'], ['F', 'Führungsstruktur'], ['V', 'Lagevortrag starten oder beenden'], ['D', 'Dunkelmodus umschalten'],
-  ['K', 'Reiter Kräfte'], ['T', 'Reiter Tagebuch'], ['M', 'Reiter Meldungen'], ['P', 'Reiter Probleme'], ['Z', 'Reiter Zahlen'], ['W', 'Reiter Wetter'], ['G', 'Reiter Gefahrstoff'],
+  ['K', 'Reiter Kräfte'], ['B', 'Reiter Behandlungsplatz'], ['T', 'Reiter Tagebuch'], ['M', 'Reiter Meldungen'], ['P', 'Reiter Probleme'], ['Z', 'Reiter Zahlen'], ['W', 'Reiter Wetter'], ['G', 'Reiter Gefahrstoff'],
   ['N', 'Neue Einheit'], ['J', 'Journaleintrag'], ['/', 'Ortssuche'], ['Strg+Z, Strg+Y', 'Rückgängig, Wiederholen'], ['Umschalt+P', 'Seitenleiste ein- oder ausklappen'], ['Esc', 'Schließen, Abbrechen']
 ];
 function infoDialog(title, ...body) {
@@ -5774,7 +5791,7 @@ function goTab(name) {
 document.addEventListener('keydown', e => {
   if (typing(e.target) || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.dlg:not(.dlgout)') || menuStack.length) return;
   if (e.target && /^(SELECT|BUTTON)$/.test(e.target.tagName) && e.key === ' ') return;
-  const k = e.key.toLowerCase(), tabs = { k: 'kraefte', t: 'tagebuch', m: 'meldungen', p: 'probleme', z: 'zahlen', w: 'keule', g: 'chem' };
+  const k = e.key.toLowerCase(), tabs = { b: 'bhp', k: 'kraefte', t: 'tagebuch', m: 'meldungen', p: 'probleme', z: 'zahlen', w: 'keule', g: 'chem' };
   if (e.shiftKey && k !== '?') return;
   if (k === '?') { e.preventDefault(); showShortcuts(); }
   else if (k === 'u') { e.preventDefault(); $('#btnUnits').click(); }
@@ -5919,6 +5936,73 @@ function fillMsgRefs() {
   $('#roleList').replaceChildren(...state.roles.map(r => el('option', { value: r.label }))); 
 }
 /* Vordrucke für Meldungen: füllen Zahlen aus der Lage vor, kein amtlicher Vordruck */
+/* ------------------------------------------------------------------ */
+/* Behandlungsplatz (BHP): Zahlen je Sichtungskategorie, Transport, Kliniken */
+/* ------------------------------------------------------------------ */
+const BHP_CAT = [['sk1', 'SK I (rot)', '#dc2626'], ['sk2', 'SK II (gelb)', '#ca8a04'], ['sk3', 'SK III (grün)', '#16a34a']];
+const bhpLayer = L.layerGroup().addTo(map);
+const bhpNum = v => Math.max(0, Math.round(+v || 0));
+function bhpNew(ll) { return { id: uid(), name: 'Behandlungsplatz ' + (state.bhp.length + 1), lat: ll.lat, lng: ll.lng, leiter: '', funk: '', w: { sk1: 0, sk2: 0, sk3: 0 }, t: { sk1: 0, sk2: 0, sk3: 0 }, kap: { sk1: 0, sk2: 0, sk3: 0 }, rtw: 0, ktw: 0, na: 0, kliniken: [], time: nowIso() }; }
+function bhpTotals() { const r = { n: state.bhp.length, w: { sk1: 0, sk2: 0, sk3: 0 }, t: { sk1: 0, sk2: 0, sk3: 0 } }; state.bhp.forEach(b => BHP_CAT.forEach(c => { r.w[c[0]] += bhpNum(b.w[c[0]]); r.t[c[0]] += bhpNum(b.t[c[0]]); })); return r; }
+function addBhp(ll) {
+  if (runtime.viewer || !can('bhp')) return; const b = bhpNew(ll); state.bhp.push(b); addJournal(b.name + ' eingerichtet', true, { lat: ll.lat, lng: ll.lng }); renderBhp(); save('Behandlungsplatz eingerichtet'); setPanel(true); openTab('bhp'); say('Behandlungsplatz eingerichtet.', 3000);
+}
+function bhpItems(b) {
+  return [{ label: 'Zoom', onclick: () => map.setView([b.lat, b.lng], Math.max(map.getZoom(), 17)) }, { label: 'In der Liste zeigen', onclick: () => { setPanel(true); openTab('bhp'); } },
+    ...(!runtime.viewer && can('bhp') ? [{ sep: true }, { label: 'Entfernen', onclick: () => { state.bhp = state.bhp.filter(x => x !== b); addJournal(b.name + ' aufgelöst', true); renderBhp(); save('Behandlungsplatz entfernt'); } }] : [])];
+}
+function bhpIcon(b) {
+  const num = (k, c) => '<i style="background:' + c + '">' + bhpNum(b.w[k]) + '</i>';
+  return L.divIcon({ className: '', iconSize: [96, 34], iconAnchor: [48, 17], html: '<div class="bhpm"><b>BHP</b>' + BHP_CAT.map(c => num(c[0], c[2])).join('') + '</div>' });
+}
+function renderBhpMap() {
+  bhpLayer.clearLayers();
+  state.bhp.forEach(b => { const m = L.marker([b.lat, b.lng], { draggable: !runtime.viewer && can('bhp'), zIndexOffset: 850, icon: bhpIcon(b) });
+    m.bindTooltip(el('span', { text: b.name + ': wartend SK I ' + bhpNum(b.w.sk1) + ', SK II ' + bhpNum(b.w.sk2) + ', SK III ' + bhpNum(b.w.sk3) }));
+    m.on('dragend', () => { const ll = m.getLatLng(); b.lat = ll.lat; b.lng = ll.lng; save('Behandlungsplatz verschoben: ' + b.name); });
+    m.on('contextmenu', e => ctxOpen(e, bhpItems(b), null, 'Behandlungsplatz: ' + b.name)); m.addTo(bhpLayer); });
+}
+function renderBhp() {
+  renderBhpMap();
+  const box = $('#bhpList'); if (!box) return; const act = document.activeElement;
+  if (act && box.contains(act) && /^(INPUT|TEXTAREA|SELECT)$/.test(act.tagName)) { const tt = bhpTotals(); $('#bhpSum').textContent = bhpSumText(tt); return; }
+  box.replaceChildren(); const ed = !ro('bhp'), tt = bhpTotals(); $('#bhpSum').textContent = bhpSumText(tt);
+  if (!state.bhp.length) box.append(el('div', { class: 'hint', text: 'Noch kein Behandlungsplatz. Mit dem Knopf oben oder per Rechtsklick auf die Karte einrichten.' }));
+  state.bhp.forEach(b => {
+    const num = (get, set, w) => el('input', { type: 'number', min: '0', step: '1', class: 'num', value: get(), style: 'width:' + (w || 64) + 'px', disabled: ed ? null : 'disabled', onchange: ev => { set(bhpNum(ev.target.value)); ev.target.value = get(); renderBhpMap(); $('#bhpSum').textContent = bhpSumText(bhpTotals()); save('Behandlungsplatz ' + b.name + ' angepasst'); } });
+    const bump = (k, d) => { b.w[k] = Math.max(0, bhpNum(b.w[k]) + d); renderBhp(); save('BHP ' + b.name + ': ' + (d > 0 ? '+' : '') + d + ' wartend ' + BHP_CAT.find(c => c[0] === k)[1]); };
+    const away = k => { if (bhpNum(b.w[k]) < 1) return; b.w[k] = bhpNum(b.w[k]) - 1; b.t[k] = bhpNum(b.t[k]) + 1; addJournal(b.name + ': 1 Patient ' + BHP_CAT.find(c => c[0] === k)[1] + ' abtransportiert (insgesamt ' + b.t[k] + ')', true, { lat: b.lat, lng: b.lng }); renderBhp(); save('BHP ' + b.name + ': Transport ' + k); };
+    const warn = BHP_CAT.filter(c => b.kap[c[0]] > 0 && bhpNum(b.w[c[0]]) > b.kap[c[0]]).map(c => c[1] + ' über Kapazität');
+    const rows = BHP_CAT.map(([k, lab, col]) => el('div', { class: 'bhp-row', style: '--c:' + col },
+      el('b', { text: lab }),
+      el('span', { class: 'bhp-w' }, 'wartend ', ed ? el('button', { class: 'btn small', 'aria-label': lab + ' wartend minus', text: '−', onclick: () => bump(k, -1) }) : null, num(() => bhpNum(b.w[k]), v => { b.w[k] = v; }, 56), ed ? el('button', { class: 'btn small', 'aria-label': lab + ' wartend plus', text: '+', onclick: () => bump(k, 1) }) : null),
+      ed ? el('button', { class: 'btn small', text: 'Transport', title: 'Einen Patienten abtransportiert melden', disabled: bhpNum(b.w[k]) < 1 ? 'disabled' : null, onclick: () => away(k) }) : null,
+      el('span', { class: 'hint', text: 'abtransportiert ' + bhpNum(b.t[k]) }),
+      el('label', { class: 'hint' }, 'Plätze ', num(() => bhpNum(b.kap[k]), v => { b.kap[k] = v; }, 52))));
+    const kl = b.kliniken.map(c => el('div', { class: 'row' }, el('input', { type: 'text', value: c.name, placeholder: 'Klinik', disabled: ed ? null : 'disabled', onchange: ev => { c.name = ev.target.value.trim(); save('Zielklinik: ' + c.name); } }),
+      el('label', { class: 'hint' }, 'frei ', num(() => bhpNum(c.frei), v => { c.frei = v; }, 52)), el('label', { class: 'hint' }, 'min ', num(() => bhpNum(c.min), v => { c.min = v; }, 52)),
+      ed ? el('button', { class: 'btn small danger', 'aria-label': 'Klinik entfernen', text: '×', onclick: () => { b.kliniken = b.kliniken.filter(x => x !== c); renderBhp(); save('Zielklinik entfernt'); } }) : null));
+    const card = el('div', { class: 'card bhp-card', 'data-bid': b.id, style: '--c:#b91c1c' },
+      el('div', { class: 'row' }, el('input', { type: 'text', class: 'title', value: b.name, disabled: ed ? null : 'disabled', onchange: ev => { b.name = ev.target.value.trim() || b.name; renderBhp(); save('Behandlungsplatz umbenannt: ' + b.name); } })),
+      el('div', { class: 'row' }, el('input', { type: 'text', value: b.leiter || '', placeholder: 'Leiter (Name)', disabled: ed ? null : 'disabled', onchange: ev => { b.leiter = ev.target.value.trim(); save('BHP-Leiter: ' + b.name); } }), el('input', { type: 'text', value: b.funk || '', placeholder: 'Funkrufname', disabled: ed ? null : 'disabled', onchange: ev => { b.funk = ev.target.value.trim(); save('BHP-Funkruf: ' + b.name); } })),
+      ...rows, warn.length ? el('div', { class: 'notice', text: 'Achtung: ' + warn.join(', ') + '.' }) : null,
+      el('h3', { class: 'cm-h', text: 'Transportmittel bereit' }),
+      el('div', { class: 'row' }, el('label', { class: 'hint' }, 'RTW ', num(() => bhpNum(b.rtw), v => { b.rtw = v; }, 52)), el('label', { class: 'hint' }, 'KTW ', num(() => bhpNum(b.ktw), v => { b.ktw = v; }, 52)), el('label', { class: 'hint' }, 'NEF/NA ', num(() => bhpNum(b.na), v => { b.na = v; }, 52))),
+      el('h3', { class: 'cm-h', text: 'Zielkliniken' }), el('div', { class: 'hint', text: 'Freie Plätze und Fahrzeit laut Leitstelle. „min“ ist die Fahrzeit.' }), ...kl,
+      ed ? el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Klinik hinzufügen', onclick: () => { b.kliniken.push({ id: uid(), name: '', frei: 0, min: 0 }); renderBhp(); save('Zielklinik hinzugefügt'); } })) : null,
+      el('div', { class: 'row' }, el('button', { class: 'btn small', text: 'Karte', onclick: () => map.setView([b.lat, b.lng], Math.max(map.getZoom(), 17)) }), el('button', { class: 'btn small', text: 'Meldung vorbereiten', onclick: () => bhpMessage(b) }), ed ? el('button', { class: 'btn small danger', text: 'Entfernen', onclick: () => { state.bhp = state.bhp.filter(x => x !== b); addJournal(b.name + ' aufgelöst', true); renderBhp(); save('Behandlungsplatz entfernt'); } }) : null));
+    box.append(card);
+  });
+  if (runtime.viewer) lockViewer(box);
+}
+const bhpSumText = tt => tt.n ? 'Alle Behandlungsplätze: wartend SK I ' + tt.w.sk1 + ', SK II ' + tt.w.sk2 + ', SK III ' + tt.w.sk3 + ' · abtransportiert SK I ' + tt.t.sk1 + ', SK II ' + tt.t.sk2 + ', SK III ' + tt.t.sk3 + '.' : '';
+function bhpMessage(b) {
+  setPanel(true); openTab('meldungen'); const f = lageFacts(), kl = b.kliniken.filter(c => c.name).map(c => c.name + ' (frei ' + bhpNum(c.frei) + ', ' + bhpNum(c.min) + ' min)').join('; ') || 'keine eingetragen';
+  $('#mDir').value = 'aus'; $('#mKind').value = 'Meldung'; $('#mTo').value = 'Einsatzleiter'; $('#mPrio').value = bhpNum(b.w.sk1) ? 1 : 2; $('#mText').rows = 10;
+  $('#mText').value = 'MELDUNG BEHANDLUNGSPLATZ ' + b.name + ', ' + f.zeit + '\nLeiter: ' + (b.leiter || '') + (b.funk ? ', Funk ' + b.funk : '') + '\nWartend: SK I ' + bhpNum(b.w.sk1) + ', SK II ' + bhpNum(b.w.sk2) + ', SK III ' + bhpNum(b.w.sk3) + '\nAbtransportiert: SK I ' + bhpNum(b.t.sk1) + ', SK II ' + bhpNum(b.t.sk2) + ', SK III ' + bhpNum(b.t.sk3) + '\nTransportmittel bereit: RTW ' + bhpNum(b.rtw) + ', KTW ' + bhpNum(b.ktw) + ', NEF/NA ' + bhpNum(b.na) + '\nZielkliniken: ' + kl + '\nBedarf (Kräfte, Material): ';
+  $('#mText').focus();
+}
+function initBhp() { const a = $('#bhpAdd'); if (!a) return; a.onclick = () => { stopDraw(); runtime.mode = { type: 'bhploc' }; map.getContainer().style.cursor = 'crosshair'; say('Ort des Behandlungsplatzes anklicken. Esc bricht ab.'); }; }
 function lageFacts() {
   const t = casTotals().t, us = state.units, sum = f => us.reduce((a, u) => a + (u[f] || 0), 0), ca = chemActive(), cs = ca && chemSub(ca.sid), w = state.wind, e = state.exercise || {};
   const st = id => us.filter(u => u.status === id).length, due = typeof meetingDue === 'function' ? meetingDue() : null;
@@ -5971,7 +6055,7 @@ function initMsgTpl() {
 function initMeldungen() {
   $('#mKind').append(...MSG_KINDS.map(k => el('option', { value: k, text: k }))); $('#mWay').append(...MSG_WAY.map(w => el('option', { value: w, text: w || '– Weg –' })));
   $('#mExtraOn').addEventListener('change', e => { state.msgExtra = e.target.checked; $('#mExtra').hidden = !e.target.checked; persist(); });
-  initMsgTpl(); initTileCacheUi();
+  initMsgTpl(); initTileCacheUi(); initBhp();
   $('#mAdd').onclick = () => {
     const text = $('#mText').value.trim(); if (!text) { $('#mText').focus(); return; }
     addMessage({ dir: $('#mDir').value, kind: $('#mKind').value, from: $('#mFrom').value.trim(), to: $('#mTo').value.trim(), text, prio: prioNum($('#mPrio').value), ref: $('#mRef').value,
@@ -6127,6 +6211,7 @@ map.on('click', e => {
   else if (runtime.mode === 'poi') addManualPoi(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode === 'cas') addCas(e.latlng.lat, e.latlng.lng);
   else if (runtime.mode && runtime.mode.type === 'measloc') placeMeasure(e.latlng);
+  else if (runtime.mode && runtime.mode.type === 'bhploc') { stopDraw(); addBhp(e.latlng); }
   else if (runtime.mode && runtime.mode.type === 'chemloc') { const sid = runtime.mode.sid; stopDraw(); addChem(sid, e.latlng); }
   else if (runtime.mode && runtime.mode.type === 'unitloc') {
     const un = state.units.find(x => x.id === runtime.mode.id); stopDraw();
@@ -6319,7 +6404,7 @@ function applyState(s, fit) {
   Object.keys(markers).forEach(k => delete markers[k]);
   state = s; runtime.sector = {};
   state.areas.forEach(prepArea); state.layerOn = Object.assign(Object.fromEntries(LAYERS.map(l => [l.id, l.on])), state.layerOn);
-  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra; histInit(); persist();
+  renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderBhp(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra; histInit(); persist();
   if (fit && state.areas.length) map.fitBounds(L.latLngBounds(state.areas.flatMap(a => a.rings.flat())).pad(0.08));
 }
 
@@ -6338,7 +6423,7 @@ histInit();
 initKeule(); initEinsatz(); initKraefte(); initAbschnitte(); initUnitOverview(); initPop(); initTidy(); initChem(); initFue(); initRoles();
 setInterval(() => { if (!document.hidden && !runtime.viewer) renderUnitMarkers(); }, 30000);   // überfällige Ablösungen erscheinen von selbst
 initMeldungen(); initStaende(); $('#roleAdd').onclick = () => { state.roles.push({ id: 'R' + uid(), label: 'neue Rolle' }); renderRoles(); renderJournal(); fillMsgRefs(); persist(); };
-renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
+renderAreas(); renderAreaList(); renderMarkers(); renderSymbols(); renderSections(); renderJournal(); renderAll(); renderCas(); renderProblems(); renderKeulen(); renderChem(); renderBhp(); renderEinsatz(); renderUnits(); renderAbschnitte(); renderMessages(); fillMsgRefs(); renderRoles(); renderStands(); $('#mExtraOn').checked = !!state.msgExtra; $('#mExtra').hidden = !state.msgExtra;
 initPlaceSearch(); initialView();
 tickClock(); setInterval(tickClock, 1000);
 $('#panelToggle').innerHTML = panelGlyph(!$('#app').classList.contains('collapsed'));

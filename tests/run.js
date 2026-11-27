@@ -104,6 +104,24 @@ async function seite(b, q, w, h) {
     await p.reload(); await p.waitForFunction(() => window.__lage); await p.waitForTimeout(2500);
     const ok = await p.evaluate(() => [...document.querySelectorAll('img.leaflet-tile')].filter(i => i.naturalWidth > 0).length); assert.ok(ok > 0, 'keine Kachel ohne Netz sichtbar'); await ctx.close();
   });
+  await t('Behandlungsplatz: anlegen, zählen, Transport, Journal, Rolle', async () => {
+    const p = await seite(b, '?rolle=S1'); await p.keyboard.press('b'); await p.waitForTimeout(300);
+    assert.strictEqual(await p.evaluate(() => document.querySelector('#tabs [aria-selected=true]').dataset.tab), 'bhp');
+    await p.click('#bhpAdd'); await p.mouse.click(700, 400); await p.waitForTimeout(500);
+    assert.strictEqual(await p.evaluate(() => window.__lage.state.bhp.length), 1);
+    await p.click('.bhp-row >> nth=0 >> button:has-text("+")'); await p.click('.bhp-row >> nth=0 >> button:has-text("+")'); await p.waitForTimeout(300);
+    await p.click('.bhp-row >> nth=0 >> button:has-text("Transport")'); await p.waitForTimeout(300);
+    const r = await p.evaluate(() => { const x = window.__lage.state.bhp[0]; return [x.w.sk1, x.t.sk1, window.__lage.state.journal.some(j => /abtransportiert/.test(j.text))]; });
+    assert.deepStrictEqual(r, [1, 1, true]); assert.ok(/wartend SK I 1/.test(await p.textContent('#bhpSum')));
+    await p.click('.bhp-card button:has-text("Klinik hinzufügen")'); await p.waitForTimeout(300); assert.strictEqual(await p.evaluate(() => window.__lage.state.bhp[0].kliniken.length), 1);
+    await p.evaluate(() => window.__lage.undo()); await p.waitForTimeout(300); assert.strictEqual(await p.evaluate(() => window.__lage.state.bhp[0].kliniken.length), 0);
+    const s3 = await seite(b, '?rolle=S3'); assert.ok(!(await s3.locator('#tabs [data-tab="bhp"]').isVisible())); await s3.close(); await p.close();
+  });
+  await t('Behandlungsplatz: Export von S1 enthält die Daten', async () => {
+    const p = await seite(b, '?rolle=S1'); await p.evaluate(() => { window.__lage.state.bhp.push({ id: 'b1', name: 'BHP Test', lat: 51, lng: 7, leiter: '', funk: '', w: { sk1: 2, sk2: 0, sk3: 0 }, t: { sk1: 0, sk2: 0, sk3: 0 }, kap: { sk1: 0, sk2: 0, sk3: 0 }, rtw: 0, ktw: 0, na: 0, kliniken: [] }); });
+    const [d] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('#btnExport').click())]);
+    const j = JSON.parse(require('fs').readFileSync(await d.path(), 'utf8')); assert.strictEqual(j.role, 'S1'); assert.strictEqual(j.data.bhp[0].w.sk1, 2); await p.close();
+  });
   await b.close();
   console.log('\n' + ok + ' bestanden, ' + fail + ' fehlgeschlagen'); if (errs.length) { console.log('Skriptfehler im Browser:', [...new Set(errs)]); fail++; }
   process.exit(fail ? 1 : 0);
