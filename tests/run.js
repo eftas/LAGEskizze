@@ -14,8 +14,8 @@ async function seite(b, q, w, h) {
 }
 (async () => {
   const b = await chromium.launch();
-  await t('Start ohne Skriptfehler, Name und Rolle', async () => {
-    const p = await seite(b, '?rolle=S2'); assert.strictEqual(await p.textContent('h1'), 'LAGEkarte'); assert.ok((await p.textContent('#roleChip')).includes('S2')); await p.close();
+  await t('Start ohne Skriptfehler, Name, keine Funktionswahl', async () => {
+    const p = await seite(b, '?rolle=S2'); assert.strictEqual(await p.textContent('h1'), 'LAGEkarte'); assert.strictEqual(await p.locator('#roleChip').count(), 0); await p.close();
   });
   await t('Burger-Menü öffnet und schließt, Lagevortrag und Dunkelmodus liegen in der Kopfzeile', async () => {
     const p = await seite(b, '?rolle=S2'); assert.ok(await p.locator('#btnVortrag').isVisible()); assert.ok(await p.locator('#btnTheme').isVisible());
@@ -45,10 +45,10 @@ async function seite(b, q, w, h) {
     assert.deepStrictEqual(r.c1, [600, 5600, false]); assert.deepStrictEqual(r.c2, [600, 3300, false]); assert.deepStrictEqual(r.c3, [600, 2500, false]);
     assert.deepStrictEqual(r.c4, [1000, 11000, true]); assert.deepStrictEqual(r.c5, [60, 1500, false]); assert.deepStrictEqual(r.n1, [300, 4100, false]); assert.deepStrictEqual(r.n2, [30, 200, false]); assert.deepStrictEqual(r.n3, [30, 300, false]); assert.deepStrictEqual(r.k1, [200, 1200, false]); assert.deepStrictEqual(r.k2, [200, 3900, false]); assert.deepStrictEqual(r.k3, [30, 200, false]); await p.close();
   });
-  await t('Rechtsklick-Menü je Funktion: S5 ohne Bearbeitung, S3 nur Einheit', async () => {
-    const m = async rolle => { const p = await seite(b, '?rolle=' + rolle, 1300, 800); await p.mouse.click(700, 400, { button: 'right' }); await p.waitForTimeout(500); const l = await p.evaluate(() => [...document.querySelectorAll('.ctx-item')].map(x => x.textContent.trim())); await p.close(); return l; };
-    const s5 = await m('S5'), s3 = await m('S3'), s2 = await m('S2');
-    assert.ok(!s5.some(x => /Gefahrstoff|Einheit|Problem|Objekt/.test(x))); assert.ok(s3.some(x => /Einheit hier/.test(x)) && !s3.some(x => /Gefahrstoff/.test(x))); assert.ok(s2.some(x => /Gefahrstoff/.test(x)));
+  await t('Rechtsklick-Menü: alles vorhanden, keine Funktionswahl', async () => {
+    const p = await seite(b, '?rolle=S5', 1300, 800); await p.mouse.click(700, 400, { button: 'right' }); await p.waitForTimeout(500);
+    const l = await p.evaluate(() => [...document.querySelectorAll('.ctx-item')].map(x => x.textContent.trim()));
+    assert.ok(['Gefahrstoff', 'Einheit hier', 'Problem', 'Behandlungsplatz'].every(k => l.some(x => x.includes(k))), l.join('|')); assert.strictEqual(await p.locator('.rolelay').count(), 0); await p.close();
   });
   await t('Tastenkürzel: G, T, Fragezeichen', async () => {
     const p = await seite(b, '?rolle=S2'); await p.keyboard.press('g'); await p.waitForTimeout(200);
@@ -104,8 +104,8 @@ async function seite(b, q, w, h) {
     await p.reload(); await p.waitForFunction(() => window.__lage); await p.waitForTimeout(2500);
     const ok = await p.evaluate(() => [...document.querySelectorAll('img.leaflet-tile')].filter(i => i.naturalWidth > 0).length); assert.ok(ok > 0, 'keine Kachel ohne Netz sichtbar'); await ctx.close();
   });
-  await t('Behandlungsplatz: anlegen, zählen, Transport, Journal, Rolle', async () => {
-    const p = await seite(b, '?rolle=S1'); await p.keyboard.press('b'); await p.waitForTimeout(300);
+  await t('Behandlungsplatz: anlegen, zählen, Transport, Journal', async () => {
+    const p = await seite(b, '?rolle=S2'); await p.keyboard.press('b'); await p.waitForTimeout(300);
     assert.strictEqual(await p.evaluate(() => document.querySelector('#tabs [aria-selected=true]').dataset.tab), 'bhp');
     await p.click('#bhpAdd'); await p.mouse.click(700, 400); await p.waitForTimeout(500);
     assert.strictEqual(await p.evaluate(() => window.__lage.state.bhp.length), 1);
@@ -115,12 +115,12 @@ async function seite(b, q, w, h) {
     assert.deepStrictEqual(r, [1, 1, true]); assert.ok(/wartend SK I 1/.test(await p.textContent('#bhpSum')));
     await p.click('.bhp-card button:has-text("Klinik hinzufügen")'); await p.waitForTimeout(300); assert.strictEqual(await p.evaluate(() => window.__lage.state.bhp[0].kliniken.length), 1);
     await p.evaluate(() => window.__lage.undo()); await p.waitForTimeout(300); assert.strictEqual(await p.evaluate(() => window.__lage.state.bhp[0].kliniken.length), 0);
-    const s3 = await seite(b, '?rolle=S3'); assert.ok(!(await s3.locator('#tabs [data-tab="bhp"]').isVisible())); await s3.close(); await p.close();
+    await p.close();
   });
-  await t('Behandlungsplatz: Export von S1 enthält die Daten', async () => {
-    const p = await seite(b, '?rolle=S1'); await p.evaluate(() => { window.__lage.state.bhp.push({ id: 'b1', name: 'BHP Test', lat: 51, lng: 7, leiter: '', funk: '', w: { sk1: 2, sk2: 0, sk3: 0 }, t: { sk1: 0, sk2: 0, sk3: 0 }, kap: { sk1: 0, sk2: 0, sk3: 0 }, rtw: 0, ktw: 0, na: 0, kliniken: [] }); });
+  await t('Behandlungsplatz: Export enthält die Daten', async () => {
+    const p = await seite(b, '?rolle=S2'); await p.evaluate(() => { window.__lage.state.bhp.push({ id: 'b1', name: 'BHP Test', lat: 51, lng: 7, leiter: '', funk: '', w: { sk1: 2, sk2: 0, sk3: 0 }, t: { sk1: 0, sk2: 0, sk3: 0 }, kap: { sk1: 0, sk2: 0, sk3: 0 }, rtw: 0, ktw: 0, na: 0, kliniken: [] }); });
     const [d] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('#btnExport').click())]);
-    const j = JSON.parse(require('fs').readFileSync(await d.path(), 'utf8')); assert.strictEqual(j.role, 'S1'); assert.strictEqual(j.data.bhp[0].w.sk1, 2); await p.close();
+    const j = JSON.parse(require('fs').readFileSync(await d.path(), 'utf8')); assert.strictEqual(j.role, 'S2'); assert.strictEqual(j.data.bhp[0].w.sk1, 2); await p.close();
   });
   await b.close();
   console.log('\n' + ok + ' bestanden, ' + fail + ' fehlgeschlagen'); if (errs.length) { console.log('Skriptfehler im Browser:', [...new Set(errs)]); fail++; }

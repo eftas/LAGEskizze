@@ -1487,7 +1487,6 @@ body.vortrag .leaflet-top.leaflet-right { margin-right: var(--vtR, 436px); margi
     <span id="storeChip" class="chip due" hidden></span>
     <span id="liveBadge" class="chip" hidden></span>
     <button id="btnShare" title="Stand live an andere Geräte verteilen (QR-Code)">Teilen</button>
-    <button id="roleChip" class="chip" title="Funktion wechseln" hidden></button>
     <button id="btnVortrag" title="Karte groß mit einklappbaren Leisten, zum Beispiel für den Lagevortrag">Lagevortrag zeigen</button>
     <button id="btnTheme" aria-label="Dunkelmodus" title="Hell oder dunkel umschalten"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.4A5.5 5.5 0 0 1 13.4 3.1C12.9 3 12.5 3 12 3z"/></svg></button>
     <div id="hdrMore"><button id="btnMore" aria-label="Menü" aria-haspopup="menu" aria-expanded="false" title="Weitere Funktionen"><i></i><i></i><i></i></button>
@@ -5593,10 +5592,11 @@ const ROLLEN = [
   { id: 'S2', name: 'S2 Lage', d: 'Lagevortrag, alles bearbeiten, Daten der anderen einlesen' }, { id: 'S3', name: 'S3 Einsatz', d: 'Einheiten und Abschnitte' },
   { id: 'S4', name: 'S4 Versorgung', d: 'Ablösung, Atemschutz, Nachforderung, Ausfälle' }, { id: 'S5', name: 'S5 Presse', d: 'Meldungen' }, { id: 'S6', name: 'S6 Kommunikation', d: 'Kommunikationsplan' }];
 const ROLE_DOM = { EL: ['people', 'fb'], S1: ['casualties', 'bhp'], S2: ['areas', 'objects', 'deps', 'symbols', 'manualPois', 'wind', 'weather', 'plumes', 'chem', 'measure', 'problems', 'exercise', 'meeting'], S3: ['units', 'sections'], S4: ['logi'], S5: [], S6: ['funk'] };
+ROLE_DOM.S2 = [...new Set(Object.values(ROLE_DOM).flat())];   // der S2 trägt alle Bereiche, auch im Export
 const DOM_PATH = { people: ['fue', 'people'], fb: ['fue', 'fb'], funk: ['fue', 'funk'] };
 const ROLE_TABS = { EL: ['bhp', 'probleme', 'tagebuch', 'meldungen', 'staende', 'daten'], S1: ['bhp', 'zahlen', 'meldungen', 'tagebuch', 'daten'], S3: ['kraefte', 'abschnitte', 'meldungen', 'tagebuch', 'daten'],
   S4: ['bhp', 'probleme', 'meldungen', 'daten'], S5: ['meldungen', 'tagebuch', 'daten'], S6: ['meldungen', 'daten'] };
-const roleId = () => runtime.role || 'S2';
+const roleId = () => 'S2';   // ein Stab, ein Programm: der S2 kann alles
 const can = d => roleId() === 'S2' || (ROLE_DOM[roleId()] || []).includes(d);
 const ro = d => runtime.viewer || !can(d);
 const roleName = () => (ROLLEN.find(r => r.id === roleId()) || ROLLEN[2]).name;
@@ -5616,22 +5616,9 @@ function applyRole() {
   document.querySelectorAll('#tabs button').forEach(b => { b.hidden = !!(tabs && !tabs.includes(b.dataset.tab)); });
   $('#btnAddPoi').hidden = r !== 'S2' || runtime.viewer;
   $('#lvShow').hidden = false; $('#impOthers').hidden = r !== 'S2';
-  const chip = $('#roleChip'); chip.hidden = runtime.viewer; chip.textContent = roleName();
   $('#btnExport').hidden = runtime.viewer; $('#btnExport').title = r === 'S2' ? 'Eigene Daten und Gesamtstand als JSON-Datei' : 'Nur Ihre Daten als JSON-Datei speichern';
   const sel = document.querySelector('#tabs button[aria-selected="true"]'); if (!sel || sel.hidden) openTab((tabs && tabs[0]) || 'einsatz');
   renderUnitOverview(); renderFue();
-}
-function chooseRole(forceAsk) {
-  return new Promise(resolve => {
-    const close = () => { document.removeEventListener('keydown', onKey, true); dlg.classList.add('rolehide'); setTimeout(() => dlg.remove(), 400); };
-    const onKey = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); resolve(); } };
-    const done = id => { runtime.role = id; try { localStorage.setItem('kritis-role', id); } catch (e) { /* egal */ } close(); applyRole(); resolve(); };
-    const dlg = el('div', { class: 'dlg rolelay rolehide', role: 'dialog', 'aria-modal': 'true', style: 'z-index:5000', onmousedown: e => { if (e.target === dlg) { close(); resolve(); } } }, el('div', { class: 'rolecard' }, el('h2', { text: 'Wer sind Sie?' }),
-      el('p', { class: 'hint', text: 'Sie sehen danach nur die Aufgaben Ihrer Funktion. S2 kann alles bearbeiten. Ihre Eingaben bleiben auf diesem Gerät, bis Sie sie exportieren.' }),
-      el('div', { class: 'rolegrid' }, ...ROLLEN.map(r => el('button', { class: 'btn rolebtn' + (r.id === 'S2' ? ' primary' : ''), onclick: () => done(r.id) }, el('b', { text: r.name }), el('small', { text: r.d }))))));
-    document.body.append(dlg); document.addEventListener('keydown', onKey, true);
-    void dlg.offsetWidth; requestAnimationFrame(() => dlg.classList.remove('rolehide'));
-  });
 }
 function showLagevortrag() { startVortrag(); }
 /* ---- Export und Einlesen ---- */
@@ -5807,7 +5794,7 @@ function tourSteps() {
   const S = (sel, title, text, opt) => ({ sel, title, text, ...(opt || {}) });
   const rn = roleName();
   return [
-    S('#roleChip', 'Ihre Funktion: ' + rn, 'Sie sehen und ändern nur Ihre Aufgaben. Mit einem Klick auf die Funktion wechseln Sie. Ihre Eingaben bleiben auf diesem Gerät, bis Sie sie über das Menü exportieren.'),
+    S('#hdrTop h1', 'LAGEkarte', 'Alles liegt auf diesem Gerät, bis Sie die Lage über das Menü exportieren. Das Programm sichert nicht automatisch.'),
     S('#clock', 'Uhr und taktische Zeit', 'Ein Klick auf die Uhr legt die nächste Lagebesprechung fest. Daneben steht die taktische Zeit (Tag, Stunde, Minute).'),
     S('#tabs', 'Reiter links', 'Hier liegen Ihre Aufgaben, zum Beispiel Kräfte, Meldungen, Tagebuch oder Gefahrstoff. Mit Umschalt+P klappen Sie die Leiste ein.'),
     S('#map', 'Karte', 'Rechtsklick auf die Karte öffnet das Menü für Ihre Funktion, etwa Einheit einsetzen, Gefahrstoff melden oder Problem eintragen. Mit der linken Maustaste verschieben Sie die Karte.'),
@@ -5843,14 +5830,9 @@ function maybeTour() {
   runTour();
 }
 function initRoles() {
-  $('#roleChip').onclick = () => chooseRole(true); $('#btnExport').onclick = () => exportRole(false); $('#btnHelp').onclick = showShortcuts; setTimeout(maybeTour, 1800);
+  $('#btnExport').onclick = () => exportRole(false); $('#btnHelp').onclick = showShortcuts; setTimeout(maybeTour, 1800);
   $('#mtGuided').onclick = openGuidedMeeting; $('#lvShow').onclick = showLagevortrag; $('#expMine').onclick = () => exportRole(false); $('#expAll').onclick = () => exportRole(true); $('#impOthers').onclick = importDlg;
-  const q = qs.get('rolle'), saved = (() => { try { return localStorage.getItem('kritis-role'); } catch (e) { return null; } })();
-  if (runtime.viewer) { runtime.role = 'S2'; applyRole(); return; }
-  if (q && ROLLEN.some(r => r.id === q)) { runtime.role = q; try { localStorage.setItem('kritis-role', q); } catch (e) { /* egal */ } applyRole();  return; }
-  if (navigator.webdriver && q !== 'fragen') { runtime.role = saved || 'S2'; applyRole(); openTab('einsatz'); return; }   // automatische Tests starten ohne Frage
-  if (saved && ROLLEN.some(r => r.id === saved) && q !== 'fragen') { runtime.role = saved; applyRole();  return; }
-  runtime.role = 'S2'; applyRole(); chooseRole(false);
+  runtime.role = 'S2'; applyRole(); if (!runtime.viewer && navigator.webdriver) openTab('einsatz');
 }
 /* Abschnitte-Reiter */
 function secTotals(sx) { const us = state.units.filter(u => u.sectionId === sx.id); return { us, f: us.reduce((a, u) => a + (u.f || 0), 0), u: us.reduce((a, u) => a + (u.u || 0), 0), h: us.reduce((a, u) => a + (u.h || 0), 0) }; }
