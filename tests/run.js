@@ -122,6 +122,23 @@ async function seite(b, q, w, h) {
     const [d] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('#btnExport').click())]);
     const j = JSON.parse(require('fs').readFileSync(await d.path(), 'utf8')); assert.strictEqual(j.role, 'S2'); assert.strictEqual(j.data.bhp[0].w.sk1, 2); await p.close();
   });
+  await t('Stabswand: Kräfteübersicht, Doppelklick Anfahrt, Ziehen, Überschreiben', async () => {
+    const p = await seite(b, '', 1700, 1300); await p.evaluate(() => { const s = window.__lage.state, now = new Date().toISOString();
+      s.sections = [{ id: 'ea1', kind: 'poly', typ: 'ea', name: 'EA ICE', color: '#2563eb', pts: [] }, { id: 'ea2', kind: 'poly', typ: 'ea', name: 'EA Zwei', color: '#16a34a', pts: [] }];
+      const U = (id, sec, st, f, u, h) => ({ id, name: 'E' + id, call: '', sym: null, f, u, h, status: st, sectionId: sec, task: '', note: '', lat: null, lng: null, time: now });
+      s.units = [U('a', 'ea1', 'einsatz', 1, 3, 9), U('b', 'ea1', 'anfahrt', 1, 2, 8), U('c', 'ea2', 'einsatz', 0, 2, 4)]; });
+    await p.keyboard.press('u'); await p.waitForTimeout(500); await p.evaluate(() => document.querySelector('#ovStat').dispatchEvent(new Event('change'))); await p.waitForTimeout(400);
+    const sums = async () => p.evaluate(() => [...document.querySelectorAll('.kt-t tr.sig td')].map(x => +x.textContent));
+    assert.deepStrictEqual(await sums(), [11, 19, 0]);
+    await p.dblclick('.wt[data-uid="a"]'); await p.waitForTimeout(500);
+    assert.deepStrictEqual(await sums(), [24, 6, 0]); assert.ok(await p.locator('.wt.anf[data-uid="a"]').count()); assert.ok(!(await p.locator('.dlg').count()), 'Karteikarte darf nicht aufgehen');
+    await p.dblclick('.wt[data-uid="a"]'); await p.waitForTimeout(500); assert.deepStrictEqual(await sums(), [11, 19, 0]);
+    const from = await p.locator('.wt[data-uid="c"]').boundingBox(), to = await p.locator('.wblock[data-drop="sec:ea1"]').boundingBox();
+    await p.mouse.move(from.x + 30, from.y + 30); await p.mouse.down(); await p.mouse.move(from.x + 60, from.y + 10, { steps: 4 }); await p.mouse.move(to.x + 60, to.y + 40, { steps: 8 }); await p.mouse.up(); await p.waitForTimeout(500);
+    assert.strictEqual(await p.evaluate(() => window.__lage.state.units.find(u => u.id === 'c').sectionId), 'ea1');
+    await p.fill('.kt-t tbody tr:first-child td:nth-child(3) input', '99'); await p.press('.kt-t tbody tr:first-child td:nth-child(3) input', 'Tab'); await p.waitForTimeout(400);
+    assert.ok((await sums())[1] >= 99); await p.close();
+  });
   await b.close();
   console.log('\n' + ok + ' bestanden, ' + fail + ' fehlgeschlagen'); if (errs.length) { console.log('Skriptfehler im Browser:', [...new Set(errs)]); fail++; }
   process.exit(fail ? 1 : 0);
